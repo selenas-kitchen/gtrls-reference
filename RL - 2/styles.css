@@ -366,6 +366,15 @@ input {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+#awardRacePanel {
+  grid-column: 1 / -1;
+}
+
+#awardRaceGrid {
+  max-width: 980px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .mini-leader-card {
   height: auto;
   min-height: 72px;
@@ -373,19 +382,12 @@ input {
   gap: 4px;
   align-content: center;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--accent);
-  background: #fff;
+  border-left: 5px solid var(--team-color, var(--accent));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--team-color, var(--accent)) 12%, #fff), #fff 52%);
   color: var(--ink);
   cursor: pointer;
+  padding: 12px 14px;
   text-align: left;
-}
-
-.mini-leader-card:nth-child(3n) {
-  border-left-color: var(--accent-2);
-}
-
-.mini-leader-card:nth-child(3n + 1) {
-  border-left-color: var(--blue);
 }
 
 .mini-leader-card span {
@@ -405,6 +407,19 @@ input {
 
 .mini-leader-card small {
   color: var(--muted);
+}
+
+#awardRacePanel .mini-leader-card {
+  min-height: 94px;
+  border-left-width: 7px;
+}
+
+#awardRacePanel .mini-leader-card strong {
+  font-size: 1.08rem;
+}
+
+#awardRacePanel .mini-leader-card small {
+  line-height: 1.35;
 }
 
 .leaderboards {
@@ -500,6 +515,38 @@ input {
   margin-top: 14px;
 }
 
+.player-total-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.player-total-grid article {
+  min-height: 86px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+}
+
+.player-total-grid span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.player-total-grid strong {
+  color: var(--ink);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
 .appearance-card {
   border: 1px solid var(--line);
   border-top: 4px solid var(--accent);
@@ -556,7 +603,8 @@ input {
   margin-top: 14px;
 }
 
-.award-card {
+.award-card,
+.award-card button {
   display: grid;
   gap: 5px;
   border: 1px solid var(--line);
@@ -564,6 +612,17 @@ input {
   border-radius: 8px;
   padding: 12px;
   background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.award-card button {
+  width: 100%;
+  cursor: pointer;
+}
+
+.award-card button:hover {
+  background: #fff8e5;
 }
 
 .award-card strong {
@@ -587,14 +646,28 @@ input {
   margin-top: 14px;
 }
 
-.info-grid article {
+.info-grid article,
+.info-grid button {
+  min-height: 88px;
   display: grid;
-  gap: 5px;
+  gap: 8px;
+  align-content: center;
   border: 1px solid var(--line);
   border-left: 4px solid var(--blue);
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px;
   background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.info-grid button {
+  width: 100%;
+  cursor: pointer;
+}
+
+.info-grid button:hover {
+  background: #eef5ff;
 }
 
 .info-grid span {
@@ -605,7 +678,60 @@ input {
 }
 
 .info-grid strong {
+  white-space: normal;
+  line-height: 1.25;
   color: var(--ink);
+}
+
+.awards-panel {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.awards-panel h2 {
+  margin: 0;
+}
+
+.awards-panel p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.award-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.award-filter {
+  min-height: 64px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  background: #f9fbf9;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.award-filter.active {
+  border-color: var(--accent);
+  background: #edf7f6;
+}
+
+.award-filter strong {
+  font-size: 0.92rem;
+}
+
+.award-filter span {
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .compact-stat-list {
@@ -858,7 +984,12 @@ tbody tr.clickable td:first-child {
     grid-template-columns: 1fr;
   }
 
-  #teamLeaderGrid {
+  .player-total-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #teamLeaderGrid,
+  #awardRaceGrid {
     grid-template-columns: 1fr;
   }
 
