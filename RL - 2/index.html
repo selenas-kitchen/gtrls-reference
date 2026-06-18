@@ -32,6 +32,10 @@
         <input id="includeScrims" type="checkbox">
         <span>Include scrims</span>
       </label>
+      <label id="excludeTwosControl" class="check-control hidden">
+        <input id="excludeTwosEra" type="checkbox">
+        <span>Exclude 2's Era</span>
+      </label>
       <div class="segmented" role="tablist" aria-label="Stats view">
         <button class="active" type="button" data-view="teams">Teams</button>
         <button type="button" data-view="players">Players</button>
@@ -39,6 +43,7 @@
         <button type="button" data-view="lifetimeTeams">Lifetime Teams</button>
         <button type="button" data-view="lifetimePlayers">Lifetime Players</button>
         <button type="button" data-view="awards">Awards</button>
+        <button type="button" data-view="kitchen">Selena's Kitchen</button>
       </div>
     </section>
 
@@ -96,11 +101,15 @@
     </section>
 
     <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
+    <section id="kitchenPanel" class="kitchen-panel hidden" aria-label="Selena's Kitchen"></section>
 
     <section class="table-shell">
       <div class="table-head">
         <h2 id="tableTitle">Team Stats</h2>
-        <span id="rowCount">0 rows</span>
+        <div class="table-meta">
+          <div id="tableLegend" class="table-legend hidden" aria-label="Table key"></div>
+          <span id="rowCount">0 rows</span>
+        </div>
       </div>
       <div class="table-wrap">
         <table>

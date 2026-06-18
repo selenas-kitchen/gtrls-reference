@@ -34,6 +34,7 @@
     ["WAXYSAUSAGE9", "MJD22-_-"],
     ["MERKWRM", "MerkWTM"],
     ["MERKWTM", "MerkWTM"],
+    ["RAVENGLITCH", "Ravenglitch"],
     ["MADJANITOR", "MadJanitor88"],
     ["IMmABLURR", "IMMa_Blurr"],
     ["IMMABLURR", "IMMa_Blurr"],
@@ -208,7 +209,9 @@
     row.shotsPerGame = Math.round(((row.shots || 0) / games) * 100) / 100;
     row.shotsConcededPerGame = Math.round(((row.shotsConceded || 0) / games) * 100) / 100;
     row.goalsConcededPerGame = Math.round(((row.goalsConceded || 0) / games) * 100) / 100;
-    row.per = typeof row.per === "number" ? row.per : Math.round(((0.1 * (row.goals || 0)) + (0.05 * (row.assists || 0)) + ((2 / 30) * (row.saves || 0)) + (0.01 * (row.shots || 0)) - (games * 0.1)) * 100) / 100;
+    const rawPer = (0.1 * (row.goals || 0)) + (0.05 * (row.assists || 0)) + ((2 / 30) * (row.saves || 0)) + (0.01 * (row.shots || 0));
+    const calculatedPer = row.season === "S1" ? ((rawPer * (2 / 3)) - (games * 0.1)) : (rawPer - (games * 0.1));
+    row.per = typeof row.per === "number" ? row.per : Math.round(calculatedPer * 100) / 100;
     row.perPerGame = typeof row.perPerGame === "number" ? row.perPerGame : Math.round((row.per / games) * 1000) / 1000;
     row.shootingPct = row.shots > 0 ? Math.round((row.goals / row.shots) * 1000) / 10 : 0;
     row.teamSaveRate = row.shotsConceded > 0 ? Math.round((row.saves / row.shotsConceded) * 1000) / 10 : 0;
@@ -623,6 +626,7 @@
   }));
 
   const playoffs = [
+    ["S1 Playoffs", "Note", "See Keppen for details.", "", ""],
     ["S2 Playoffs", "Placements", "WIN-DIXIES", "4 - 0", "SMOOTH JIZZ"],
     ["S2 Playoffs", "Placements", "ROUGH SAX", "1 - 4", "MEGAWATT"],
     ["S2 Playoffs", "Semi-Finals", "EPSTEIN'S WAITLIST", "4 - 0", "MEGAWATT"],
@@ -652,7 +656,21 @@
     ["S5 Playoffs", "Championship", "Weenie Hut Jrs", "Champion", "BMM"],
   ].map(([season, round, teamA, result, teamB]) => ({ season, round, teamA: team(teamA), result, teamB: team(teamB), source: "manual" }));
 
+  function applyTeamRecordsToPlayers() {
+    const teamsBySeason = new Map(teams.map((row) => [`${row.season}|${row.name}`, row]));
+    players.forEach((row) => {
+      const teamName = (row.teams || [])[0];
+      const teamRow = teamsBySeason.get(`${row.season}|${teamName}`);
+      if (!teamRow) return;
+      row.wins = teamRow.wins || 0;
+      row.losses = teamRow.losses || 0;
+      row.gameWins = typeof teamRow.gameWins === "number" ? teamRow.gameWins : row.wins;
+      row.gameLosses = typeof teamRow.gameLosses === "number" ? teamRow.gameLosses : row.losses;
+    });
+  }
+
   teams.forEach(finalizeCommon);
+  applyTeamRecordsToPlayers();
   players.forEach(finalizeCommon);
 
   window.RL_MANUAL_HISTORY = { teams, players, teamInfo, playoffs, draft, schedules: [] };

@@ -41,6 +41,7 @@ const playerAliasMap = new Map([
   ["WAXYSAUSAGE9", "MJD22-_-"],
   ["MERKWRM", "MerkWTM"],
   ["MERKWTM", "MerkWTM"],
+  ["RAVENGLITCH", "Ravenglitch"],
 ]);
 
 const teamAliasMap = new Map([
@@ -146,7 +147,7 @@ function canonicalizeDataNames() {
 
 function combinePlayerSeasonRows(rows) {
   const rawFields = [
-    "games", "wins", "losses", "standingsPoints", "score", "goals", "assists", "saves", "shots",
+    "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "score", "goals", "assists", "saves", "shots",
     "shotsConceded", "goalsConceded", "lastDefenderGoalsConceded", "opponentSavesForced",
     "demosInflicted", "demosTaken", "avgSpeedTotal", "avgBoostTotal", "amountCollected",
     "amountStolen", "totalDistance", "mvps",
@@ -229,7 +230,9 @@ const state = {
   sortKey: "wins",
   sortDir: "desc",
   includeScrims: false,
+  excludeTwosEra: false,
   awardFilter: "All",
+  kitchenSelectedPlayer: "",
   page: { type: "dashboard" },
 };
 
@@ -262,6 +265,8 @@ const teamColumns = [
   ["shotsConcededPerGame", "ShA/G"],
   ["opponentSavesForcedPerGame", "Opp Sv/G"],
   ["goalDiff", "Diff"],
+  ["per", "PER"],
+  ["perPerGame", "PER/G"],
   ["boostCollectedPerGame", "Boost/G"],
   ["boostStolenPerGame", "Stolen/G"],
   ["demosPerGame", "Demo/G"],
@@ -274,8 +279,12 @@ const playerColumns = [
   ["season", "Season"],
   ["teamsText", "Team(s) This Season"],
   ["games", "GP"],
-  ["wins", "W"],
-  ["winPct", "Win %"],
+  ["wins", "Match W"],
+  ["losses", "Match L"],
+  ["matchWinPct", "Match Win %"],
+  ["gameWins", "Game W"],
+  ["gameLosses", "Game L"],
+  ["gameWinPct", "Game Win %"],
   ["goals", "Goals"],
   ["goalsPerGame", "G/G"],
   ["assists", "Ast"],
@@ -333,6 +342,8 @@ const els = {
   searchInput: document.querySelector("#searchInput"),
   searchSuggestions: document.querySelector("#searchSuggestions"),
   includeScrims: document.querySelector("#includeScrims"),
+  excludeTwosControl: document.querySelector("#excludeTwosControl"),
+  excludeTwosEra: document.querySelector("#excludeTwosEra"),
   tabButtons: [...document.querySelectorAll("[data-view]")],
   teamLeaderGrid: document.querySelector("#teamLeaderGrid"),
   awardRaceGrid: document.querySelector("#awardRaceGrid"),
@@ -357,11 +368,14 @@ const els = {
   leaderOne: document.querySelector("#leaderOne"),
   leaderTwo: document.querySelector("#leaderTwo"),
   tableTitle: document.querySelector("#tableTitle"),
+  tableLegend: document.querySelector("#tableLegend"),
   rowCount: document.querySelector("#rowCount"),
   head: document.querySelector("#statsHead"),
   body: document.querySelector("#statsBody"),
+  tableShell: document.querySelector(".table-shell"),
   detailExtras: document.querySelector("#detailExtras"),
   awardFilters: document.querySelector("#awardFilters"),
+  kitchenPanel: document.querySelector("#kitchenPanel"),
   playoffStats: document.querySelector("#playoffStats"),
 };
 
@@ -483,6 +497,12 @@ const playerSeasonColumns = [
   ["season", "Season"],
   ["teamsText", "Team(s)"],
   ["games", "GP"],
+  ["wins", "Match W"],
+  ["losses", "Match L"],
+  ["matchWinPct", "Match Win %"],
+  ["gameWins", "Game W"],
+  ["gameLosses", "Game L"],
+  ["gameWinPct", "Game Win %"],
   ["score", "Total Score"],
   ["goals", "Goals"],
   ["assists", "Assists"],
@@ -579,6 +599,11 @@ function isPlayoffSeason(season) {
   return String(season).endsWith("Playoffs");
 }
 
+function excludedFromLifetime(rowOrSeason) {
+  const season = typeof rowOrSeason === "string" ? rowOrSeason : rowOrSeason?.season;
+  return state.excludeTwosEra && season === "S1";
+}
+
 function visibleSeasons() {
   return data.seasons.filter((season) => state.includeScrims || !isScrimSeason(season));
 }
@@ -633,6 +658,7 @@ function isUnavailableValue(row, key) {
   if (key === "pressureRate" || key === "pressureIndex") return Number(row.amountStolen || 0) === 0 && Number(row.demosInflicted || 0) === 0 && Number(row.opponentSavesForced || 0) === 0;
   if (unavailableWhenManualZero.has(key)) return Number(row[key] || 0) === 0;
   if (["teamSaveRate", "opponentShootingPct", "shotsConcededPerGame"].includes(key)) return Number(row.shotsConceded || 0) === 0;
+  if (key === "goalsConcededPerGame") return Number(row.goalsConceded || 0) === 0;
   return false;
 }
 
@@ -652,7 +678,9 @@ function finalizeCommon(item) {
   item.shotsPerGame = Math.round((item.shots / games) * 100) / 100;
   item.shotsConcededPerGame = Math.round((item.shotsConceded / games) * 100) / 100;
   item.goalsConcededPerGame = Math.round((item.goalsConceded / games) * 100) / 100;
-  item.per = Math.round(((0.1 * item.goals) + (0.05 * item.assists) + ((2 / 30) * item.saves) + (0.01 * item.shots) - (item.games * 0.1)) * 100) / 100;
+  const rawPer = (0.1 * item.goals) + (0.05 * item.assists) + ((2 / 30) * item.saves) + (0.01 * item.shots);
+  const calculatedPer = item.season === "S1" ? ((rawPer * (2 / 3)) - (item.games * 0.1)) : (rawPer - (item.games * 0.1));
+  item.per = Math.round(calculatedPer * 100) / 100;
   item.perPerGame = Math.round((item.per / games) * 1000) / 1000;
   item.shootingPct = item.shots > 0 ? Math.round((item.goals / item.shots) * 1000) / 10 : 0;
   item.teamSaveRate = item.shotsConceded > 0 ? Math.round((item.saves / item.shotsConceded) * 1000) / 10 : 0;
@@ -677,7 +705,7 @@ function aggregateLifetimeRows(rows, type) {
   const byName = new Map();
   const numericFields = [
     "games", "wins", "losses", "score", "goals", "assists", "saves", "shots",
-    "standingsPoints", "gameWins", "gameLosses",
+    "standingsPoints", "gameWins", "gameLosses", "per",
     "shotsConceded", "goalsConceded", "lastDefenderGoalsConceded", "opponentSavesForced",
     "demosInflicted", "demosTaken", "avgSpeedTotal", "avgBoostTotal", "amountCollected",
     "amountStolen", "totalDistance",
@@ -685,6 +713,7 @@ function aggregateLifetimeRows(rows, type) {
 
   rows.forEach((row) => {
     if (!seasonIncluded(row)) return;
+    if (excludedFromLifetime(row)) return;
     if (!byName.has(row.name)) {
       byName.set(row.name, {
         season: "Lifetime",
@@ -704,7 +733,12 @@ function aggregateLifetimeRows(rows, type) {
   });
 
   return [...byName.values()].map((item) => {
+    const carriedPer = item.per;
     finalizeCommon(item);
+    if (typeof carriedPer === "number") {
+      item.per = Math.round(carriedPer * 100) / 100;
+      item.perPerGame = Math.round((item.per / Math.max(1, item.games)) * 1000) / 1000;
+    }
     if (type === "team") {
       item.pressureRate = Math.round(((item.shots + item.opponentSavesForced + item.amountStolen + item.demosInflicted) / Math.max(1, item.games)) * 100) / 100;
       item.missPct = item.shots > 0 ? Math.round(((item.shots - item.goals - item.opponentSavesForced) / item.shots) * 1000) / 10 : 0;
@@ -729,8 +763,13 @@ function lifetimePlayers() {
 
 function addGameToPlayerAggregate(item, game) {
   item.games += 1;
-  if (game.result === "win") item.wins += 1;
-  else item.losses += 1;
+  if (game.result === "win") {
+    item.wins += 1;
+    item.gameWins += 1;
+  } else {
+    item.losses += 1;
+    item.gameLosses += 1;
+  }
   item.score += game.score || 0;
   item.goals += game.goals || 0;
   item.assists += game.assists || 0;
@@ -758,12 +797,15 @@ function emptyPlayerAggregate(name, season = "") {
     games: 0,
     wins: 0,
     losses: 0,
+    gameWins: 0,
+    gameLosses: 0,
     standingsPoints: 0,
     score: 0,
     goals: 0,
     assists: 0,
     saves: 0,
     shots: 0,
+    per: 0,
     shotsConceded: 0,
     goalsConceded: 0,
     lastDefenderGoalsConceded: 0,
@@ -814,9 +856,11 @@ function teamRoster(team, season) {
   const byPlayer = new Map();
   data.players
     .filter((row) => (row.source === "manual" || row.source === "mixed") && (season === "Lifetime" || row.season === season) && (row.teams || []).includes(team))
+    .filter((row) => season !== "Lifetime" || !excludedFromLifetime(row))
     .forEach((row) => byPlayer.set(row.name, { ...row, teams: new Set(row.teams || [team]) }));
   playerGames()
     .filter((game) => game.team === team && (season === "Lifetime" || game.season === season))
+    .filter((game) => season !== "Lifetime" || !excludedFromLifetime(game))
     .filter((game) => !hasManualPlayerTeamSeason(game.player, team, game.season))
     .forEach((game) => {
       if (!byPlayer.has(game.player)) byPlayer.set(game.player, emptyPlayerAggregate(game.player, season));
@@ -829,9 +873,11 @@ function playerCareer(player) {
   const bySeason = new Map();
   data.players
     .filter((row) => (row.source === "manual" || row.source === "mixed") && row.name === player)
+    .filter((row) => !excludedFromLifetime(row))
     .forEach((row) => bySeason.set(row.season, { ...row, teams: new Set(row.teams || []) }));
   playerGames()
     .filter((game) => game.player === player)
+    .filter((game) => !excludedFromLifetime(game))
     .filter((game) => !hasManualPlayerSeason(player, game.season))
     .forEach((game) => {
       if (!bySeason.has(game.season)) bySeason.set(game.season, emptyPlayerAggregate(player, game.season));
@@ -844,6 +890,7 @@ function playerLifetimeRow(player) {
   const item = emptyPlayerAggregate(player, "Career");
   data.players
     .filter((row) => (row.source === "manual" || row.source === "mixed") && row.name === player)
+    .filter((row) => !excludedFromLifetime(row))
     .forEach((row) => {
       Object.keys(row).forEach((key) => {
         if (typeof row[key] === "number" && typeof item[key] === "number") item[key] += row[key];
@@ -852,9 +899,14 @@ function playerLifetimeRow(player) {
     });
   playerGames()
     .filter((game) => game.player === player)
+    .filter((game) => !excludedFromLifetime(game))
     .filter((game) => !hasManualPlayerSeason(player, game.season))
     .forEach((game) => addGameToPlayerAggregate(item, game));
-  return finalizePlayerAggregate(item);
+  const carriedPer = item.per;
+  const finalized = finalizePlayerAggregate(item);
+  finalized.per = Math.round(carriedPer * 100) / 100;
+  finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 1000) / 1000;
+  return finalized;
 }
 
 function seasonPlayerRows(season) {
@@ -979,7 +1031,7 @@ function activeSummary() {
   if (state.season !== "All" && !isLifetimeView()) {
     return data.summary.find((row) => row.season === state.season) ?? { games: 0, teams: 0, players: 0 };
   }
-  const summaries = data.summary.filter((row) => (state.includeScrims || !isScrimSeason(row.season)) && !isPlayoffSeason(row.season));
+  const summaries = data.summary.filter((row) => (state.includeScrims || !isScrimSeason(row.season)) && !isPlayoffSeason(row.season) && (!isLifetimeView() || !excludedFromLifetime(row)));
   if (isLifetimeView()) {
     const games = summaries.reduce((total, row) => total + row.games, 0);
     return { games, teams: lifetimeTeams().length, players: lifetimePlayers().length };
@@ -1040,7 +1092,7 @@ function standingsRows() {
 function playoffBracketRows(season) {
   return (data.manualHistory?.playoffs || [])
     .filter((row) => row.season === season)
-    .map((row) => ({ ...row }));
+    .map((row) => row.result ? { ...row } : { ...row, round: "", teamA: "", result: row.teamA, teamB: "" });
 }
 
 function rowsForView() {
@@ -1097,8 +1149,257 @@ function awardRaceRows(definition) {
 
 function leaderFor(rows, key, direction = "desc") {
   return [...rows]
-    .filter((row) => typeof row[key] === "number")
+    .filter((row) => typeof row[key] === "number" && !isUnavailableValue(row, key))
     .sort((a, b) => direction === "asc" ? a[key] - b[key] : b[key] - a[key])[0];
+}
+
+function median(values) {
+  const sorted = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function regularRowsSinceTwosEra(type) {
+  const rows = type === "team" ? data.teams : data.players;
+  return rows.filter((row) => row.season !== "S1" && !isScrimSeason(row.season) && !isPlayoffSeason(row.season));
+}
+
+function kitchenActivePlayers() {
+  const season = latestRegularSeason();
+  const currentRows = rowsForDataset("players", season)
+    .filter((row) => row.season === season)
+    .sort((a, b) => b.perPerGame - a.perPerGame);
+  const careerRows = new Map(aggregateLifetimeRows(regularRowsSinceTwosEra("player"), "player").map((row) => [row.name, row]));
+  const ratings = currentRows.map((row) => Number(row.rating)).filter((value) => Number.isFinite(value) && value > 0);
+  const dataMedian = median(ratings);
+  const upperLimit = 0.25;
+  const lowerLimit = -0.05;
+  const steepness = 0.005;
+  return currentRows.map((row, index) => {
+    const rating = Number(row.rating) || 0;
+    const expected = rating
+      ? lowerLimit + ((upperLimit - lowerLimit) / (1 + Math.exp(-steepness * (rating - dataMedian))))
+      : 0;
+    const diff = row.perPerGame - expected;
+    return {
+      ...row,
+      rating,
+      rank: index + 1,
+      career: careerRows.get(row.name),
+      expectedPerPerGame: Math.round(expected * 1000) / 1000,
+      perDelta: Math.round(diff * 1000) / 1000,
+      carryPotential: expected ? Math.round((row.perPerGame / expected) * 100) / 100 : 0,
+    };
+  });
+}
+
+function kitchenRegression(points) {
+  const valid = points.map((row) => ({ ...row, rating: Number(row.rating), perPerGame: Number(row.perPerGame) }))
+    .filter((row) => Number.isFinite(row.rating) && Number.isFinite(row.perPerGame));
+  if (valid.length < 2) return { slope: 0, intercept: valid[0]?.perPerGame || 0 };
+  const meanX = valid.reduce((total, row) => total + row.rating, 0) / valid.length;
+  const meanY = valid.reduce((total, row) => total + row.perPerGame, 0) / valid.length;
+  const numerator = valid.reduce((total, row) => total + ((row.rating - meanX) * (row.perPerGame - meanY)), 0);
+  const denominator = valid.reduce((total, row) => total + ((row.rating - meanX) ** 2), 0);
+  const slope = denominator ? numerator / denominator : 0;
+  return { slope, intercept: meanY - (slope * meanX) };
+}
+
+function teamConsensusLabel(team, avgPerPerGame) {
+  const winRate = typeof team.matchWinPct === "number" ? team.matchWinPct : (typeof team.winPct === "number" ? team.winPct : 0);
+  const perfDiff = (team.perPerGame || 0) - avgPerPerGame;
+  const performance = perfDiff > 0.03 ? "playing above expectations" : (perfDiff < -0.03 ? "playing below expectations" : "playing to expectations");
+  const result = winRate > 52 ? "winning" : (winRate < 48 ? "losing" : "splitting");
+  let consensus = "fair";
+  if (performance.includes("above") && result === "winning") consensus = "strong";
+  else if (performance.includes("below") && result === "losing") consensus = "weak";
+  else if (performance.includes("below") && result === "winning") consensus = "lucky";
+  else if (performance.includes("above") && result === "losing") consensus = "unlucky";
+  else if (result === "winning") consensus = perfDiff >= 0 ? "strong" : "lucky";
+  else if (result === "losing") consensus = perfDiff <= 0 ? "weak" : "unlucky";
+  return { performance, result, consensus, perfDiff };
+}
+
+function kitchenTeams() {
+  const season = latestRegularSeason();
+  const rows = rowsForDataset("teams", season)
+    .filter((row) => row.season === season);
+  const avgPerPerGame = rows.reduce((total, row) => total + (row.perPerGame || 0), 0) / Math.max(1, rows.length);
+  return rows
+    .map((row) => ({ ...row, ...teamConsensusLabel(row, avgPerPerGame) }))
+    .sort((a, b) => b.standingsPoints - a.standingsPoints || b.matchWinPct - a.matchWinPct);
+}
+
+function kitchenClass(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
+function renderKitchen() {
+  const season = latestRegularSeason();
+  const players = kitchenActivePlayers();
+  const teams = kitchenTeams();
+  const topEfficiency = players[0];
+  const biggestOver = [...players].sort((a, b) => b.perDelta - a.perDelta)[0];
+  const topTeam = teams[0];
+  const ratedPlayers = players.map((row) => ({ ...row, rating: Number(row.rating), perPerGame: Number(row.perPerGame) }))
+    .filter((row) => Number.isFinite(row.rating) && Number.isFinite(row.perPerGame));
+  const graphXMin = 700;
+  const graphXMax = 1500;
+  const graphYMin = -0.1;
+  const graphYMax = 0.4;
+  const chart = { left: 58, top: 22, width: 820, height: 360 };
+  const scaleX = (value) => chart.left + (((value - graphXMin) / Math.max(1, graphXMax - graphXMin)) * chart.width);
+  const scaleY = (value) => chart.top + chart.height - (((value - graphYMin) / Math.max(0.01, graphYMax - graphYMin)) * chart.height);
+  const regression = kitchenRegression(ratedPlayers);
+  const lineY1 = regression.slope * graphXMin + regression.intercept;
+  const lineY2 = regression.slope * graphXMax + regression.intercept;
+  const xTicks = [graphXMin, graphXMin + ((graphXMax - graphXMin) / 2), graphXMax];
+  const yTicks = [graphYMin, graphYMin + ((graphYMax - graphYMin) / 2), graphYMax];
+  const playerGraphRows = ratedPlayers.map((row) => {
+    const x = scaleX(row.rating);
+    const y = scaleY(row.perPerGame);
+    const tooltipX = Math.min(x + 12, chart.left + chart.width - 210);
+    const tooltipY = Math.max(chart.top + 8, y - 58);
+    return `
+      <g class="kitchen-dot" tabindex="0" data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${fmt(row.rating)}" data-per="${fmt(row.perPerGame)}" data-xper="${fmt(row.expectedPerPerGame)}" data-delta="${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}" style="--team-color:${escapeHtml(teamColor(row.teams?.[0] || row.teamsText || row.name))}">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6"></circle>
+        <g class="kitchen-svg-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
+          <rect width="198" height="52" rx="7"></rect>
+          <text x="10" y="18">${escapeHtml(displayName(row.name, "name"))}</text>
+          <text x="10" y="35">Rating ${fmt(row.rating)} | PER/G ${fmt(row.perPerGame)}</text>
+          <text x="10" y="48">xPER/G ${fmt(row.expectedPerPerGame)} | ${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}</text>
+        </g>
+        <title>${escapeHtml(displayName(row.name, "name"))} | Rating ${fmt(row.rating)} | PER/G ${fmt(row.perPerGame)}</title>
+      </g>
+    `;
+  }).join("");
+  const playerRows = players.map((row) => `
+    <tr data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${fmt(row.rating)}" data-per="${fmt(row.perPerGame)}" data-xper="${fmt(row.expectedPerPerGame)}" data-delta="${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}">
+      <td><button type="button" class="kitchen-player-button" data-kitchen-player="${escapeHtml(row.name)}">${escapeHtml(displayName(row.name, "name"))}</button></td>
+      <td>${escapeHtml(row.teamsText || "")}</td>
+      <td>${fmt(row.rating)}</td>
+      <td>${fmt(row.perPerGame)}</td>
+      <td>${fmt(row.expectedPerPerGame)}</td>
+      <td class="${row.perDelta >= 0 ? "positive" : "negative"}">${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}</td>
+    </tr>
+  `).join("");
+  const teamRows = teams.map((row) => `
+    <article class="kitchen-team-card ${escapeHtml(kitchenClass(row.consensus))}" style="--team-color:${escapeHtml(teamColor(row.name))}">
+      <div>
+        <strong>${escapeHtml(displayName(row.name, "team"))}</strong>
+        <span>${escapeHtml(row.performance)} and ${escapeHtml(row.result)}</span>
+      </div>
+      <em>${escapeHtml(row.consensus)}</em>
+      <dl>
+        <div><dt>Score</dt><dd>${fmt(row.standingsPoints)}</dd></div>
+        <div><dt>Match Win</dt><dd>${fmt(row.matchWinPct, "%")}</dd></div>
+        <div><dt>PER/G</dt><dd>${fmt(row.perPerGame)}</dd></div>
+      </dl>
+    </article>
+  `).join("");
+  els.kitchenPanel.innerHTML = `
+    <div class="kitchen-hero">
+      <div>
+        <p class="eyebrow">Analytics lab</p>
+        <h2>Selena's Kitchen</h2>
+        <p>A clean spin on Sus Kitchen: current ${season} efficiency, an interactive PER/G by rating chart, and team vibe checks.</p>
+      </div>
+      <div class="kitchen-recipe">
+        <span>S-curve recipe</span>
+        <code>Expected PER/G = LL + (UL - LL) / (1 + exp(-S * (rating - median)))</code>
+      </div>
+    </div>
+    <div class="kitchen-stat-grid">
+      <article><span>Top PER/G</span><strong>${escapeHtml(displayName(topEfficiency?.name || "-", "name"))}</strong><small>${fmt(topEfficiency?.perPerGame)}</small></article>
+      <article><span>Most Over Expected</span><strong>${escapeHtml(displayName(biggestOver?.name || "-", "name"))}</strong><small>${biggestOver?.perDelta >= 0 ? "+" : ""}${fmt(biggestOver?.perDelta)}</small></article>
+      <article><span>Best Fit</span><strong>${regression.slope >= 0 ? "+" : ""}${fmt(regression.slope * 100)}</strong><small>PER/G per 100 rating</small></article>
+      <article><span>Top Team</span><strong>${escapeHtml(displayName(topTeam?.name || "-", "team"))}</strong><small>${fmt(topTeam?.standingsPoints)} league score</small></article>
+    </div>
+    <div class="kitchen-layout">
+      <section class="kitchen-card wide">
+        <div class="kitchen-card-head">
+          <h3>${season} Player Breakdown</h3>
+          <span>${players.length} players | rating vs expected efficiency</span>
+        </div>
+        <div class="kitchen-scatter" aria-label="${season} player PER/G by rating graph">
+          <div class="kitchen-graph-key">
+            <span><i class="actual"></i>Players</span>
+            <span><i class="expected"></i>Best fit</span>
+          </div>
+          <svg viewBox="0 0 920 430" role="img" aria-label="PER per game versus rating scatter plot">
+            <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
+            <line class="axis" x1="${chart.left}" y1="${chart.top + chart.height}" x2="${chart.left + chart.width}" y2="${chart.top + chart.height}"></line>
+            ${xTicks.map((tick) => `<g class="tick"><line x1="${scaleX(tick).toFixed(1)}" y1="${chart.top}" x2="${scaleX(tick).toFixed(1)}" y2="${chart.top + chart.height}"></line><text x="${scaleX(tick).toFixed(1)}" y="${chart.top + chart.height + 28}">${fmt(Math.round(tick))}</text></g>`).join("")}
+            ${yTicks.map((tick) => `<g class="tick"><line x1="${chart.left}" y1="${scaleY(tick).toFixed(1)}" x2="${chart.left + chart.width}" y2="${scaleY(tick).toFixed(1)}"></line><text x="${chart.left - 12}" y="${scaleY(tick).toFixed(1)}">${fmt(tick)}</text></g>`).join("")}
+            <line class="fit-line" x1="${scaleX(graphXMin).toFixed(1)}" y1="${scaleY(lineY1).toFixed(1)}" x2="${scaleX(graphXMax).toFixed(1)}" y2="${scaleY(lineY2).toFixed(1)}"></line>
+            ${playerGraphRows}
+            <text class="axis-label x-label" x="${chart.left + (chart.width / 2)}" y="424">Rating</text>
+            <text class="axis-label y-label" transform="translate(16 ${chart.top + (chart.height / 2)}) rotate(-90)">PER/G</text>
+          </svg>
+          <div id="kitchenPlayerInfo" class="kitchen-player-info">
+            <span>Select a player from the table or hover a dot.</span>
+          </div>
+        </div>
+        <div class="kitchen-table-wrap">
+          <table class="kitchen-table">
+            <thead><tr><th>Player</th><th>Team</th><th>Rating</th><th>PER/G</th><th>xPER/G</th><th>PER/G-</th></tr></thead>
+            <tbody>${playerRows}</tbody>
+          </table>
+        </div>
+      </section>
+      <section class="kitchen-card">
+        <div class="kitchen-card-head">
+          <h3>Rough Consensus</h3>
+          <span>results plus efficiency</span>
+        </div>
+        <div class="kitchen-team-grid">${teamRows}</div>
+      </section>
+      <section class="kitchen-card kitchen-notes">
+        <h3>Notes</h3>
+        <p>PER is counting-stat production. The scatter plot compares each ${season} player's rating to PER/G, with the grey line showing the linear best fit.</p>
+        <p>xPER/G still uses the active ${season} ratings curve, so the plus-minus column highlights who is cooking above or below that baseline.</p>
+      </section>
+    </div>
+  `;
+  els.kitchenPanel.classList.remove("hidden");
+  updateKitchenSelection(state.kitchenSelectedPlayer);
+}
+
+function kitchenInfoHtml(dataset) {
+  if (!dataset?.kitchenPlayer) return `<span>Select a player from the table or hover a dot.</span>`;
+  return `
+    <strong>${escapeHtml(displayName(dataset.kitchenPlayer, "name"))}</strong>
+    <span>${escapeHtml(dataset.team || "")}</span>
+    <dl>
+      <div><dt>Rating</dt><dd>${escapeHtml(dataset.rating || "")}</dd></div>
+      <div><dt>PER/G</dt><dd>${escapeHtml(dataset.per || "")}</dd></div>
+      <div><dt>xPER/G</dt><dd>${escapeHtml(dataset.xper || "")}</dd></div>
+      <div><dt>PER/G-</dt><dd>${escapeHtml(dataset.delta || "")}</dd></div>
+    </dl>
+  `;
+}
+
+function kitchenPlayerDataset(player) {
+  if (!player) return null;
+  return [...els.kitchenPanel.querySelectorAll("[data-kitchen-player]")]
+    .find((node) => node.dataset.kitchenPlayer === player)?.dataset || null;
+}
+
+function updateKitchenSelection(player, { temporary = false } = {}) {
+  const activePlayer = player || "";
+  els.kitchenPanel.querySelectorAll(".kitchen-dot, .kitchen-table tbody tr").forEach((node) => {
+    const isActive = node.dataset.kitchenPlayer === activePlayer;
+    node.classList.toggle(temporary ? "is-hovered" : "is-selected", isActive);
+    if (!temporary) node.classList.remove("is-hovered");
+  });
+  const info = els.kitchenPanel.querySelector("#kitchenPlayerInfo");
+  if (info) info.innerHTML = kitchenInfoHtml(kitchenPlayerDataset(activePlayer));
+}
+
+function clearKitchenHover() {
+  els.kitchenPanel.querySelectorAll(".is-hovered").forEach((node) => node.classList.remove("is-hovered"));
+  updateKitchenSelection(state.kitchenSelectedPlayer);
 }
 
 function latestRegularSeason() {
@@ -1161,11 +1462,11 @@ function renderLeagueLeaderPanels(rows) {
 
   if (showLifetimeTeamPanel) {
     teamPanel.querySelector("h2").textContent = "Career Team Leaders";
-    const teamItems = careerTeamLeaderStats.map(([key, label, suffix = "", direction = "desc"]) => {
+    const teamItems = careerTeamLeaderStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
       const leader = leaderFor(lifetimeTeams(), key, direction);
-      return { label, name: leader?.name ?? "-", team: leader?.name ?? "", meta: leader ? fmt(leader[key], suffix) : "" };
+      return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: fmt(leader[key], suffix) }] : [];
     });
-    renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, null);
+    renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
     awardPanel.classList.add("hidden");
     return;
   }
@@ -1174,9 +1475,9 @@ function renderLeagueLeaderPanels(rows) {
     awardPanel.querySelector("h2").textContent = "Career Player Leaders";
     const playerItems = careerPlayerLeaderStats.map(([key, label, suffix = "", direction = "desc"]) => {
       const leader = leaderFor(lifetimePlayers(), key, direction);
-      return { label, name: leader?.name ?? "-", team: leader?.teams?.[0] || leader?.teamsText || "", meta: leader ? fmt(leader[key], suffix) : "" };
+      return { key, direction, label, name: leader?.name ?? "-", team: leader?.teams?.[0] || leader?.teamsText || "", meta: leader ? fmt(leader[key], suffix) : "" };
     });
-    renderMiniLeaderGrid(els.awardRaceGrid, playerItems, (item) => ({ type: "player", player: item.name }));
+    renderMiniLeaderGrid(els.awardRaceGrid, playerItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
     teamPanel.classList.add("hidden");
     return;
   }
@@ -1185,11 +1486,11 @@ function renderLeagueLeaderPanels(rows) {
   awardPanel.querySelector("h2").textContent = `${panelSeason} Award Races`;
 
   const regularTeamRows = state.season === "All" ? rowsForDataset("teams", "All") : rowsForDataset("teams", panelSeason);
-  const teamItems = teamLeagueStats.map(([key, label, suffix = "", direction = "desc"]) => {
+  const teamItems = teamLeagueStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
     const leader = leaderFor(regularTeamRows, key, direction);
-    return { label, name: leader?.name ?? "-", team: leader?.name ?? "", meta: leader ? `${fmt(leader[key], suffix)} - ${leader.season}` : "" };
+    return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: `${fmt(leader[key], suffix)} - ${leader.season}` }] : [];
   });
-  if (showTeamPanel) renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, null);
+  if (showTeamPanel) renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
 
   const awardItems = awardRaceDefinitionsForSeason(panelSeason).map((award) => {
     const leader = awardRaceRows(award)[0];
@@ -1199,10 +1500,11 @@ function renderLeagueLeaderPanels(rows) {
       name: leader?.name ?? "-",
       team: leaderTeam,
       meta: leader ? `${leaderTeam ? `${leaderTeam} | ` : ""}${award.avgLabel ? `${award.avgLabel}: ${fmt(leader.average)} | ` : ""}${award.totalLabel}: ${fmt(leader.total)}` : "",
+      sortKey: award.avgStat,
       award,
     };
   });
-  if (showAwardPanel) renderMiniLeaderGrid(els.awardRaceGrid, awardItems, (item) => ({ type: "awardRace", award: item.award.award, season: item.award.season }));
+  if (showAwardPanel) renderMiniLeaderGrid(els.awardRaceGrid, awardItems, (item) => ({ type: "sort", key: item.sortKey, dir: "desc" }));
 }
 
 function gameNumberFromLabel(label) {
@@ -1239,6 +1541,7 @@ function dashboardTitle() {
     lifetimeTeams: "Lifetime Team Stats",
     lifetimePlayers: "Lifetime Player Stats",
     awards: "Awards History",
+    kitchen: "Selena's Kitchen",
   })[state.view];
 }
 
@@ -1385,6 +1688,7 @@ function renderKpis(rows) {
   els.generatedAt.textContent = `Generated ${data.generatedAt}`;
   els.seasonSelect.disabled = isLifetimeView();
   document.querySelector(".controls").classList.toggle("season-disabled", isLifetimeView());
+  els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
   renderLeagueLeaderPanels(rows);
 }
 
@@ -1442,6 +1746,20 @@ function renderFigures(rows) {
 
 function playerAwards(player) {
   return s5Awards.filter((award) => award.player === player);
+}
+
+const playerMilestoneDefinitions = [
+  ["goals", "Goals", [100, 200, 300]],
+  ["saves", "Saves", [100, 200]],
+  ["assists", "Assists", [50]],
+];
+
+function playerMilestones(totals) {
+  return playerMilestoneDefinitions.flatMap(([key, label, thresholds]) =>
+    thresholds
+      .filter((threshold) => (totals[key] || 0) >= threshold)
+      .map((threshold) => ({ label, threshold, value: totals[key] || 0 }))
+  );
 }
 
 function teamInfoFor(teamName, season) {
@@ -1541,6 +1859,7 @@ function renderDetailExtras() {
   const awards = playerAwards(state.page.player);
   const draftRows = draftRowsForPlayer(state.page.player);
   const totals = playerLifetimeRow(state.page.player);
+  const milestones = playerMilestones(totals);
   const totalCards = [
     ["Total Score", totals.score],
     ["Total Shots", totals.shots],
@@ -1584,6 +1903,17 @@ function renderDetailExtras() {
       `).join("")}
     </div>
   ` : `<p class="empty-note">No draft info added yet.</p>`;
+  const honorsHtml = milestones.length ? `
+    <div class="honor-list">
+      ${milestones.map((milestone) => `
+        <article class="honor-card">
+          <span>${escapeHtml(milestone.label)}</span>
+          <strong>${escapeHtml(fmt(milestone.threshold))}</strong>
+          <small>Career total: ${escapeHtml(fmt(milestone.value))}</small>
+        </article>
+      `).join("")}
+    </div>
+  ` : `<p class="empty-note">No milestone honors yet.</p>`;
 
   els.detailExtras.innerHTML = `
     <div class="extras-grid">
@@ -1612,7 +1942,7 @@ function renderDetailExtras() {
       </section>
       <section>
         <h2>Honors</h2>
-        <p class="empty-note">Honors can be added here later.</p>
+        ${honorsHtml}
       </section>
     </div>
   `;
@@ -1620,7 +1950,7 @@ function renderDetailExtras() {
 }
 
 function renderPlayoffStats() {
-  if (state.page.type !== "dashboard" || isLifetimeView() || state.view === "awards" || state.season === "All" || isPlayoffSeason(state.season)) {
+  if (state.page.type !== "dashboard" || isLifetimeView() || state.view === "awards" || state.view === "kitchen" || state.season === "All" || isPlayoffSeason(state.season)) {
     els.playoffStats.classList.add("hidden");
     els.playoffStats.innerHTML = "";
     return;
@@ -1638,7 +1968,9 @@ function renderPlayoffStats() {
     <section>
       <h2>${selectedPlayoffSeason || "Historical"} Playoff Brackets</h2>
       <div class="compact-stat-list">
-        ${manualPlayoffs.map((row) => `<button type="button"><strong>${escapeHtml(row.round)}</strong><span>${escapeHtml(displayName(row.teamA, "team"))} ${escapeHtml(row.result)} ${escapeHtml(displayName(row.teamB, "team"))}</span></button>`).join("")}
+        ${manualPlayoffs.map((row) => row.result
+          ? `<button type="button"><strong>${escapeHtml(row.round)}</strong><span>${escapeHtml(displayName(row.teamA, "team"))} ${escapeHtml(row.result)} ${escapeHtml(displayName(row.teamB, "team"))}</span></button>`
+          : `<button type="button"><strong>${escapeHtml(row.teamA)}</strong></button>`).join("")}
       </div>
     </section>
   ` : "";
@@ -1717,8 +2049,9 @@ function renderTable(rows, columns, title, rowAction = null) {
   els.head.closest(".table-wrap").classList.remove("leader-card-wrap");
   els.tableTitle.textContent = title;
   els.rowCount.textContent = `${rows.length} ${rows.length === 1 ? "row" : "rows"}`;
+  renderTableLegend(rows);
   els.head.innerHTML = `<tr>${columns.map(([key, label]) => `
-    <th data-sort="${key}">${label}${state.sortKey === key ? (state.sortDir === "asc" ? " ^" : " v") : ""}</th>
+    <th data-sort="${key}"${state.sortKey === key ? ` class="sorted-column"` : ""}>${label}${state.sortKey === key ? (state.sortDir === "asc" ? " ^" : " v") : ""}</th>
   `).join("")}</tr>`;
   els.body.innerHTML = rows.map((row) => {
     const action = rowAction ? rowAction(row) : null;
@@ -1732,17 +2065,34 @@ function renderTable(rows, columns, title, rowAction = null) {
     if ((key === "teamA" || key === "teamB") && playoffWinner === key) value = `<strong class="playoff-winner">${value}</strong>`;
     if (row.__careerHighs?.has(key)) value = `<strong class="career-high">${value}</strong>`;
     if (row.__seasonRecords?.has(key)) value = `<strong class="season-leader">${value}</strong><sup class="season-record">*</sup>`;
-    return `<td>${value}</td>`;
+    return `<td${state.sortKey === key ? ` class="sorted-column"` : ""}>${value}</td>`;
   }).join("")}</tr>`;
   }).join("");
+}
+
+function renderTableLegend(rows) {
+  const hasCareerHigh = rows.some((row) => row.__careerHighs?.size);
+  const hasSeasonRecord = rows.some((row) => row.__seasonRecords?.size);
+  const items = [];
+  if (hasCareerHigh) items.push(`<span><strong class="career-high">Bold</strong> career high</span>`);
+  if (hasSeasonRecord) {
+    items.push(`<span><strong class="season-leader">Orange</strong> season leader</span>`);
+    items.push(`<span><sup class="season-record">*</sup> season record</span>`);
+  }
+  els.tableLegend.innerHTML = items.join("");
+  els.tableLegend.classList.toggle("hidden", items.length === 0);
 }
 
 function render() {
   const inDetail = state.page.type !== "dashboard";
   els.detailBar.classList.toggle("hidden", !inDetail);
+  els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
   document.querySelector(".kpis").classList.toggle("hidden", inDetail || isPlayoffSeason(state.season) || !["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view));
   document.querySelector(".figures").classList.add("hidden");
   document.querySelector(".leaderboards").classList.add("hidden");
+  els.tableShell.classList.remove("hidden");
+  els.kitchenPanel.classList.add("hidden");
+  els.kitchenPanel.innerHTML = "";
   els.awardFilters.classList.add("hidden");
   els.awardFilters.innerHTML = "";
   renderSearchSuggestions();
@@ -1768,6 +2118,14 @@ function render() {
     renderKpis([]);
     renderTable(awardHistoryRows(), awardHistoryColumns, "Awards History", dashboardAction);
     renderAwardFilters();
+    renderPlayoffStats();
+    return;
+  }
+
+  if (state.view === "kitchen") {
+    renderKpis([]);
+    els.tableShell.classList.add("hidden");
+    renderKitchen();
     renderPlayoffStats();
     return;
   }
@@ -1808,11 +2166,16 @@ els.includeScrims.addEventListener("change", (event) => {
   render();
 });
 
+els.excludeTwosEra.addEventListener("change", (event) => {
+  state.excludeTwosEra = event.target.checked;
+  render();
+});
+
 els.tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.page = { type: "dashboard" };
     state.view = button.dataset.view;
-    state.sortKey = state.view === "awards" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
+    state.sortKey = state.view === "awards" || state.view === "kitchen" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
     state.sortDir = "desc";
     if (state.view === "standings") state.sortDir = "asc";
     els.tabButtons.forEach((btn) => btn.classList.toggle("active", btn === button));
@@ -1876,9 +2239,16 @@ els.body.addEventListener("click", (event) => {
 document.querySelector(".kpis").addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
-  state.page = JSON.parse(decodeURIComponent(target.dataset.action));
-  state.sortKey = "rank";
-  state.sortDir = "asc";
+  const action = JSON.parse(decodeURIComponent(target.dataset.action));
+  if (action.type === "sort") {
+    state.page = { type: "dashboard" };
+    state.sortKey = action.key;
+    state.sortDir = action.dir || "desc";
+  } else {
+    state.page = action;
+    state.sortKey = "rank";
+    state.sortDir = "asc";
+  }
   render();
 });
 
@@ -1896,6 +2266,37 @@ els.playoffStats.addEventListener("click", (event) => {
   if (!target) return;
   state.page = JSON.parse(decodeURIComponent(target.dataset.action));
   render();
+});
+
+els.kitchenPanel.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-kitchen-player]");
+  if (!target) return;
+  state.kitchenSelectedPlayer = target.dataset.kitchenPlayer || "";
+  updateKitchenSelection(state.kitchenSelectedPlayer);
+});
+
+els.kitchenPanel.addEventListener("mouseover", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot) return;
+  updateKitchenSelection(dot.dataset.kitchenPlayer, { temporary: true });
+});
+
+els.kitchenPanel.addEventListener("mouseout", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot || dot.contains(event.relatedTarget)) return;
+  clearKitchenHover();
+});
+
+els.kitchenPanel.addEventListener("focusin", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot) return;
+  updateKitchenSelection(dot.dataset.kitchenPlayer, { temporary: true });
+});
+
+els.kitchenPanel.addEventListener("focusout", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot) return;
+  clearKitchenHover();
 });
 
 els.detailExtras.addEventListener("click", (event) => {
@@ -1944,5 +2345,6 @@ els.head.addEventListener("click", (event) => {
 });
 
 els.includeScrims.checked = state.includeScrims;
+els.excludeTwosEra.checked = state.excludeTwosEra;
 renderSeasonOptions();
 render();
