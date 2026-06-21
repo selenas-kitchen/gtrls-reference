@@ -1501,8 +1501,8 @@ function awardRaceDefinitionsForSeason(season) {
 }
 
 const teamColorPalette = [
-  "#1f7a8c", "#c44536", "#2f855a", "#8a5cf6", "#d97706", "#2563eb",
-  "#be185d", "#0f766e", "#7c3aed", "#b45309", "#047857", "#dc2626",
+  "#00b8d4", "#ff2aa1", "#111318", "#007f96", "#c40078", "#647581",
+  "#32e8ff", "#ff73c5", "#263238", "#0094aa", "#d40a86", "#8aa3ad",
 ];
 
 function teamColor(name) {
@@ -1769,7 +1769,10 @@ function renderSeasonOptions() {
 }
 
 function renderKpis(rows) {
-  els.generatedAt.textContent = `Generated ${data.generatedAt}`;
+  const modified = new Date(document.lastModified);
+  const fallback = new Date(data.generatedAt);
+  const lastUpdated = Number.isNaN(modified.getTime()) ? fallback : modified;
+  els.generatedAt.textContent = `Last Update: ${lastUpdated.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`;
   els.seasonSelect.disabled = isLifetimeView();
   document.querySelector(".controls").classList.toggle("season-disabled", isLifetimeView());
   els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
