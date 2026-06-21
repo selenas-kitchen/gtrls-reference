@@ -94,6 +94,8 @@ const teamAliasMap = new Map([
   ["THEWINDIXIES", "WIN-DIXIES"],
   ["WINDIXIES", "WIN-DIXIES"],
   ["MEGAWATT", "MEGAWATT"],
+  ["SLEDDAWGS", "Snowbunnies"],
+  ["SNOWBUNNIES", "Snowbunnies"],
 ]);
 
 function aliasKey(value) {
@@ -143,6 +145,11 @@ function canonicalizeDataNames() {
     row.teamA = canonicalTeamName(row.teamA);
     row.teamB = canonicalTeamName(row.teamB);
   });
+  manualHistory.schedules.forEach((row) => {
+    row.home = canonicalTeamName(row.home);
+    row.away = canonicalTeamName(row.away);
+    row.winner = canonicalTeamName(row.winner);
+  });
 }
 
 function combinePlayerSeasonRows(rows) {
@@ -165,6 +172,8 @@ function combinePlayerSeasonRows(rows) {
         firstDate: row.firstDate || "",
         lastDate: row.lastDate || "",
         rating: row.rating,
+        ratingEstimated: !!row.ratingEstimated,
+        ratingSource: row.ratingSource || "",
       });
     }
     const item = groups.get(key);
@@ -174,7 +183,13 @@ function combinePlayerSeasonRows(rows) {
     });
     if (row.source !== item.source) item.source = "mixed";
     if (row.overrideGenerated) item.overrideGenerated = true;
-    if (typeof row.rating === "number") item.rating = typeof item.rating === "number" ? Math.max(item.rating, row.rating) : row.rating;
+    if (typeof row.rating === "number") {
+      item.rating = typeof item.rating === "number" ? Math.max(item.rating, row.rating) : row.rating;
+      if (!row.ratingEstimated || !item.ratingSource) {
+        item.ratingEstimated = !!row.ratingEstimated;
+        item.ratingSource = row.ratingSource || item.ratingSource;
+      }
+    }
     if (row.firstDate && (!item.firstDate || row.firstDate < item.firstDate)) item.firstDate = row.firstDate;
     if (row.lastDate && (!item.lastDate || row.lastDate > item.lastDate)) item.lastDate = row.lastDate;
   });
@@ -233,6 +248,8 @@ const state = {
   excludeTwosEra: false,
   awardFilter: "All",
   kitchenSelectedPlayer: "",
+  kitchenSortKey: "perPerGame",
+  kitchenSortDir: "desc",
   page: { type: "dashboard" },
 };
 
@@ -601,6 +618,7 @@ function isPlayoffSeason(season) {
 
 function excludedFromLifetime(rowOrSeason) {
   const season = typeof rowOrSeason === "string" ? rowOrSeason : rowOrSeason?.season;
+  if (typeof rowOrSeason === "object" && rowOrSeason?.excludeFromLifetime) return true;
   return state.excludeTwosEra && season === "S1";
 }
 
@@ -614,11 +632,32 @@ function seasonIncluded(row) {
   return true;
 }
 
-function fmt(value, suffix = "") {
+const averageGameStatKeys = new Set([
+  "avgScore", "avgSpeed", "avgBoost", "pointsPerGame", "perPerGame",
+  "average",
+  "goalsPerGame", "assistsPerGame", "savesPerGame", "shotsPerGame",
+  "shotsConcededPerGame", "goalsConcededPerGame", "opponentSavesForcedPerGame",
+  "boostCollectedPerGame", "boostStolenPerGame", "demosPerGame",
+  "pressureRate", "pressureIndex",
+]);
+
+function fmt(value, suffix = "", options = {}) {
   if (typeof value === "number") {
-    return `${Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}`;
+    const fixed = options.fixed;
+    const formatOptions = fixed === undefined
+      ? (Number.isInteger(value) ? {} : { maximumFractionDigits: 2 })
+      : { minimumFractionDigits: fixed, maximumFractionDigits: fixed };
+    return `${value.toLocaleString(undefined, formatOptions)}${suffix}`;
   }
   return value ?? "";
+}
+
+function fmtStat(value, key, suffix = "") {
+  return fmt(value, suffix, averageGameStatKeys.has(key) ? { fixed: 2 } : {});
+}
+
+function fmtGameAvg(value, suffix = "") {
+  return fmt(value, suffix, { fixed: 2 });
 }
 
 function displayName(value, key = "") {
@@ -659,6 +698,7 @@ function isUnavailableValue(row, key) {
   if (unavailableWhenManualZero.has(key)) return Number(row[key] || 0) === 0;
   if (["teamSaveRate", "opponentShootingPct", "shotsConcededPerGame"].includes(key)) return Number(row.shotsConceded || 0) === 0;
   if (key === "goalsConcededPerGame") return Number(row.goalsConceded || 0) === 0;
+  if (key === "goalDiff") return !!row.goalDiffUnavailable;
   return false;
 }
 
@@ -671,7 +711,7 @@ function finalizeCommon(item) {
   item.matchWinPct = Math.round(((item.wins || 0) / matchTotal) * 1000) / 10;
   item.gameWinPct = Math.round(((gameWins || 0) / gameTotal) * 1000) / 10;
   item.winPct = item.matchWinPct;
-  item.avgScore = Math.round((item.score / games) * 10) / 10;
+  item.avgScore = Math.round((item.score / games) * 100) / 100;
   item.goalsPerGame = Math.round((item.goals / games) * 100) / 100;
   item.assistsPerGame = Math.round((item.assists / games) * 100) / 100;
   item.savesPerGame = Math.round((item.saves / games) * 100) / 100;
@@ -681,7 +721,7 @@ function finalizeCommon(item) {
   const rawPer = (0.1 * item.goals) + (0.05 * item.assists) + ((2 / 30) * item.saves) + (0.01 * item.shots);
   const calculatedPer = item.season === "S1" ? ((rawPer * (2 / 3)) - (item.games * 0.1)) : (rawPer - (item.games * 0.1));
   item.per = Math.round(calculatedPer * 100) / 100;
-  item.perPerGame = Math.round((item.per / games) * 1000) / 1000;
+  item.perPerGame = Math.round((item.per / games) * 100) / 100;
   item.shootingPct = item.shots > 0 ? Math.round((item.goals / item.shots) * 1000) / 10 : 0;
   item.teamSaveRate = item.shotsConceded > 0 ? Math.round((item.saves / item.shotsConceded) * 1000) / 10 : 0;
   item.opponentShootingPct = item.shotsConceded > 0 ? Math.round((item.goalsConceded / item.shotsConceded) * 1000) / 10 : 0;
@@ -689,8 +729,8 @@ function finalizeCommon(item) {
   item.goalDiff = item.goals - item.goalsConceded;
   item.demosPerGame = Math.round((item.demosInflicted / games) * 100) / 100;
   item.distancePerGame = Math.round(item.totalDistance / games);
-  item.boostCollectedPerGame = Math.round(item.amountCollected / games);
-  item.boostStolenPerGame = Math.round(item.amountStolen / games);
+  item.boostCollectedPerGame = Math.round((item.amountCollected / games) * 100) / 100;
+  item.boostStolenPerGame = Math.round((item.amountStolen / games) * 100) / 100;
   item.opponentSavesForcedPerGame = Math.round((item.opponentSavesForced / games) * 100) / 100;
   item.pressureIndex = Math.round((
     (item.shots / games) +
@@ -737,7 +777,7 @@ function aggregateLifetimeRows(rows, type) {
     finalizeCommon(item);
     if (typeof carriedPer === "number") {
       item.per = Math.round(carriedPer * 100) / 100;
-      item.perPerGame = Math.round((item.per / Math.max(1, item.games)) * 1000) / 1000;
+      item.perPerGame = Math.round((item.per / Math.max(1, item.games)) * 100) / 100;
     }
     if (type === "team") {
       item.pressureRate = Math.round(((item.shots + item.opponentSavesForced + item.amountStolen + item.demosInflicted) / Math.max(1, item.games)) * 100) / 100;
@@ -905,7 +945,7 @@ function playerLifetimeRow(player) {
   const carriedPer = item.per;
   const finalized = finalizePlayerAggregate(item);
   finalized.per = Math.round(carriedPer * 100) / 100;
-  finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 1000) / 1000;
+  finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 100) / 100;
   return finalized;
 }
 
@@ -1143,7 +1183,7 @@ function awardRaceRows(definition) {
       games: row.games,
       total: row[definition.stat],
       average: row[definition.avgStat],
-      extra: definition.extraStat ? `${definition.extraStat === "shotsPerGame" ? "Sh/G" : "Extra"}: ${fmt(row[definition.extraStat], definition.extraStat === "shootingPct" ? "%" : "")}${definition.extraStat === "shootingPct" ? ` (${shootingRanks.get(row.name)}${rankSuffix(shootingRanks.get(row.name))})` : ""}` : "",
+      extra: definition.extraStat ? `${definition.extraStat === "shotsPerGame" ? "Sh/G" : "Extra"}: ${fmtStat(row[definition.extraStat], definition.extraStat, definition.extraStat === "shootingPct" ? "%" : "")}${definition.extraStat === "shootingPct" ? ` (${shootingRanks.get(row.name)}${rankSuffix(shootingRanks.get(row.name))})` : ""}` : "",
     }));
 }
 
@@ -1165,8 +1205,7 @@ function regularRowsSinceTwosEra(type) {
   return rows.filter((row) => row.season !== "S1" && !isScrimSeason(row.season) && !isPlayoffSeason(row.season));
 }
 
-function kitchenActivePlayers() {
-  const season = latestRegularSeason();
+function kitchenActivePlayers(season) {
   const currentRows = rowsForDataset("players", season)
     .filter((row) => row.season === season)
     .sort((a, b) => b.perPerGame - a.perPerGame);
@@ -1177,33 +1216,103 @@ function kitchenActivePlayers() {
   const lowerLimit = -0.05;
   const steepness = 0.005;
   return currentRows.map((row, index) => {
-    const rating = Number(row.rating) || 0;
-    const expected = rating
+    const rating = Number(row.rating);
+    const hasRating = Number.isFinite(rating) && rating > 0;
+    const expected = hasRating
       ? lowerLimit + ((upperLimit - lowerLimit) / (1 + Math.exp(-steepness * (rating - dataMedian))))
-      : 0;
-    const diff = row.perPerGame - expected;
+      : null;
+    const roundedExpected = expected === null ? null : Math.round(expected * 100) / 100;
+    const diff = roundedExpected === null ? null : row.perPerGame - roundedExpected;
     return {
       ...row,
-      rating,
+      rating: hasRating ? rating : null,
       rank: index + 1,
       career: careerRows.get(row.name),
-      expectedPerPerGame: Math.round(expected * 1000) / 1000,
-      perDelta: Math.round(diff * 1000) / 1000,
-      carryPotential: expected ? Math.round((row.perPerGame / expected) * 100) / 100 : 0,
+      expectedPerPerGame: roundedExpected,
+      perDelta: diff === null ? null : Math.round(diff * 100) / 100,
+      carryPotential: expected ? Math.round((row.perPerGame / expected) * 100) / 100 : null,
     };
   });
 }
 
-function kitchenRegression(points) {
-  const valid = points.map((row) => ({ ...row, rating: Number(row.rating), perPerGame: Number(row.perPerGame) }))
-    .filter((row) => Number.isFinite(row.rating) && Number.isFinite(row.perPerGame));
-  if (valid.length < 2) return { slope: 0, intercept: valid[0]?.perPerGame || 0 };
+function kitchenRegression(points, yKey = "perPerGame") {
+  const valid = points.map((row) => ({ ...row, rating: Number(row.rating), yValue: Number(row[yKey]) }))
+    .filter((row) => Number.isFinite(row.rating) && Number.isFinite(row.yValue));
+  if (valid.length < 2) return { slope: 0, intercept: valid[0]?.yValue || 0 };
   const meanX = valid.reduce((total, row) => total + row.rating, 0) / valid.length;
-  const meanY = valid.reduce((total, row) => total + row.perPerGame, 0) / valid.length;
-  const numerator = valid.reduce((total, row) => total + ((row.rating - meanX) * (row.perPerGame - meanY)), 0);
+  const meanY = valid.reduce((total, row) => total + row.yValue, 0) / valid.length;
+  const numerator = valid.reduce((total, row) => total + ((row.rating - meanX) * (row.yValue - meanY)), 0);
   const denominator = valid.reduce((total, row) => total + ((row.rating - meanX) ** 2), 0);
   const slope = denominator ? numerator / denominator : 0;
   return { slope, intercept: meanY - (slope * meanX) };
+}
+
+function sortedKitchenPlayers(players) {
+  return [...players].sort((a, b) => {
+    const result = compareValues(a[state.kitchenSortKey], b[state.kitchenSortKey]);
+    return state.kitchenSortDir === "asc" ? result : -result;
+  });
+}
+
+function kitchenSortHeader(key, label) {
+  const active = state.kitchenSortKey === key;
+  const marker = active ? (state.kitchenSortDir === "asc" ? " ^" : " v") : "";
+  return `<th${active ? ` class="sorted-column"` : ""}><button type="button" data-kitchen-sort="${key}">${label}${marker}</button></th>`;
+}
+
+function renderKitchenScatter(players, { id, title, yKey, yLabel, yMin, yMax, yFormat = "", yDecimals = null, baselineY = null, xMin = 700, xMax = 1500 }) {
+  const graphXMin = xMin;
+  const graphXMax = xMax;
+  const chart = { left: 58, top: 22, width: 820, height: 360 };
+  const scaleX = (value) => chart.left + (((value - graphXMin) / Math.max(1, graphXMax - graphXMin)) * chart.width);
+  const scaleY = (value) => chart.top + chart.height - (((value - yMin) / Math.max(0.01, yMax - yMin)) * chart.height);
+  const regression = kitchenRegression(players, yKey);
+  const lineY1 = baselineY === null ? (regression.slope * graphXMin + regression.intercept) : baselineY;
+  const lineY2 = baselineY === null ? (regression.slope * graphXMax + regression.intercept) : baselineY;
+  const xTicks = [graphXMin, graphXMin + ((graphXMax - graphXMin) / 2), graphXMax];
+  const yTicks = [yMin, yMin + ((yMax - yMin) / 2), yMax];
+  const yDisplay = (value) => yDecimals === null ? fmt(value, yFormat) : Number(value).toFixed(yDecimals);
+  const playerGraphRows = players.map((row) => {
+    const yValue = Number(row[yKey]);
+    const x = scaleX(row.rating);
+    const y = scaleY(yValue);
+    const tooltipX = Math.min(x + 12, chart.left + chart.width - 210);
+    const tooltipY = Math.max(chart.top + 8, y - 58);
+    return `
+      <g class="kitchen-dot" tabindex="0" data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${fmt(row.rating)}${row.ratingEstimated ? "*" : ""}" data-rating-source="${escapeHtml(row.ratingSource || "")}" data-per="${fmtGameAvg(row.perPerGame)}" data-xper="${fmtGameAvg(row.expectedPerPerGame)}" data-delta="${row.perDelta >= 0 ? "+" : ""}${fmtGameAvg(row.perDelta)}" style="--team-color:${escapeHtml(teamColor(row.teams?.[0] || row.teamsText || row.name))}">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6"></circle>
+        <g class="kitchen-svg-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
+          <rect width="198" height="52" rx="7"></rect>
+          <text x="10" y="18">${escapeHtml(displayName(row.name, "name"))}</text>
+          <text x="10" y="35">Rating ${fmt(row.rating)}${row.ratingEstimated ? "*" : ""} | ${escapeHtml(yLabel)} ${yDisplay(yValue)}</text>
+          <text x="10" y="48">PER/G ${fmtGameAvg(row.perPerGame)} | PER/G- ${row.perDelta >= 0 ? "+" : ""}${fmtGameAvg(row.perDelta)}</text>
+        </g>
+        <title>${escapeHtml(displayName(row.name, "name"))} | Rating ${fmt(row.rating)}${row.ratingEstimated ? ` estimated: ${escapeHtml(row.ratingSource || "future rating")}` : ""} | ${escapeHtml(yLabel)} ${yDisplay(yValue)}</title>
+      </g>
+    `;
+  }).join("");
+  return `
+    <div class="kitchen-scatter" aria-label="${escapeHtml(title)}">
+      <div class="kitchen-card-head kitchen-graph-head">
+        <h4>${escapeHtml(title)}</h4>
+        <div class="kitchen-graph-key">
+          <span><i class="actual"></i>Players</span>
+          <span><i class="expected"></i>${baselineY === null ? "Best fit" : "Zero baseline"}</span>
+        </div>
+      </div>
+      <svg viewBox="0 0 920 430" role="img" aria-label="${escapeHtml(title)} scatter plot">
+        <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
+        <line class="axis" x1="${chart.left}" y1="${chart.top + chart.height}" x2="${chart.left + chart.width}" y2="${chart.top + chart.height}"></line>
+        ${xTicks.map((tick) => `<g class="tick"><line x1="${scaleX(tick).toFixed(1)}" y1="${chart.top}" x2="${scaleX(tick).toFixed(1)}" y2="${chart.top + chart.height}"></line><text x="${scaleX(tick).toFixed(1)}" y="${chart.top + chart.height + 28}">${fmt(Math.round(tick))}</text></g>`).join("")}
+        ${yTicks.map((tick) => `<g class="tick"><line x1="${chart.left}" y1="${scaleY(tick).toFixed(1)}" x2="${chart.left + chart.width}" y2="${scaleY(tick).toFixed(1)}"></line><text x="${chart.left - 12}" y="${scaleY(tick).toFixed(1)}">${yDisplay(tick)}</text></g>`).join("")}
+        <line class="fit-line" x1="${scaleX(graphXMin).toFixed(1)}" y1="${scaleY(lineY1).toFixed(1)}" x2="${scaleX(graphXMax).toFixed(1)}" y2="${scaleY(lineY2).toFixed(1)}"></line>
+        ${playerGraphRows}
+        <text class="axis-label x-label" x="${chart.left + (chart.width / 2)}" y="424">Rating</text>
+        <text class="axis-label y-label" transform="translate(16 ${chart.top + (chart.height / 2)}) rotate(-90)">${escapeHtml(yLabel)}</text>
+      </svg>
+      ${id === "per" ? `<div id="kitchenPlayerInfo" class="kitchen-player-info"><span>Select a player from the table or hover a dot.</span></div>` : ""}
+    </div>
+  `;
 }
 
 function teamConsensusLabel(team, avgPerPerGame) {
@@ -1221,8 +1330,7 @@ function teamConsensusLabel(team, avgPerPerGame) {
   return { performance, result, consensus, perfDiff };
 }
 
-function kitchenTeams() {
-  const season = latestRegularSeason();
+function kitchenTeams(season) {
   const rows = rowsForDataset("teams", season)
     .filter((row) => row.season === season);
   const avgPerPerGame = rows.reduce((total, row) => total + (row.perPerGame || 0), 0) / Math.max(1, rows.length);
@@ -1236,52 +1344,32 @@ function kitchenClass(value) {
 }
 
 function renderKitchen() {
-  const season = latestRegularSeason();
-  const players = kitchenActivePlayers();
-  const teams = kitchenTeams();
+  const season = /^S\d+$/.test(state.season) ? state.season : latestRegularSeason();
+  const players = kitchenActivePlayers(season);
+  const teams = kitchenTeams(season);
   const topEfficiency = players[0];
-  const biggestOver = [...players].sort((a, b) => b.perDelta - a.perDelta)[0];
+  const biggestOver = [...players].filter((row) => typeof row.perDelta === "number").sort((a, b) => b.perDelta - a.perDelta)[0];
   const topTeam = teams[0];
   const ratedPlayers = players.map((row) => ({ ...row, rating: Number(row.rating), perPerGame: Number(row.perPerGame) }))
-    .filter((row) => Number.isFinite(row.rating) && Number.isFinite(row.perPerGame));
-  const graphXMin = 700;
-  const graphXMax = 1500;
-  const graphYMin = -0.1;
-  const graphYMax = 0.4;
-  const chart = { left: 58, top: 22, width: 820, height: 360 };
-  const scaleX = (value) => chart.left + (((value - graphXMin) / Math.max(1, graphXMax - graphXMin)) * chart.width);
-  const scaleY = (value) => chart.top + chart.height - (((value - graphYMin) / Math.max(0.01, graphYMax - graphYMin)) * chart.height);
+    .filter((row) => Number.isFinite(row.rating) && row.rating > 0 && Number.isFinite(row.perPerGame));
   const regression = kitchenRegression(ratedPlayers);
-  const lineY1 = regression.slope * graphXMin + regression.intercept;
-  const lineY2 = regression.slope * graphXMax + regression.intercept;
-  const xTicks = [graphXMin, graphXMin + ((graphXMax - graphXMin) / 2), graphXMax];
-  const yTicks = [graphYMin, graphYMin + ((graphYMax - graphYMin) / 2), graphYMax];
-  const playerGraphRows = ratedPlayers.map((row) => {
-    const x = scaleX(row.rating);
-    const y = scaleY(row.perPerGame);
-    const tooltipX = Math.min(x + 12, chart.left + chart.width - 210);
-    const tooltipY = Math.max(chart.top + 8, y - 58);
-    return `
-      <g class="kitchen-dot" tabindex="0" data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${fmt(row.rating)}" data-per="${fmt(row.perPerGame)}" data-xper="${fmt(row.expectedPerPerGame)}" data-delta="${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}" style="--team-color:${escapeHtml(teamColor(row.teams?.[0] || row.teamsText || row.name))}">
-        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6"></circle>
-        <g class="kitchen-svg-tooltip" transform="translate(${tooltipX.toFixed(1)} ${tooltipY.toFixed(1)})">
-          <rect width="198" height="52" rx="7"></rect>
-          <text x="10" y="18">${escapeHtml(displayName(row.name, "name"))}</text>
-          <text x="10" y="35">Rating ${fmt(row.rating)} | PER/G ${fmt(row.perPerGame)}</text>
-          <text x="10" y="48">xPER/G ${fmt(row.expectedPerPerGame)} | ${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}</text>
-        </g>
-        <title>${escapeHtml(displayName(row.name, "name"))} | Rating ${fmt(row.rating)} | PER/G ${fmt(row.perPerGame)}</title>
-      </g>
-    `;
-  }).join("");
-  const playerRows = players.map((row) => `
-    <tr data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${fmt(row.rating)}" data-per="${fmt(row.perPerGame)}" data-xper="${fmt(row.expectedPerPerGame)}" data-delta="${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}">
+  const sortedPlayers = sortedKitchenPlayers(players);
+  const ratingWindow = season === "S5" ? { xMin: 250, xMax: 1000 } : { xMin: 700, xMax: 1500 };
+  const graphHtml = ratedPlayers.length ? `
+    ${renderKitchenScatter(ratedPlayers, { id: "per", title: `${season} PER/G vs Rating`, yKey: "perPerGame", yLabel: "PER/G", yMin: -0.1, yMax: 0.4, yDecimals: 2, ...ratingWindow })}
+    ${renderKitchenScatter(ratedPlayers, { id: "delta", title: `${season} PER/G- vs Rating`, yKey: "perDelta", yLabel: "PER/G-", yMin: -0.1, yMax: 0.15, yDecimals: 3, baselineY: 0, ...ratingWindow })}
+  ` : `<div class="kitchen-rating-empty"><strong>Rating graphs unavailable for ${escapeHtml(season)}</strong><span>No manual or estimated player ratings are available.</span></div>`;
+  const estimateFootnote = ["S1", "S2"].includes(season) ? `<div class="kitchen-estimate-footnote"><strong>* Estimated ratings</strong><span>${escapeHtml(season)} ratings are backfilled from each player's nearest future manual rating; a future-season median is used when no player-specific value exists.</span></div>` : "";
+  const statValue = (value, formatter = fmt) => value === null || value === undefined ? "n/a" : formatter(value);
+  const ratingValue = (row) => row.rating === null ? "n/a" : `${fmt(row.rating)}${row.ratingEstimated ? "*" : ""}`;
+  const playerRows = sortedPlayers.map((row) => `
+    <tr data-kitchen-player="${escapeHtml(row.name)}" data-team="${escapeHtml(row.teamsText || "")}" data-rating="${escapeHtml(ratingValue(row))}" data-rating-source="${escapeHtml(row.ratingSource || "")}" data-per="${fmtGameAvg(row.perPerGame)}" data-xper="${escapeHtml(statValue(row.expectedPerPerGame, fmtGameAvg))}" data-delta="${row.perDelta === null ? "n/a" : `${row.perDelta >= 0 ? "+" : ""}${fmtGameAvg(row.perDelta)}`}" >
       <td><button type="button" class="kitchen-player-button" data-kitchen-player="${escapeHtml(row.name)}">${escapeHtml(displayName(row.name, "name"))}</button></td>
       <td>${escapeHtml(row.teamsText || "")}</td>
-      <td>${fmt(row.rating)}</td>
-      <td>${fmt(row.perPerGame)}</td>
-      <td>${fmt(row.expectedPerPerGame)}</td>
-      <td class="${row.perDelta >= 0 ? "positive" : "negative"}">${row.perDelta >= 0 ? "+" : ""}${fmt(row.perDelta)}</td>
+      <td>${row.ratingEstimated ? `<span class="estimated-rating" title="${escapeHtml(row.ratingSource || "Estimated rating")}">${escapeHtml(ratingValue(row))}</span>` : escapeHtml(ratingValue(row))}</td>
+      <td>${fmtGameAvg(row.perPerGame)}</td>
+      <td>${escapeHtml(statValue(row.expectedPerPerGame, fmtGameAvg))}</td>
+      <td${row.perDelta === null ? "" : ` class="${row.perDelta >= 0 ? "positive" : "negative"}"`}>${row.perDelta === null ? "n/a" : `${row.perDelta >= 0 ? "+" : ""}${fmtGameAvg(row.perDelta)}`}</td>
     </tr>
   `).join("");
   const teamRows = teams.map((row) => `
@@ -1294,7 +1382,7 @@ function renderKitchen() {
       <dl>
         <div><dt>Score</dt><dd>${fmt(row.standingsPoints)}</dd></div>
         <div><dt>Match Win</dt><dd>${fmt(row.matchWinPct, "%")}</dd></div>
-        <div><dt>PER/G</dt><dd>${fmt(row.perPerGame)}</dd></div>
+        <div><dt>PER/G</dt><dd>${fmtGameAvg(row.perPerGame)}</dd></div>
       </dl>
     </article>
   `).join("");
@@ -1311,9 +1399,9 @@ function renderKitchen() {
       </div>
     </div>
     <div class="kitchen-stat-grid">
-      <article><span>Top PER/G</span><strong>${escapeHtml(displayName(topEfficiency?.name || "-", "name"))}</strong><small>${fmt(topEfficiency?.perPerGame)}</small></article>
-      <article><span>Most Over Expected</span><strong>${escapeHtml(displayName(biggestOver?.name || "-", "name"))}</strong><small>${biggestOver?.perDelta >= 0 ? "+" : ""}${fmt(biggestOver?.perDelta)}</small></article>
-      <article><span>Best Fit</span><strong>${regression.slope >= 0 ? "+" : ""}${fmt(regression.slope * 100)}</strong><small>PER/G per 100 rating</small></article>
+      <article><span>Top PER/G</span><strong>${escapeHtml(displayName(topEfficiency?.name || "-", "name"))}</strong><small>${fmtGameAvg(topEfficiency?.perPerGame)}</small></article>
+      <article><span>Most Over Expected</span><strong>${escapeHtml(displayName(biggestOver?.name || "-", "name"))}</strong><small>${biggestOver ? `${biggestOver.perDelta >= 0 ? "+" : ""}${fmtGameAvg(biggestOver.perDelta)}` : "n/a"}</small></article>
+      <article><span>Best Fit</span><strong>${ratedPlayers.length ? `${regression.slope >= 0 ? "+" : ""}${fmt(regression.slope * 100)}` : "n/a"}</strong><small>PER/G per 100 rating</small></article>
       <article><span>Top Team</span><strong>${escapeHtml(displayName(topTeam?.name || "-", "team"))}</strong><small>${fmt(topTeam?.standingsPoints)} league score</small></article>
     </div>
     <div class="kitchen-layout">
@@ -1322,28 +1410,18 @@ function renderKitchen() {
           <h3>${season} Player Breakdown</h3>
           <span>${players.length} players | rating vs expected efficiency</span>
         </div>
-        <div class="kitchen-scatter" aria-label="${season} player PER/G by rating graph">
-          <div class="kitchen-graph-key">
-            <span><i class="actual"></i>Players</span>
-            <span><i class="expected"></i>Best fit</span>
-          </div>
-          <svg viewBox="0 0 920 430" role="img" aria-label="PER per game versus rating scatter plot">
-            <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
-            <line class="axis" x1="${chart.left}" y1="${chart.top + chart.height}" x2="${chart.left + chart.width}" y2="${chart.top + chart.height}"></line>
-            ${xTicks.map((tick) => `<g class="tick"><line x1="${scaleX(tick).toFixed(1)}" y1="${chart.top}" x2="${scaleX(tick).toFixed(1)}" y2="${chart.top + chart.height}"></line><text x="${scaleX(tick).toFixed(1)}" y="${chart.top + chart.height + 28}">${fmt(Math.round(tick))}</text></g>`).join("")}
-            ${yTicks.map((tick) => `<g class="tick"><line x1="${chart.left}" y1="${scaleY(tick).toFixed(1)}" x2="${chart.left + chart.width}" y2="${scaleY(tick).toFixed(1)}"></line><text x="${chart.left - 12}" y="${scaleY(tick).toFixed(1)}">${fmt(tick)}</text></g>`).join("")}
-            <line class="fit-line" x1="${scaleX(graphXMin).toFixed(1)}" y1="${scaleY(lineY1).toFixed(1)}" x2="${scaleX(graphXMax).toFixed(1)}" y2="${scaleY(lineY2).toFixed(1)}"></line>
-            ${playerGraphRows}
-            <text class="axis-label x-label" x="${chart.left + (chart.width / 2)}" y="424">Rating</text>
-            <text class="axis-label y-label" transform="translate(16 ${chart.top + (chart.height / 2)}) rotate(-90)">PER/G</text>
-          </svg>
-          <div id="kitchenPlayerInfo" class="kitchen-player-info">
-            <span>Select a player from the table or hover a dot.</span>
-          </div>
-        </div>
+        ${estimateFootnote}
+        ${graphHtml}
         <div class="kitchen-table-wrap">
           <table class="kitchen-table">
-            <thead><tr><th>Player</th><th>Team</th><th>Rating</th><th>PER/G</th><th>xPER/G</th><th>PER/G-</th></tr></thead>
+            <thead><tr>
+              ${kitchenSortHeader("name", "Player")}
+              ${kitchenSortHeader("teamsText", "Team")}
+              ${kitchenSortHeader("rating", "Rating")}
+              ${kitchenSortHeader("perPerGame", "PER/G")}
+              ${kitchenSortHeader("expectedPerPerGame", "xPER/G")}
+              ${kitchenSortHeader("perDelta", "PER/G-")}
+            </tr></thead>
             <tbody>${playerRows}</tbody>
           </table>
         </div>
@@ -1359,6 +1437,7 @@ function renderKitchen() {
         <h3>Notes</h3>
         <p>PER is counting-stat production. The scatter plot compares each ${season} player's rating to PER/G, with the grey line showing the linear best fit.</p>
         <p>xPER/G still uses the active ${season} ratings curve, so the plus-minus column highlights who is cooking above or below that baseline.</p>
+        <p><strong>* Estimated rating:</strong> S1-S2 use the player's nearest future manual rating. Players without a future value use the nearest future season's median.</p>
       </section>
     </div>
   `;
@@ -1371,6 +1450,7 @@ function kitchenInfoHtml(dataset) {
   return `
     <strong>${escapeHtml(displayName(dataset.kitchenPlayer, "name"))}</strong>
     <span>${escapeHtml(dataset.team || "")}</span>
+    ${dataset.ratingSource ? `<small>${escapeHtml(dataset.ratingSource)}</small>` : ""}
     <dl>
       <div><dt>Rating</dt><dd>${escapeHtml(dataset.rating || "")}</dd></div>
       <div><dt>PER/G</dt><dd>${escapeHtml(dataset.per || "")}</dd></div>
@@ -1404,7 +1484,7 @@ function clearKitchenHover() {
 
 function latestRegularSeason() {
   return [...data.seasons]
-    .filter((season) => !isScrimSeason(season) && !isPlayoffSeason(season))
+    .filter((season) => /^S\d+$/.test(season))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     .at(-1) || "All";
 }
@@ -1454,8 +1534,8 @@ function renderLeagueLeaderPanels(rows) {
   const panelSeason = state.season === "All" ? latestRegularSeason() : state.season;
   const showLifetimeTeamPanel = state.view === "lifetimeTeams";
   const showLifetimePlayerPanel = state.view === "lifetimePlayers";
-  const showTeamPanel = (state.view === "teams" || showLifetimeTeamPanel) && !isPlayoffSeason(state.season);
-  const showAwardPanel = (state.view === "players" || showLifetimePlayerPanel) && !isPlayoffSeason(state.season);
+  const showTeamPanel = (state.view === "teams" || showLifetimeTeamPanel) && !isPlayoffSeason(state.season) && state.season !== "World Cup";
+  const showAwardPanel = (state.view === "players" || showLifetimePlayerPanel) && !isPlayoffSeason(state.season) && state.season !== "World Cup";
   teamPanel.classList.toggle("hidden", !showTeamPanel);
   awardPanel.classList.toggle("hidden", !showAwardPanel);
   if (!showTeamPanel && !showAwardPanel) return;
@@ -1464,7 +1544,7 @@ function renderLeagueLeaderPanels(rows) {
     teamPanel.querySelector("h2").textContent = "Career Team Leaders";
     const teamItems = careerTeamLeaderStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
       const leader = leaderFor(lifetimeTeams(), key, direction);
-      return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: fmt(leader[key], suffix) }] : [];
+      return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: fmtStat(leader[key], key, suffix) }] : [];
     });
     renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
     awardPanel.classList.add("hidden");
@@ -1475,7 +1555,7 @@ function renderLeagueLeaderPanels(rows) {
     awardPanel.querySelector("h2").textContent = "Career Player Leaders";
     const playerItems = careerPlayerLeaderStats.map(([key, label, suffix = "", direction = "desc"]) => {
       const leader = leaderFor(lifetimePlayers(), key, direction);
-      return { key, direction, label, name: leader?.name ?? "-", team: leader?.teams?.[0] || leader?.teamsText || "", meta: leader ? fmt(leader[key], suffix) : "" };
+      return { key, direction, label, name: leader?.name ?? "-", team: leader?.teams?.[0] || leader?.teamsText || "", meta: leader ? fmtStat(leader[key], key, suffix) : "" };
     });
     renderMiniLeaderGrid(els.awardRaceGrid, playerItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
     teamPanel.classList.add("hidden");
@@ -1488,7 +1568,7 @@ function renderLeagueLeaderPanels(rows) {
   const regularTeamRows = state.season === "All" ? rowsForDataset("teams", "All") : rowsForDataset("teams", panelSeason);
   const teamItems = teamLeagueStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
     const leader = leaderFor(regularTeamRows, key, direction);
-    return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: `${fmt(leader[key], suffix)} - ${leader.season}` }] : [];
+    return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: `${fmtStat(leader[key], key, suffix)} - ${leader.season}` }] : [];
   });
   if (showTeamPanel) renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
 
@@ -1499,7 +1579,7 @@ function renderLeagueLeaderPanels(rows) {
       label: award.award,
       name: leader?.name ?? "-",
       team: leaderTeam,
-      meta: leader ? `${leaderTeam ? `${leaderTeam} | ` : ""}${award.avgLabel ? `${award.avgLabel}: ${fmt(leader.average)} | ` : ""}${award.totalLabel}: ${fmt(leader.total)}` : "",
+      meta: leader ? `${leaderTeam ? `${leaderTeam} | ` : ""}${award.avgLabel ? `${award.avgLabel}: ${fmtStat(leader.average, award.avgStat)} | ` : ""}${award.totalLabel}: ${fmt(leader.total)}` : "",
       sortKey: award.avgStat,
       award,
     };
@@ -1606,7 +1686,11 @@ function detailContext() {
   if (state.page.type === "team") {
     const seasonLabel = state.page.season === "Lifetime" ? "All seasons" : state.page.season;
     const teamRow = teamSeasonRow(state.page.team, state.page.season);
-    const record = teamRow ? `${teamRow.wins}-${teamRow.losses}, league score ${fmt(teamRow.standingsPoints)}, ${fmt(teamRow.avgScore)} score/G` : "";
+    const record = teamRow
+      ? (teamRow.season === "World Cup"
+        ? `${teamRow.wins}-${teamRow.losses}, tournament score ${fmt(teamRow.standingsPoints)}`
+        : `${teamRow.wins}-${teamRow.losses}, league score ${fmt(teamRow.standingsPoints)}, ${fmtGameAvg(teamRow.avgScore)} score/G`)
+      : "";
     return {
       eyebrow: "Team roster",
       title: `${state.page.team} - ${seasonLabel}${record ? ` (${record})` : ""}`,
@@ -1699,7 +1783,7 @@ function renderBars(target, rows, key, suffix = "", tone = "default", scaleMax =
     <div class="bar-row ${tone}" title="${row.name}">
       <span class="bar-name">${escapeHtml(displayName(row.name, "name"))}${state.season === "All" && row.season ? ` <small>${escapeHtml(row.season)}</small>` : ""}</span>
       <span class="bar-track"><span class="bar-fill" style="--w:${Math.max(2, Math.min(100, (row[key] / max) * 100))}%"></span></span>
-      <span class="bar-value">${fmt(row[key], suffix)}</span>
+      <span class="bar-value">${fmtStat(row[key], key, suffix)}</span>
     </div>
   `).join("");
 }
@@ -1732,7 +1816,7 @@ function setFigure(index, label, row, valueKey, suffix = "") {
   const [labelEl, valueEl, metaEl] = slots[index];
   labelEl.textContent = label;
   valueEl.textContent = row ? row.name : "-";
-  metaEl.textContent = row ? `${fmt(row[valueKey], suffix)} - ${fmt(row.games)} GP` : "";
+  metaEl.textContent = row ? `${fmtStat(row[valueKey], valueKey, suffix)} - ${fmt(row.games)} GP` : "";
 }
 
 function renderFigures(rows) {
@@ -1810,6 +1894,9 @@ function renderDetailExtras() {
             <article><span>Home Server</span><strong>${escapeHtml(info.homeServer)}</strong></article>
             <article><span>Average MMR</span><strong>${escapeHtml(fmt(info.averageMmr))}</strong></article>
           </div>
+          ${info.roster?.length ? `<div class="team-roster-list">
+            ${info.roster.map((name) => `<button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "player", player: name }))}">${escapeHtml(displayName(name, "name"))}</button>`).join("")}
+          </div>` : ""}
         </section>` : ""}
         ${draft ? `<section>
           <h2>Draft Info</h2>
@@ -1872,7 +1959,7 @@ function renderDetailExtras() {
       ${group.entries.map((entry) => `
         <button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "seasonLeaders", season: entry.season, player: state.page.player }))}">
           <span>${escapeHtml(entry.season)}</span>
-          <strong>${escapeHtml(fmt(entry.value))}</strong>
+          <strong>${escapeHtml(fmtStat(entry.value, group.stat))}</strong>
           <em>(${entry.rank}${rankSuffix(entry.rank)})</em>
         </button>
       `).join("")}
@@ -1957,9 +2044,10 @@ function renderPlayoffStats() {
   }
   const selectedPlayoffSeason = state.season === "All" ? "" : `${state.season} Playoffs`;
   const manualPlayoffs = (data.manualHistory?.playoffs || []).filter((row) => !selectedPlayoffSeason || row.season === selectedPlayoffSeason);
+  const manualSchedules = (data.manualHistory?.schedules || []).filter((row) => row.season === state.season);
   const playoffTeams = data.teams.filter((row) => row.season === "S5 Playoffs").sort((a, b) => b.wins - a.wins || b.goals - a.goals);
   const playoffPlayers = data.players.filter((row) => row.season === "S5 Playoffs").sort((a, b) => b.goals - a.goals).slice(0, 8);
-  if (!playoffTeams.length && !playoffPlayers.length && !manualPlayoffs.length) {
+  if (!playoffTeams.length && !playoffPlayers.length && !manualPlayoffs.length && !manualSchedules.length) {
     els.playoffStats.classList.add("hidden");
     els.playoffStats.innerHTML = "";
     return;
@@ -1977,16 +2065,32 @@ function renderPlayoffStats() {
   const playoffTeamHtml = playoffTeams.length && state.season === "S5" ? `<section>
         <h2>S5 Playoff Team Stats</h2>
         <div class="compact-stat-list">
-          ${playoffTeams.map((row) => `<button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "team", team: row.name, season: row.season }))}"><strong>${escapeHtml(displayName(row.name, "name"))}</strong><span>${fmt(row.wins)}-${fmt(row.losses)} | ${fmt(row.goalsPerGame)} G/G | ${fmt(row.avgScore)} score/G</span></button>`).join("")}
+          ${playoffTeams.map((row) => `<button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "team", team: row.name, season: row.season }))}"><strong>${escapeHtml(displayName(row.name, "name"))}</strong><span>${fmt(row.wins)}-${fmt(row.losses)} | ${fmtGameAvg(row.goalsPerGame)} G/G | ${fmtGameAvg(row.avgScore)} score/G</span></button>`).join("")}
         </div>
       </section>` : "";
   const playoffPlayerHtml = playoffPlayers.length && state.season === "S5" ? `<section>
         <h2>S5 Playoff Player Stats</h2>
         <div class="compact-stat-list">
-          ${playoffPlayers.map((row) => `<button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "player", player: row.name }))}"><strong>${escapeHtml(displayName(row.name, "name"))}</strong><span>${fmt(row.goals)} G | ${fmt(row.perPerGame)} PER/G | ${fmt(row.shootingPct, "%")}</span></button>`).join("")}
+          ${playoffPlayers.map((row) => `<button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "player", player: row.name }))}"><strong>${escapeHtml(displayName(row.name, "name"))}</strong><span>${fmt(row.goals)} G | ${fmtGameAvg(row.perPerGame)} PER/G | ${fmt(row.shootingPct, "%")}</span></button>`).join("")}
         </div>
       </section>` : "";
-  const content = `${playoffTeamHtml}${playoffPlayerHtml}${playoffBracketHtml}`;
+  const scheduleHtml = manualSchedules.length ? `<section>
+        <h2>${escapeHtml(state.season)} Schedule & Results</h2>
+        <div class="schedule-list">
+          ${manualSchedules.map((row) => `
+            <article${row.round === "Championship" ? ` class="championship"` : ""}>
+              <span>${escapeHtml(row.round)}</span>
+              <div>
+                <strong${row.winner === row.home ? ` class="winner"` : ""}>${escapeHtml(displayName(row.home, "team"))}</strong>
+                <b>${escapeHtml(row.result)}</b>
+                <strong${row.winner === row.away ? ` class="winner"` : ""}>${escapeHtml(displayName(row.away, "team"))}</strong>
+              </div>
+              ${row.note ? `<small>${escapeHtml(row.note)}</small>` : ""}
+            </article>
+          `).join("")}
+        </div>
+      </section>` : "";
+  const content = `${scheduleHtml}${playoffTeamHtml}${playoffPlayerHtml}${playoffBracketHtml}`;
   if (!content.trim()) {
     els.playoffStats.classList.add("hidden");
     els.playoffStats.innerHTML = "";
@@ -2061,7 +2165,7 @@ function renderTable(rows, columns, title, rowAction = null) {
     const percent = key === "winPct" || key === "matchWinPct" || key === "gameWinPct" || key === "shootingPct" || key === "missPct" || key === "teamSaveRate" || key === "opponentShootingPct";
     const nameKeys = new Set(["name", "team", "opponent", "player", "teamA", "teamB", "captain", "pick1", "pick2"]);
     const raw = nameKeys.has(key) ? displayName(row[key], key === "teamA" || key === "teamB" || key === "team" ? "team" : "name") : row[key];
-    let value = isUnavailableValue(row, key) ? "n/a" : (key === "season" ? `<span class="pill">${escapeHtml(raw)}</span>` : escapeHtml(fmt(raw, percent ? "%" : "")));
+    let value = isUnavailableValue(row, key) ? "n/a" : (key === "season" ? `<span class="pill">${escapeHtml(raw)}</span>` : escapeHtml(fmtStat(raw, key, percent ? "%" : "")));
     if ((key === "teamA" || key === "teamB") && playoffWinner === key) value = `<strong class="playoff-winner">${value}</strong>`;
     if (row.__careerHighs?.has(key)) value = `<strong class="career-high">${value}</strong>`;
     if (row.__seasonRecords?.has(key)) value = `<strong class="season-leader">${value}</strong><sup class="season-record">*</sup>`;
@@ -2087,7 +2191,7 @@ function render() {
   const inDetail = state.page.type !== "dashboard";
   els.detailBar.classList.toggle("hidden", !inDetail);
   els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
-  document.querySelector(".kpis").classList.toggle("hidden", inDetail || isPlayoffSeason(state.season) || !["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view));
+  document.querySelector(".kpis").classList.toggle("hidden", inDetail || isPlayoffSeason(state.season) || state.season === "World Cup" || !["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view));
   document.querySelector(".figures").classList.add("hidden");
   document.querySelector(".leaderboards").classList.add("hidden");
   els.tableShell.classList.remove("hidden");
@@ -2152,6 +2256,16 @@ function render() {
 
 els.seasonSelect.addEventListener("change", (event) => {
   state.season = event.target.value;
+  if (state.view === "kitchen" && !/^S\d+$/.test(state.season)) {
+    state.season = latestRegularSeason();
+    event.target.value = state.season;
+  }
+  if (state.season === "World Cup" && (state.view === "teams" || state.view === "players")) {
+    state.view = "standings";
+    state.sortKey = "standingsRank";
+    state.sortDir = "asc";
+    els.tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
+  }
   render();
 });
 
@@ -2175,6 +2289,10 @@ els.tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.page = { type: "dashboard" };
     state.view = button.dataset.view;
+    if (state.view === "kitchen" && !/^S\d+$/.test(state.season)) {
+      state.season = latestRegularSeason();
+      els.seasonSelect.value = state.season;
+    }
     state.sortKey = state.view === "awards" || state.view === "kitchen" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
     state.sortDir = "desc";
     if (state.view === "standings") state.sortDir = "asc";
@@ -2269,6 +2387,18 @@ els.playoffStats.addEventListener("click", (event) => {
 });
 
 els.kitchenPanel.addEventListener("click", (event) => {
+  const sortHeader = event.target.closest("[data-kitchen-sort]");
+  if (sortHeader) {
+    const key = sortHeader.dataset.kitchenSort;
+    if (state.kitchenSortKey === key) {
+      state.kitchenSortDir = state.kitchenSortDir === "asc" ? "desc" : "asc";
+    } else {
+      state.kitchenSortKey = key;
+      state.kitchenSortDir = key === "name" || key === "teamsText" ? "asc" : "desc";
+    }
+    render();
+    return;
+  }
   const target = event.target.closest("[data-kitchen-player]");
   if (!target) return;
   state.kitchenSelectedPlayer = target.dataset.kitchenPlayer || "";

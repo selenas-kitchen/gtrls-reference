@@ -9,6 +9,7 @@
     ["THELAKEEFFEKT", "TheLakeEffekt"],
     ["THELAKEEFFEKT", "TheLakeEffekt"],
     ["SLAPSHOTS1324", "I_have_a_bag"],
+    ["IHAVEABAG", "I_have_a_bag"],
     ["ATOWNSTEELERS", "AtownSteelers"],
     ["BROCK", "AtownSteelers"],
     ["DUKEOFDOPE7", "Dukeofdope7"],
@@ -104,6 +105,8 @@
     ["THEWINDIXIES", "WIN-DIXIES"],
     ["WINDIXIES", "WIN-DIXIES"],
     ["MEGAWATT", "MEGAWATT"],
+    ["SLEDDAWGS", "Snowbunnies"],
+    ["SNOWBUNNIES", "Snowbunnies"],
   ]);
 
   function key(value) {
@@ -299,6 +302,11 @@
     teamRow("S6", "Quack Wok", 5, "2 - 3", 4717, 8, 12, 7, 21, 33, { overrideGenerated: true, standingsPoints: 1, wins: 0, losses: 1, matchRecord: "0 - 1", sweeps: 0, gameFiveLosses: 1, shotsConceded: 34, rating: 1062.9, standingsRank: 10, goalDiff: -4, per: 1.4, perPerGame: 0.28 }),
     teamRow("S6", "Spirit Airlines", 11, "2 - 9", 10159, 21, 32, 10, 42, 58, { overrideGenerated: true, standingsPoints: 1, wins: 0, losses: 3, matchRecord: "0 - 3", sweeps: 0, gameFiveLosses: 1, shotsConceded: 98, rating: 1022.8, standingsRank: 11, goalDiff: -11, per: 2.7, perPerGame: 0.24 }),
     teamRow("S6", "Crossbar Cartel", 3, "0 - 3", 3007, 6, 11, 4, 13, 16, { overrideGenerated: true, standingsPoints: 0, wins: 0, losses: 1, matchRecord: "0 - 1", sweeps: 0, gameFiveLosses: 0, shotsConceded: 30, rating: 1024.8, standingsRank: 12, goalDiff: -5, per: 0.9, perPerGame: 0.31 }),
+
+    teamRow("World Cup", "Reef Donkeys", 9, "9 - 0", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 9, wins: 3, losses: 0, matchRecord: "3 - 0", sweeps: 3, gameFiveLosses: 0, remainingMatches: 0, maxScore: 9, standingsRank: 1, goalDiffUnavailable: true, excludeFromLifetime: true }),
+    teamRow("World Cup", "Bigger Nehavior", 12, "6 - 6", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 4, wins: 2, losses: 1, matchRecord: "2 - 1", sweeps: 0, gameFiveLosses: 0, remainingMatches: 0, maxScore: 4, standingsRank: 2, goalDiffUnavailable: true, excludeFromLifetime: true }),
+    teamRow("World Cup", "Snowbunnies", 13, "5 - 8", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 3, wins: 1, losses: 2, matchRecord: "1 - 2", sweeps: 0, gameFiveLosses: 1, remainingMatches: 0, maxScore: 3, standingsRank: 3, goalDiffUnavailable: true, excludeFromLifetime: true }),
+    teamRow("World Cup", "Hoosier Daddy", 12, "3 - 9", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 1, wins: 0, losses: 3, matchRecord: "0 - 3", sweeps: 0, gameFiveLosses: 1, remainingMatches: 0, maxScore: 1, standingsRank: 4, goalDiffUnavailable: true, excludeFromLifetime: true }),
   ];
 
   function addAggregatedTeamRowsFromPlayers(players) {
@@ -499,6 +507,80 @@
     ].map((row) => playerRow("S6", ...row)),
   ];
 
+  const historicalPlayerRatings = {
+    S3: [
+      ["SchwiftyWT", 1319], ["TheAeth", 795], ["henryspace_", 607],
+      ["SqueakerJG2", 1134], ["KWNSquid", 1027], ["PoolnoodlE_412", 652],
+      ["AtownSteelers", 1113], ["i_have_a_bag", 1110], ["xvp08", 590],
+      ["Aximov", 1207], ["Kuhlbeans", 830], ["Authurm19", 777],
+      ["CoalTrainLLC", 1035], ["Prxlifik", 973], ["Dukeofdope7", 807],
+      ["godfatherjones", 1031], ["JulietAlphaRomeo", 988], ["LIL HATED ONE", 875],
+      ["RoyalxRenegade", 1125], ["LilacAbyss", 863], ["MadJanitor88", 824],
+      ["millameista", 1092], ["Val3nor", 1064], ["Thelakeeffekt", 806],
+      ["Original_6_Hawks", 1071], ["gonslinger", 913], ["Wildchip2567", 813],
+      ["Dailcowgs94", 1014], ["Doobxy", 1011], ["Bubbles3913", 887],
+    ],
+    S4: [
+      ["AtownSteelers", 1151], ["Original_6_Hawks", 1142], ["DukeofDope7", 958],
+      ["I_have_a_bag", 1205], ["godfatherjones", 1087], ["TheLakeEffekt", 831],
+      ["RoyalxRenegade", 1220], ["CoalTrainLLC", 1149], ["MadJanitor88", 858],
+      ["Val3nor", 1221], ["Authurm19", 1058], ["ttv_starzyrl", 922],
+      ["KWNSquid", 1243], ["JulietAlphaRomeo", 1124], ["LIL HATED ONE", 850],
+      ["MegatronMD", 1287], ["Ramen", 1194], ["Sir_vantzzz", 798],
+      ["SqueakerJG2", 1322], ["RL_Zombie", 1083], ["TheAeth", 843],
+      ["Kneeks.", 1328], ["TJMaxxinista", 1116], ["Lil_Otter13", 759],
+      ["Aximov", 1339], ["IMMa_Blurr", 1045], ["WildChip2567", 1025],
+      ["Epontious", 1356], ["dailcowgs94", 1057], ["go1g_", 756],
+      ["SchwiftyWT", 1393], ["KolbyCheat", 1048], ["Ravenglitch", 964],
+      ["JenkiJ", 1395], ["Doobxy", 1131], ["PoolNoodlE_412", 652],
+      ["Joshhh_RL", 1616], ["Bubbles3913", 1129], ["Henryspace_", 656],
+    ],
+  };
+
+  Object.entries(historicalPlayerRatings).forEach(([season, rows]) => {
+    const ratings = new Map(rows.map(([name, rating]) => [player(name), rating]));
+    players.filter((row) => row.season === season).forEach((row) => {
+      if (!ratings.has(row.name)) return;
+      row.rating = ratings.get(row.name);
+      row.ratingEstimated = false;
+      row.ratingSource = "Manual MMR";
+    });
+  });
+
+  players.filter((row) => row.season === "S5" && Number.isFinite(row.rating)).forEach((row) => {
+    row.ratingEstimated = false;
+    row.ratingSource = "Manual rating";
+  });
+  players.filter((row) => row.season === "S6" && Number.isFinite(row.rating)).forEach((row) => {
+    row.ratingEstimated = false;
+    row.ratingSource = "Draft MMR";
+  });
+
+  function medianRating(rows) {
+    const values = rows.map((row) => row.rating).filter(Number.isFinite).sort((a, b) => a - b);
+    if (!values.length) return null;
+    const middle = Math.floor(values.length / 2);
+    return values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2;
+  }
+
+  ["S1", "S2"].forEach((season) => {
+    const seasonNumber = Number(season.slice(1));
+    players.filter((row) => row.season === season && !Number.isFinite(row.rating)).forEach((row) => {
+      const future = players
+        .filter((candidate) => candidate.name === row.name && Number(candidate.season.slice(1)) > seasonNumber && Number.isFinite(candidate.rating))
+        .sort((a, b) => Number(a.season.slice(1)) - Number(b.season.slice(1)))[0];
+      if (future) {
+        row.rating = future.rating;
+        row.ratingSource = `Estimated from ${future.season} ${future.ratingSource || "rating"}`;
+      } else {
+        const futureSeason = ["S3", "S4", "S5", "S6"].find((candidateSeason) => Number(candidateSeason.slice(1)) > seasonNumber && medianRating(players.filter((candidate) => candidate.season === candidateSeason)) !== null);
+        row.rating = Math.round(medianRating(players.filter((candidate) => candidate.season === futureSeason)) || 0);
+        row.ratingSource = `Estimated from ${futureSeason} player median`;
+      }
+      row.ratingEstimated = true;
+    });
+  });
+
   teams.push(...addAggregatedTeamRowsFromPlayers(players.filter((row) => row.season === "S1")));
 
   const teamInfo = [
@@ -583,6 +665,22 @@
   }));
   teamInfo.push(...s6TeamInfo);
 
+  const worldCupTeamInfo = [
+    ["World Cup", "Reef Donkeys", "KWNSquid", "Ax1mov", "selena.", "Bubbles3913"],
+    ["World Cup", "Hoosier Daddy", "Ramen", "dailcowgs94", "Authurm19", "AtownSteelers"],
+    ["World Cup", "Bigger Nehavior", "Original_6_Hawks", "RoyalxRenegade", "Sir_vantzzz", "MadJanitor88"],
+    ["World Cup", "Snowbunnies", "EPo -_-", "I_have_a_bag", "JulietAlphaRomeo", "greenarrowspark2"],
+  ].map(([season, teamName, captain, ...roster]) => ({
+    season,
+    team: team(teamName),
+    captain: player(captain),
+    homeStadium: "World Cup",
+    homeServer: "Tournament",
+    averageMmr: "N/A",
+    roster: [player(captain), ...roster.map(player)],
+  }));
+  teamInfo.push(...worldCupTeamInfo);
+
   const draft = [
     ["S4", "Team Kawaii", 10, "Epontious", 1356, "goig", 756, 1, "GTdail", 1057, 1056.3, 12],
     ["S4", "The Autisticats", 4, "Val3nor", 1221, "Authurm19", 1058, 2, "Starzy", 922, 1067.0, 10],
@@ -623,6 +721,25 @@
     pick2Mmr,
     teamMmr,
     teamRank,
+  }));
+
+  const schedules = [
+    ["World Cup", "Round 1", "Sled Dawgs", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
+    ["World Cup", "Round 1", "Hoosier Daddy", "1 - 3", "Bigger Nehavior", "Bigger Nehavior", ""],
+    ["World Cup", "Round 2", "Sled Dawgs", "3 - 2", "Hoosier Daddy", "Sled Dawgs", ""],
+    ["World Cup", "Round 2", "Reef Donkeys", "3 - 1", "Bigger Nehavior", "Reef Donkeys", "12 - 5 aggregate"],
+    ["World Cup", "Round 3", "Bigger Nehavior", "3 - 2", "Sled Dawgs", "Bigger Nehavior", ""],
+    ["World Cup", "Round 3", "Hoosier Daddy", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
+    ["World Cup", "Championship", "Reef Donkeys", "4 - 0", "Bigger Nehavior", "Reef Donkeys", ""],
+  ].map(([season, round, home, result, away, winner, note]) => ({
+    season,
+    round,
+    home: team(home),
+    result,
+    away: team(away),
+    winner: team(winner),
+    note,
+    source: "manual",
   }));
 
   const playoffs = [
@@ -673,5 +790,5 @@
   applyTeamRecordsToPlayers();
   players.forEach(finalizeCommon);
 
-  window.RL_MANUAL_HISTORY = { teams, players, teamInfo, playoffs, draft, schedules: [] };
+  window.RL_MANUAL_HISTORY = { teams, players, teamInfo, playoffs, draft, schedules };
 })();
