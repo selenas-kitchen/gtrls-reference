@@ -768,10 +768,32 @@
     ["S4 Playoffs", "Semi-Finals", "Sweaty Sweepers", "4 - 2", "Cucksirs"],
     ["S4 Playoffs", "Semi-Finals", "Tire Benders", "3 - 4", "Three Inch Fury"],
     ["S4 Playoffs", "Championship", "Sweaty Sweepers", "Champion", "Three Inch Fury"],
-    ["S5 Playoffs", "Playoffs", "BMM", "4 - 0", "Triple Scoop"],
-    ["S5 Playoffs", "Playoffs", "BMM", "4 - 1", "Pitch Pirates"],
-    ["S5 Playoffs", "Championship", "Weenie Hut Jrs", "Champion", "BMM"],
-  ].map(([season, round, teamA, result, teamB]) => ({ season, round, teamA: team(teamA), result, teamB: team(teamB), source: "manual" }));
+    ["S5 Playoffs", "Elimination", "Weenie Hut Jrs", "(9) 4 - 0 (4)", "The Hornets"],
+    ["S5 Playoffs", "Elimination", "Bird Bath Bombers", "(8) 0 - 4 (12)", "Milk Before Cereal"],
+    ["S5 Playoffs", "Elimination", "Big Musty Milkers", "(15) 4 - 0 (9)", "Triple Scoop"],
+    ["S5 Playoffs", "Elimination", "Pitch Pirates", "(14) 4 - 1 (10)", "D' n' the V's"],
+    ["S5 Playoffs", "Quarter-Finals", "Triple Scoop", "(17) 4 - 1 (5)", "Milk Before Cereal"],
+    ["S5 Playoffs", "Quarter-Finals", "The Hornets", "(11) 1 - 4 (17)", "Pitch Pirates"],
+    ["S5 Playoffs", "Semi-Finals", "Weenie Hut Jrs", "(17) 4 - 1 (9)", "Triple Scoop"],
+    ["S5 Playoffs", "Semi-Finals", "Big Musty Milkers", "(13) 4 - 1 (3)", "Pitch Pirates"],
+    ["S5 Playoffs", "Championship", "Weenie Hut Jrs", "4 - 2", "Big Musty Milkers", "", "4 - 2", "Ramen"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "4 - 0", "Big Musty Milkers", "1", "1 - 0", "Ramen"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "3 - 2", "Big Musty Milkers", "2", "2 - 0", "Ramen"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "3 - 1", "Big Musty Milkers", "3", "3 - 0", "Ramen"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "0 - 3", "Big Musty Milkers", "4", "3 - 1", "Aximov"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "1 - 7", "Big Musty Milkers", "5", "3 - 2", "Aximov"],
+    ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "1 - 0", "Big Musty Milkers", "6", "4 - 2", "Ramen"],
+  ].map(([season, round, teamA, result, teamB, game = "", series = "", mvp = ""]) => ({
+    season,
+    round,
+    game,
+    teamA: team(teamA),
+    result,
+    teamB: team(teamB),
+    series,
+    mvp: player(mvp),
+    source: "manual",
+  }));
 
   function applyTeamRecordsToPlayers() {
     const teamsBySeason = new Map(teams.map((row) => [`${row.season}|${row.name}`, row]));

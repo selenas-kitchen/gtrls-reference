@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=dark-20260621">
+  <link rel="stylesheet" href="styles.css?v=kitchen-header-20260622">
 </head>
 <body>
   <header class="topbar">
@@ -47,11 +47,13 @@
         <button type="button" data-view="lifetimePlayers">Lifetime Players</button>
         <button type="button" data-view="awards">Awards</button>
         <button type="button" data-view="kitchen">Selena's Kitchen</button>
+        <button type="button" data-view="teamInfo">Team Info</button>
       </div>
     </section>
 
     <section id="detailBar" class="detail-bar hidden" aria-label="Detail navigation">
       <button id="backButton" type="button">Back</button>
+      <img id="detailTeamLogo" class="detail-team-logo hidden" alt="">
       <div>
         <span id="detailEyebrow">Detail</span>
         <strong id="detailTitle">-</strong>
@@ -105,6 +107,7 @@
 
     <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
     <section id="kitchenPanel" class="kitchen-panel hidden" aria-label="Selena's Kitchen"></section>
+    <section id="teamInfoPanel" class="team-info-panel hidden" aria-label="Team information"></section>
 
     <section class="table-shell">
       <div class="table-head">
@@ -127,7 +130,7 @@
   </main>
 
   <script src="dashboard-data.js"></script>
-  <script src="manual-history.js"></script>
-  <script src="app.js"></script>
+  <script src="manual-history.js?v=s5-playoffs-20260622"></script>
+  <script src="app.js?v=kitchen-header-20260622"></script>
 </body>
 </html>
