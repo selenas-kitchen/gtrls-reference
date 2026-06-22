@@ -246,10 +246,22 @@ const state = {
   sortDir: "desc",
   includeScrims: false,
   excludeTwosEra: false,
+  seasonPhase: "regular",
+  analyticsMode: "selena",
   awardFilter: "All",
   kitchenSelectedPlayer: "",
   kitchenSortKey: "perPerGame",
   kitchenSortDir: "desc",
+  yourKitchenEntity: "players",
+  yourKitchenTeam: "All",
+  yourKitchenMember: "All",
+  yourKitchenChart: "scatter",
+  yourKitchenX: "rating",
+  yourKitchenY: "perPerGame",
+  yourKitchenVariables: [],
+  yourKitchenFormula: "",
+  yourKitchenVariableName: "",
+  yourKitchenError: "",
   page: { type: "dashboard" },
 };
 
@@ -381,6 +393,8 @@ const els = {
   includeScrims: document.querySelector("#includeScrims"),
   excludeTwosControl: document.querySelector("#excludeTwosControl"),
   excludeTwosEra: document.querySelector("#excludeTwosEra"),
+  seasonPhaseControl: document.querySelector("#seasonPhaseControl"),
+  analyticsModeControl: document.querySelector("#analyticsModeControl"),
   tabButtons: [...document.querySelectorAll("[data-view]")],
   teamLeaderGrid: document.querySelector("#teamLeaderGrid"),
   awardRaceGrid: document.querySelector("#awardRaceGrid"),
@@ -415,6 +429,7 @@ const els = {
   awardFilters: document.querySelector("#awardFilters"),
   kitchenPanel: document.querySelector("#kitchenPanel"),
   teamInfoPanel: document.querySelector("#teamInfoPanel"),
+  yourKitchenPanel: document.querySelector("#yourKitchenPanel"),
   playoffStats: document.querySelector("#playoffStats"),
 };
 
@@ -643,6 +658,34 @@ function isPlayoffSeason(season) {
   return String(season).endsWith("Playoffs");
 }
 
+function baseSeasonName(season = state.season) {
+  return isPlayoffSeason(season) ? String(season).replace(/\s+Playoffs$/, "") : season;
+}
+
+function playoffSeasonName(season) {
+  return `${baseSeasonName(season)} Playoffs`;
+}
+
+function hasPlayoffSeason(season) {
+  return data.seasons.includes(playoffSeasonName(season));
+}
+
+function lifetimeSeasonEligible() {
+  return ["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view);
+}
+
+function navViewForState() {
+  if (state.view === "lifetimeTeams") return "teams";
+  if (state.view === "lifetimePlayers") return "players";
+  if (state.view === "kitchen" || state.view === "yourKitchen") return "analytics";
+  return state.view;
+}
+
+function syncTabButtons() {
+  const navView = navViewForState();
+  els.tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === navView));
+}
+
 function excludedFromLifetime(rowOrSeason) {
   const season = typeof rowOrSeason === "string" ? rowOrSeason : rowOrSeason?.season;
   if (typeof rowOrSeason === "object" && rowOrSeason?.excludeFromLifetime) return true;
@@ -650,7 +693,7 @@ function excludedFromLifetime(rowOrSeason) {
 }
 
 function visibleSeasons() {
-  return data.seasons.filter((season) => state.includeScrims || !isScrimSeason(season));
+  return data.seasons.filter((season) => !isPlayoffSeason(season) && (state.includeScrims || !isScrimSeason(season)));
 }
 
 function seasonIncluded(row) {
@@ -1434,7 +1477,7 @@ function kitchenClass(value) {
 }
 
 function renderKitchen() {
-  const season = /^S\d+$/.test(state.season) ? state.season : latestRegularSeason();
+  const season = /^S\d+(?: Playoffs)?$/.test(state.season) ? state.season : latestRegularSeason();
   const players = kitchenActivePlayers(season);
   const teams = kitchenTeams(season);
   const topEfficiency = players[0];
@@ -1601,7 +1644,9 @@ const teamColorPalette = [
   "#32e8ff", "#ff73c5", "#263238", "#0094aa", "#d40a86", "#8aa3ad",
 ];
 
-function teamColor(name) {
+function teamColor(name, season = state.season) {
+  const officialColor = officialTeamColor(name, season);
+  if (officialColor) return officialColor;
   const key = aliasKey(name);
   if (!key) return "#1f7a8c";
   let hash = 0;
@@ -1612,7 +1657,7 @@ function teamColor(name) {
 function renderMiniLeaderGrid(target, items, actionType = null) {
   target.innerHTML = items.map((item) => {
     const action = actionType ? ` data-action="${encodeURIComponent(JSON.stringify(actionType(item)))}"` : "";
-    const color = item.teamColor || teamColor(item.team || item.name);
+    const color = item.teamColor || teamColor(item.team || item.name, item.season || state.season);
     const style = ` style="--team-color:${escapeHtml(color)}"`;
     return `
       <button type="button" class="mini-leader-card"${style}${action}>
@@ -1719,6 +1764,7 @@ function dashboardTitle() {
     awards: "Awards History",
     kitchen: "Selena's Kitchen",
     teamInfo: "Team Info",
+    yourKitchen: "Your Kitchen",
   })[state.view];
 }
 
@@ -1887,14 +1933,27 @@ function dashboardAction(row) {
 }
 
 function renderSeasonOptions() {
-  if (!state.includeScrims && isScrimSeason(state.season)) state.season = "All";
+  if (!state.includeScrims && isScrimSeason(state.season)) state.season = latestRegularSeason();
   if (state.season === "All") state.season = latestRegularSeason();
   const seasons = visibleSeasons();
-  if (!seasons.includes(state.season) && !isLifetimeView()) state.season = latestRegularSeason();
-  els.seasonSelect.innerHTML = seasons
+  let selected = isLifetimeView() ? "Lifetime" : baseSeasonName(state.season);
+  if (selected !== "Lifetime" && !seasons.includes(selected)) {
+    selected = latestRegularSeason();
+    state.season = selected;
+    state.seasonPhase = "regular";
+  }
+  const options = lifetimeSeasonEligible() ? [...seasons, "Lifetime"] : seasons;
+  els.seasonSelect.innerHTML = options
     .map((season) => `<option value="${season}">${season}</option>`)
     .join("");
-  els.seasonSelect.value = state.season;
+  els.seasonSelect.value = selected;
+  const playoffsAvailable = selected !== "Lifetime" && hasPlayoffSeason(selected);
+  if (selected !== "Lifetime") state.seasonPhase = isPlayoffSeason(state.season) ? "playoffs" : "regular";
+  els.seasonPhaseControl.classList.toggle("disabled", selected === "Lifetime" || !playoffsAvailable);
+  els.seasonPhaseControl.querySelectorAll("[data-season-phase]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.seasonPhase === state.seasonPhase);
+    button.disabled = selected === "Lifetime" || (button.dataset.seasonPhase === "playoffs" && !playoffsAvailable);
+  });
 }
 
 function renderKpis(rows) {
@@ -1902,8 +1961,8 @@ function renderKpis(rows) {
   const fallback = new Date(data.generatedAt);
   const lastUpdated = Number.isNaN(modified.getTime()) ? fallback : modified;
   els.generatedAt.textContent = `Last Update: ${lastUpdated.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`;
-  els.seasonSelect.disabled = isLifetimeView();
-  document.querySelector(".controls").classList.toggle("season-disabled", isLifetimeView());
+  els.seasonSelect.disabled = false;
+  document.querySelector(".controls").classList.remove("season-disabled");
   els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
   renderLeagueLeaderPanels(rows);
 }
@@ -1982,9 +2041,19 @@ function teamInfoFor(teamName, season) {
   return (data.manualHistory?.teamInfo || []).find((info) => info.team === teamName && info.season === season);
 }
 
-const teamPageThemeTrials = new Set(["S6|Hook Line & Blinker"]);
 const teamPageThemeAssets = {
-  "S6|Hook Line & Blinker": "assets/hook-line-blinker.png",
+  "S6|Best Friends Club": "assets/team-logos/s6/best-friends-club.png",
+  "S6|Hook Line & Blinker": "assets/team-logos/s6/hook-line-blinker.png",
+  "S6|Crossbar Cartel": "assets/team-logos/s6/crossbar-cartel.png",
+  "S6|Ball Chasin & Sauce Tastin": "assets/team-logos/s6/ball-chasin-sauce-tastin.png",
+  "S6|Spirit Airlines": "assets/team-logos/s6/spirit-airlines.png",
+  "S6|The Cox": "assets/team-logos/s6/the-cox.png",
+  "S6|Past Our Prime": "assets/team-logos/s6/past-our-prime.png",
+  "S6|Quack Wok": "assets/team-logos/s6/quack-wok.png",
+  "S6|Giga's In Paris": "assets/team-logos/s6/gigas-in-paris.png",
+  "S6|Deceptitards": "assets/team-logos/s6/deceptitards.png",
+  "S6|Supernova Abyss": "assets/team-logos/s6/supernova-abyss.png",
+  "S6|ESC": "assets/team-logos/s6/esc.png",
 };
 const rocketLeagueColorGrid = {
   A1: { hex: "#e7f0f4", name: "White" },
@@ -2015,6 +2084,52 @@ function rocketLeagueColor(value) {
   if (!code || !rocketLeagueColorGrid[code]) return null;
   const suppliedName = String(value || "").match(/\(([^)]+)\)/)?.[1]?.trim();
   return { code, ...rocketLeagueColorGrid[code], name: suppliedName || rocketLeagueColorGrid[code].name };
+}
+
+function hexRgb(hex) {
+  const value = String(hex || "").replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(value)) return null;
+  return [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16));
+}
+
+function mixHex(color, target, amount) {
+  const sourceRgb = hexRgb(color);
+  const targetRgb = hexRgb(target);
+  if (!sourceRgb || !targetRgb) return color;
+  const mixed = sourceRgb.map((channel, index) => Math.round(channel + ((targetRgb[index] - channel) * amount)));
+  return `#${mixed.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function colorLuminance(hex) {
+  const rgb = hexRgb(hex);
+  if (!rgb) return 1;
+  const linear = rgb.map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return (0.2126 * linear[0]) + (0.7152 * linear[1]) + (0.0722 * linear[2]);
+}
+
+function readableTeamAccent(hex) {
+  let accent = hex;
+  let amount = 0;
+  while (colorLuminance(accent) < 0.24 && amount < 0.72) {
+    amount += 0.08;
+    accent = mixHex(hex, "#ffffff", amount);
+  }
+  return accent;
+}
+
+function contrastText(hex) {
+  return colorLuminance(hex) > 0.18 ? "#080b12" : "#ffffff";
+}
+
+function officialTeamColor(teamName, season) {
+  const resolvedSeason = baseSeasonName(season || state.season);
+  if (resolvedSeason !== "S6") return null;
+  const info = teamInfoFor(teamName, resolvedSeason);
+  const primary = rocketLeagueColor(info?.primary);
+  return primary ? readableTeamAccent(primary.hex) : null;
 }
 
 function teamInfoRowsForSeason() {
@@ -2052,26 +2167,328 @@ function renderTeamInfoPage() {
   els.teamInfoPanel.classList.remove("hidden");
 }
 
+const yourKitchenExtraFields = new Map([
+  ["rating", "Rating"],
+  ["expectedPerPerGame", "Expected PER/G"],
+  ["perDelta", "PER/G-"],
+  ["goalsConceded", "Goals Allowed"],
+  ["shotsConceded", "Shots Allowed"],
+  ["opponentSavesForced", "Opponent Saves Forced"],
+  ["amountCollected", "Boost Collected"],
+  ["amountStolen", "Boost Stolen"],
+  ["demosInflicted", "Demos Inflicted"],
+  ["demosTaken", "Demos Taken"],
+]);
+
+function yourKitchenFieldLabels() {
+  const columns = state.yourKitchenEntity === "teams" ? teamColumns : playerColumns;
+  return new Map([...columns, ...yourKitchenExtraFields, ...state.yourKitchenVariables.map((variable) => [variable.key, variable.name])]);
+}
+
+function yourKitchenBaseRows() {
+  const source = state.yourKitchenEntity === "teams" ? data.teams : data.players;
+  return source
+    .filter((row) => row.season === state.season)
+    .map((row) => ({ ...row, teamsText: row.teams?.join(", ") || row.name }));
+}
+
+function tokenizeFormula(formula) {
+  const tokens = [];
+  let position = 0;
+  while (position < formula.length) {
+    const remainder = formula.slice(position);
+    const whitespace = remainder.match(/^\s+/);
+    if (whitespace) {
+      position += whitespace[0].length;
+      continue;
+    }
+    const number = remainder.match(/^(?:\d+\.?\d*|\.\d+)/);
+    if (number) {
+      tokens.push({ type: "number", value: Number(number[0]) });
+      position += number[0].length;
+      continue;
+    }
+    const identifier = remainder.match(/^[A-Za-z_][A-Za-z0-9_]*/);
+    if (identifier) {
+      tokens.push({ type: "identifier", value: identifier[0] });
+      position += identifier[0].length;
+      continue;
+    }
+    if ("+-*/()".includes(remainder[0])) {
+      tokens.push({ type: remainder[0], value: remainder[0] });
+      position += 1;
+      continue;
+    }
+    throw new Error(`Unexpected character: ${remainder[0]}`);
+  }
+  return tokens;
+}
+
+function compileYourKitchenFormula(formula, allowedFields) {
+  const tokens = tokenizeFormula(formula);
+  let cursor = 0;
+  const peek = () => tokens[cursor];
+  const take = () => tokens[cursor++];
+
+  function parseFactor() {
+    const token = take();
+    if (!token) throw new Error("Formula is incomplete");
+    if (token.type === "number") return { type: "number", value: token.value };
+    if (token.type === "identifier") {
+      if (!allowedFields.has(token.value)) throw new Error(`Unknown variable: ${token.value}`);
+      return { type: "identifier", value: token.value };
+    }
+    if (token.type === "+" || token.type === "-") return { type: "unary", operator: token.type, value: parseFactor() };
+    if (token.type === "(") {
+      const value = parseExpression();
+      if (take()?.type !== ")") throw new Error("Missing closing parenthesis");
+      return value;
+    }
+    throw new Error(`Unexpected token: ${token.value}`);
+  }
+
+  function parseTerm() {
+    let node = parseFactor();
+    while (peek()?.type === "*" || peek()?.type === "/") {
+      const operator = take().type;
+      node = { type: "binary", operator, left: node, right: parseFactor() };
+    }
+    return node;
+  }
+
+  function parseExpression() {
+    let node = parseTerm();
+    while (peek()?.type === "+" || peek()?.type === "-") {
+      const operator = take().type;
+      node = { type: "binary", operator, left: node, right: parseTerm() };
+    }
+    return node;
+  }
+
+  const ast = parseExpression();
+  if (cursor !== tokens.length) throw new Error(`Unexpected token: ${peek().value}`);
+  return ast;
+}
+
+function evaluateYourKitchenFormula(node, row) {
+  if (node.type === "number") return node.value;
+  if (node.type === "identifier") {
+    if (isUnavailableValue(row, node.value)) return null;
+    const value = Number(row[node.value]);
+    return Number.isFinite(value) ? value : null;
+  }
+  if (node.type === "unary") {
+    const value = evaluateYourKitchenFormula(node.value, row);
+    return value === null ? null : (node.operator === "-" ? -value : value);
+  }
+  const left = evaluateYourKitchenFormula(node.left, row);
+  const right = evaluateYourKitchenFormula(node.right, row);
+  if (left === null || right === null) return null;
+  if (node.operator === "+") return left + right;
+  if (node.operator === "-") return left - right;
+  if (node.operator === "*") return left * right;
+  if (node.operator === "/") return right === 0 ? null : left / right;
+  return null;
+}
+
+function yourKitchenDerivedRows() {
+  return yourKitchenBaseRows().map((row) => {
+    const derived = { ...row };
+    state.yourKitchenVariables.forEach((variable) => {
+      derived[variable.key] = evaluateYourKitchenFormula(variable.ast, derived);
+    });
+    return derived;
+  });
+}
+
+function yourKitchenTeams(rows) {
+  const values = state.yourKitchenEntity === "teams"
+    ? rows.map((row) => row.name)
+    : rows.flatMap((row) => row.teams || []);
+  return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+}
+
+function yourKitchenFilteredRows(rows) {
+  return rows.filter((row) => {
+    const teamMatch = state.yourKitchenTeam === "All" || (state.yourKitchenEntity === "teams" ? row.name === state.yourKitchenTeam : row.teams?.includes(state.yourKitchenTeam));
+    const memberMatch = state.yourKitchenMember === "All" || row.name === state.yourKitchenMember;
+    return teamMatch && memberMatch;
+  });
+}
+
+function yourKitchenNumericFields(rows) {
+  const labels = yourKitchenFieldLabels();
+  return [...labels.entries()].filter(([key]) => rows.some((row) => !isUnavailableValue(row, key) && Number.isFinite(Number(row[key]))));
+}
+
+function yourKitchenSlug(name) {
+  return String(name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function yourKitchenChartRows(rows) {
+  return rows.filter((row) => Number.isFinite(Number(row[state.yourKitchenX])) && Number.isFinite(Number(row[state.yourKitchenY])));
+}
+
+function yourKitchenDomain(values) {
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) {
+    const spread = Math.max(1, Math.abs(min) * 0.1);
+    min -= spread;
+    max += spread;
+  }
+  const padding = (max - min) * 0.08;
+  return [min - padding, max + padding];
+}
+
+function yourKitchenScatter(rows, labels) {
+  const plotted = yourKitchenChartRows(rows);
+  if (!plotted.length) return `<div class="your-kitchen-empty">No plottable values.</div>`;
+  const chart = { left: 72, top: 28, width: 790, height: 350 };
+  const [xMin, xMax] = yourKitchenDomain(plotted.map((row) => Number(row[state.yourKitchenX])));
+  const [yMin, yMax] = yourKitchenDomain(plotted.map((row) => Number(row[state.yourKitchenY])));
+  const x = (value) => chart.left + ((value - xMin) / (xMax - xMin)) * chart.width;
+  const y = (value) => chart.top + chart.height - ((value - yMin) / (yMax - yMin)) * chart.height;
+  const xTicks = [xMin, (xMin + xMax) / 2, xMax];
+  const yTicks = [yMin, (yMin + yMax) / 2, yMax];
+  return `<div class="your-chart-wrap"><svg class="your-chart" viewBox="0 0 920 430" role="img" aria-label="${escapeHtml(labels.get(state.yourKitchenY))} versus ${escapeHtml(labels.get(state.yourKitchenX))}">
+    <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
+    <line class="axis" x1="${chart.left}" y1="${chart.top + chart.height}" x2="${chart.left + chart.width}" y2="${chart.top + chart.height}"></line>
+    ${xTicks.map((tick) => `<g class="tick"><line x1="${x(tick)}" y1="${chart.top}" x2="${x(tick)}" y2="${chart.top + chart.height}"></line><text x="${x(tick)}" y="${chart.top + chart.height + 25}">${fmtGameAvg(tick)}</text></g>`).join("")}
+    ${yTicks.map((tick) => `<g class="tick"><line x1="${chart.left}" y1="${y(tick)}" x2="${chart.left + chart.width}" y2="${y(tick)}"></line><text x="${chart.left - 12}" y="${y(tick)}">${fmtGameAvg(tick)}</text></g>`).join("")}
+    ${plotted.map((row) => `<circle class="your-chart-dot" cx="${x(Number(row[state.yourKitchenX]))}" cy="${y(Number(row[state.yourKitchenY]))}" r="7" style="--point-color:${escapeHtml(teamColor(row.teams?.[0] || row.name))}"><title>${escapeHtml(displayName(row.name, state.yourKitchenEntity === "teams" ? "team" : "name"))} | ${escapeHtml(labels.get(state.yourKitchenX))}: ${fmtGameAvg(row[state.yourKitchenX])} | ${escapeHtml(labels.get(state.yourKitchenY))}: ${fmtGameAvg(row[state.yourKitchenY])}</title></circle>`).join("")}
+    <text class="axis-label x-label" x="${chart.left + chart.width / 2}" y="424">${escapeHtml(labels.get(state.yourKitchenX))}</text>
+    <text class="axis-label y-label" transform="translate(18 ${chart.top + chart.height / 2}) rotate(-90)">${escapeHtml(labels.get(state.yourKitchenY))}</text>
+  </svg></div>`;
+}
+
+function yourKitchenBars(rows, labels) {
+  const plotted = yourKitchenChartRows(rows).sort((a, b) => Number(a[state.yourKitchenX]) - Number(b[state.yourKitchenX]));
+  if (!plotted.length) return `<div class="your-kitchen-empty">No plottable values.</div>`;
+  const width = Math.max(920, 100 + plotted.length * 54);
+  const chart = { left: 62, top: 28, width: width - 100, height: 330 };
+  const values = plotted.map((row) => Number(row[state.yourKitchenY]));
+  const min = Math.min(0, ...values);
+  const max = Math.max(0, ...values);
+  const span = Math.max(1, max - min);
+  const y = (value) => chart.top + chart.height - ((value - min) / span) * chart.height;
+  const baseline = y(0);
+  const slot = chart.width / plotted.length;
+  return `<div class="your-chart-wrap"><svg class="your-chart your-bar-chart" viewBox="0 0 ${width} 430" style="min-width:${width}px" role="img" aria-label="${escapeHtml(labels.get(state.yourKitchenY))} bar chart">
+    <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
+    <line class="axis" x1="${chart.left}" y1="${baseline}" x2="${chart.left + chart.width}" y2="${baseline}"></line>
+    ${plotted.map((row, index) => {
+      const value = Number(row[state.yourKitchenY]);
+      const barY = Math.min(y(value), baseline);
+      const height = Math.max(1, Math.abs(baseline - y(value)));
+      const barX = chart.left + index * slot + slot * 0.16;
+      const label = displayName(row.name, state.yourKitchenEntity === "teams" ? "team" : "name");
+      return `<g><rect class="your-chart-bar" x="${barX}" y="${barY}" width="${slot * 0.68}" height="${height}" style="--point-color:${escapeHtml(teamColor(row.teams?.[0] || row.name))}"><title>${escapeHtml(label)} | ${escapeHtml(labels.get(state.yourKitchenY))}: ${fmtGameAvg(value)} | Ordered by ${escapeHtml(labels.get(state.yourKitchenX))}: ${fmtGameAvg(row[state.yourKitchenX])}</title></rect><text class="bar-label" transform="translate(${barX + slot * 0.34} 374) rotate(-45)">${escapeHtml(label)}</text></g>`;
+    }).join("")}
+    <text class="axis-label y-label" transform="translate(18 ${chart.top + chart.height / 2}) rotate(-90)">${escapeHtml(labels.get(state.yourKitchenY))}</text>
+  </svg></div>`;
+}
+
+function renderYourKitchen() {
+  const derivedRows = yourKitchenDerivedRows();
+  const teams = yourKitchenTeams(derivedRows);
+  if (state.yourKitchenTeam !== "All" && !teams.includes(state.yourKitchenTeam)) state.yourKitchenTeam = "All";
+  const teamFilteredRows = derivedRows.filter((row) => state.yourKitchenTeam === "All" || (state.yourKitchenEntity === "teams" ? row.name === state.yourKitchenTeam : row.teams?.includes(state.yourKitchenTeam)));
+  const members = [...new Set(teamFilteredRows.map((row) => row.name))].sort((a, b) => a.localeCompare(b));
+  if (state.yourKitchenMember !== "All" && !members.includes(state.yourKitchenMember)) state.yourKitchenMember = "All";
+  const filteredRows = teamFilteredRows.filter((row) => state.yourKitchenMember === "All" || row.name === state.yourKitchenMember);
+  const fields = yourKitchenNumericFields(derivedRows);
+  const fieldKeys = fields.map(([key]) => key);
+  const preferredX = state.yourKitchenEntity === "players" ? ["rating", "games", "goals"] : ["avgScore", "games", "goals"];
+  const preferredY = ["perPerGame", "goalsPerGame", "avgScore", "goals"];
+  if (!fieldKeys.includes(state.yourKitchenX)) state.yourKitchenX = preferredX.find((key) => fieldKeys.includes(key)) || fieldKeys[0] || "";
+  if (!fieldKeys.includes(state.yourKitchenY)) state.yourKitchenY = preferredY.find((key) => fieldKeys.includes(key) && key !== state.yourKitchenX) || fieldKeys.find((key) => key !== state.yourKitchenX) || state.yourKitchenX;
+  const labels = yourKitchenFieldLabels();
+  const chart = state.yourKitchenChart === "bar" ? yourKitchenBars(filteredRows, labels) : yourKitchenScatter(filteredRows, labels);
+  const plotted = yourKitchenChartRows(filteredRows);
+  els.yourKitchenPanel.innerHTML = `
+    <div class="your-kitchen-heading"><div><span>Analysis workbench</span><h2>Your Kitchen</h2></div><strong>${escapeHtml(state.season)}</strong></div>
+    <div class="your-kitchen-controls">
+      <label><span>Entity</span><select id="yourKitchenEntity"><option value="players"${state.yourKitchenEntity === "players" ? " selected" : ""}>Players</option><option value="teams"${state.yourKitchenEntity === "teams" ? " selected" : ""}>Teams</option></select></label>
+      <label><span>Team</span><select id="yourKitchenTeam"><option value="All">All teams</option>${teams.map((team) => `<option value="${escapeHtml(team)}"${state.yourKitchenTeam === team ? " selected" : ""}>${escapeHtml(displayName(team, "team"))}</option>`).join("")}</select></label>
+      <label class="${state.yourKitchenEntity === "teams" ? "hidden" : ""}"><span>Player</span><select id="yourKitchenMember"><option value="All">All players</option>${members.map((name) => `<option value="${escapeHtml(name)}"${state.yourKitchenMember === name ? " selected" : ""}>${escapeHtml(displayName(name, "name"))}</option>`).join("")}</select></label>
+      <div class="your-chart-mode" role="group" aria-label="Chart type"><button type="button" data-your-chart="scatter" class="${state.yourKitchenChart === "scatter" ? "active" : ""}">Scatter</button><button type="button" data-your-chart="bar" class="${state.yourKitchenChart === "bar" ? "active" : ""}">Bar</button></div>
+    </div>
+    <form id="yourVariableForm" class="your-variable-builder">
+      <label><span>Variable Name</span><input id="yourVariableName" value="${escapeHtml(state.yourKitchenVariableName)}" placeholder="Impact Score"></label>
+      <label class="your-formula-field"><span>Formula</span><input id="yourVariableFormula" value="${escapeHtml(state.yourKitchenFormula)}" placeholder="(goals + assists) / games"></label>
+      <label><span>Insert Stat</span><select id="yourFormulaStat"><option value="">Choose stat</option>${fields.map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)} (${escapeHtml(key)})</option>`).join("")}</select></label>
+      <div class="your-formula-operators" aria-label="Formula operators">${["+", "-", "*", "/", "(", ")"].map((operator) => `<button type="button" data-formula-token="${operator}" title="Insert ${operator}">${operator}</button>`).join("")}</div>
+      <button type="button" class="your-create-variable" data-create-variable>Create Variable</button>
+    </form>
+    ${state.yourKitchenError ? `<div class="your-kitchen-error" role="alert">${escapeHtml(state.yourKitchenError)}</div>` : ""}
+    <div class="your-variable-list"><span>Session Variables</span>${state.yourKitchenVariables.length ? state.yourKitchenVariables.map((variable) => `<div><strong>${escapeHtml(variable.name)}</strong><code>${escapeHtml(variable.formula)}</code><button type="button" data-delete-variable="${escapeHtml(variable.key)}" title="Delete ${escapeHtml(variable.name)}">&times;</button></div>`).join("") : `<em>None</em>`}</div>
+    <div class="your-axis-controls">
+      <label><span>${state.yourKitchenChart === "bar" ? "Bar Order" : "X Axis"}</span><select id="yourKitchenX">${fields.map(([key, label]) => `<option value="${escapeHtml(key)}"${state.yourKitchenX === key ? " selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>
+      <label><span>Y Axis</span><select id="yourKitchenY">${fields.map(([key, label]) => `<option value="${escapeHtml(key)}"${state.yourKitchenY === key ? " selected" : ""}>${escapeHtml(label)}</option>`).join("")}</select></label>
+      <strong>${plotted.length} plotted</strong>
+    </div>
+    <section class="your-kitchen-chart-panel"><h3>${escapeHtml(labels.get(state.yourKitchenY) || "Y")} ${state.yourKitchenChart === "scatter" ? `vs ${escapeHtml(labels.get(state.yourKitchenX) || "X")}` : `by ${state.yourKitchenEntity === "players" ? "Player" : "Team"}`}</h3>${chart}</section>
+    <div class="your-kitchen-table-wrap"><table class="your-kitchen-table"><thead><tr><th>${state.yourKitchenEntity === "players" ? "Player" : "Team"}</th><th>${escapeHtml(labels.get(state.yourKitchenX) || "X")}</th><th>${escapeHtml(labels.get(state.yourKitchenY) || "Y")}</th></tr></thead><tbody>${plotted.map((row) => `<tr><td>${escapeHtml(displayName(row.name, state.yourKitchenEntity === "teams" ? "team" : "name"))}</td><td>${fmtGameAvg(row[state.yourKitchenX])}</td><td>${fmtGameAvg(row[state.yourKitchenY])}</td></tr>`).join("")}</tbody></table></div>
+  `;
+  els.yourKitchenPanel.classList.remove("hidden");
+}
+
+function createYourKitchenVariable() {
+  state.yourKitchenVariableName = els.yourKitchenPanel.querySelector("#yourVariableName").value.trim();
+  state.yourKitchenFormula = els.yourKitchenPanel.querySelector("#yourVariableFormula").value.trim();
+  try {
+    if (!state.yourKitchenVariableName) throw new Error("Variable name is required");
+    if (!state.yourKitchenFormula) throw new Error("Formula is required");
+    const slug = yourKitchenSlug(state.yourKitchenVariableName);
+    if (!slug) throw new Error("Variable name needs a letter or number");
+    const key = `custom_${slug}`;
+    const fields = yourKitchenNumericFields(yourKitchenDerivedRows());
+    const allowedFields = new Set(fields.map(([fieldKey]) => fieldKey));
+    if (allowedFields.has(key) || state.yourKitchenVariables.some((variable) => variable.key === key)) throw new Error("Variable name is already in use");
+    const ast = compileYourKitchenFormula(state.yourKitchenFormula, allowedFields);
+    state.yourKitchenVariables.push({ key, name: state.yourKitchenVariableName, formula: state.yourKitchenFormula, ast });
+    state.yourKitchenY = key;
+    state.yourKitchenVariableName = "";
+    state.yourKitchenFormula = "";
+    state.yourKitchenError = "";
+  } catch (error) {
+    state.yourKitchenError = error.message || "Formula could not be created";
+  }
+  render();
+}
+
 function activeTeamPageTheme() {
   if (state.page.type !== "team") return null;
   const key = `${state.page.season}|${state.page.team}`;
-  if (!teamPageThemeTrials.has(key)) return null;
+  if (!teamPageThemeAssets[key]) return null;
   const info = teamInfoFor(state.page.team, state.page.season);
   const primary = rocketLeagueColor(info?.primary);
   const secondary = rocketLeagueColor(info?.secondary);
-  return primary && secondary ? { primary, secondary, logo: teamPageThemeAssets[key] || "" } : null;
+  return primary && secondary ? {
+    primary,
+    secondary,
+    primaryReadable: readableTeamAccent(primary.hex),
+    secondaryReadable: readableTeamAccent(secondary.hex),
+    secondaryText: contrastText(readableTeamAccent(secondary.hex)),
+    logo: teamPageThemeAssets[key],
+  } : null;
 }
 
 function applyTeamPageTheme() {
   const theme = activeTeamPageTheme();
   document.body.classList.toggle("team-page-themed", !!theme);
-  ["--team-primary", "--team-secondary"].forEach((property) => document.body.style.removeProperty(property));
+  ["--team-primary", "--team-secondary", "--team-primary-readable", "--team-secondary-readable", "--team-secondary-text"]
+    .forEach((property) => document.body.style.removeProperty(property));
   els.detailTeamLogo.classList.toggle("hidden", !theme?.logo);
   els.detailTeamLogo.src = theme?.logo || "";
   els.detailTeamLogo.alt = theme?.logo ? `${state.page.team} logo` : "";
   if (!theme) return;
   document.body.style.setProperty("--team-primary", theme.primary.hex);
   document.body.style.setProperty("--team-secondary", theme.secondary.hex);
+  document.body.style.setProperty("--team-primary-readable", theme.primaryReadable);
+  document.body.style.setProperty("--team-secondary-readable", theme.secondaryReadable);
+  document.body.style.setProperty("--team-secondary-text", theme.secondaryText);
 }
 
 function draftRowsForPlayer(player) {
@@ -2435,6 +2852,10 @@ function renderTableLegend(rows, columns = []) {
 
 function render() {
   const inDetail = state.page.type !== "dashboard";
+  if (state.view === "kitchen") state.analyticsMode = "selena";
+  if (state.view === "yourKitchen") state.analyticsMode = "your";
+  renderSeasonOptions();
+  syncTabButtons();
   applyTeamPageTheme();
   els.detailBar.classList.toggle("hidden", !inDetail);
   els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
@@ -2446,6 +2867,11 @@ function render() {
   els.kitchenPanel.innerHTML = "";
   els.teamInfoPanel.classList.add("hidden");
   els.teamInfoPanel.innerHTML = "";
+  els.yourKitchenPanel.classList.add("hidden");
+  els.yourKitchenPanel.innerHTML = "";
+  const showAnalyticsToggle = !inDetail && (state.view === "kitchen" || state.view === "yourKitchen");
+  els.analyticsModeControl.classList.toggle("hidden", !showAnalyticsToggle);
+  els.analyticsModeControl.querySelectorAll("[data-analytics-mode]").forEach((button) => button.classList.toggle("active", button.dataset.analyticsMode === state.analyticsMode));
   els.awardFilters.classList.add("hidden");
   els.awardFilters.innerHTML = "";
   renderSearchSuggestions();
@@ -2492,6 +2918,15 @@ function render() {
     return;
   }
 
+  if (state.view === "yourKitchen") {
+    renderKpis([]);
+    els.tableShell.classList.add("hidden");
+    els.playoffStats.classList.add("hidden");
+    els.playoffStats.innerHTML = "";
+    renderYourKitchen();
+    return;
+  }
+
   if (isPlayoffSeason(state.season) && playoffBracketRows(state.season).length) {
     const bracketRows = playoffBracketRows(state.season);
     const bracketColumns = bracketRows.some((row) => row.game || row.series || row.mvp) ? detailedPlayoffColumns : playoffColumns;
@@ -2515,17 +2950,34 @@ function render() {
 }
 
 els.seasonSelect.addEventListener("change", (event) => {
-  state.season = event.target.value;
-  if (state.view === "kitchen" && !/^S\d+$/.test(state.season)) {
-    state.season = latestRegularSeason();
-    event.target.value = state.season;
+  const selected = event.target.value;
+  state.page = { type: "dashboard" };
+  if (selected === "Lifetime") {
+    if (navViewForState() === "teams") state.view = "lifetimeTeams";
+    else if (navViewForState() === "players") state.view = "lifetimePlayers";
+    state.season = "Lifetime";
+    state.seasonPhase = "regular";
+    render();
+    return;
   }
+  if (state.view === "lifetimeTeams") state.view = "teams";
+  if (state.view === "lifetimePlayers") state.view = "players";
+  state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(selected) ? playoffSeasonName(selected) : selected;
   if (state.season === "World Cup" && (state.view === "teams" || state.view === "players")) {
     state.view = "standings";
     state.sortKey = "standingsRank";
     state.sortDir = "asc";
-    els.tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
   }
+  render();
+});
+
+els.seasonPhaseControl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-season-phase]");
+  if (!button || button.disabled || els.seasonSelect.value === "Lifetime") return;
+  state.seasonPhase = button.dataset.seasonPhase;
+  state.page = { type: "dashboard" };
+  const base = els.seasonSelect.value;
+  state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(base) ? playoffSeasonName(base) : base;
   render();
 });
 
@@ -2548,17 +3000,33 @@ els.excludeTwosEra.addEventListener("change", (event) => {
 els.tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.page = { type: "dashboard" };
-    state.view = button.dataset.view;
-    if (state.view === "kitchen" && !/^S\d+$/.test(state.season)) {
+    const requestedView = button.dataset.view;
+    if (requestedView === "teams") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimeTeams" : "teams";
+    else if (requestedView === "players") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimePlayers" : "players";
+    else if (requestedView === "analytics") state.view = state.analyticsMode === "your" ? "yourKitchen" : "kitchen";
+    else state.view = requestedView;
+    if (!["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view) && isLifetimeView()) {
       state.season = latestRegularSeason();
-      els.seasonSelect.value = state.season;
+      state.seasonPhase = "regular";
     }
-    state.sortKey = state.view === "awards" || state.view === "kitchen" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
+    if (state.season === "Lifetime" && !isLifetimeView()) {
+      state.season = latestRegularSeason();
+      state.seasonPhase = "regular";
+    }
+    state.sortKey = state.view === "awards" || state.view === "kitchen" || state.view === "yourKitchen" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
     state.sortDir = "desc";
     if (state.view === "standings") state.sortDir = "asc";
-    els.tabButtons.forEach((btn) => btn.classList.toggle("active", btn === button));
     render();
   });
+});
+
+els.analyticsModeControl.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-analytics-mode]");
+  if (!button) return;
+  state.analyticsMode = button.dataset.analyticsMode;
+  state.view = state.analyticsMode === "your" ? "yourKitchen" : "kitchen";
+  state.page = { type: "dashboard" };
+  render();
 });
 
 els.backButton.addEventListener("click", () => {
@@ -2653,6 +3121,76 @@ els.teamInfoPanel.addEventListener("click", (event) => {
   state.sortKey = "goals";
   state.sortDir = "desc";
   render();
+});
+
+els.yourKitchenPanel.addEventListener("input", (event) => {
+  if (event.target.id === "yourVariableName") state.yourKitchenVariableName = event.target.value;
+  if (event.target.id === "yourVariableFormula") state.yourKitchenFormula = event.target.value;
+});
+
+els.yourKitchenPanel.addEventListener("change", (event) => {
+  if (event.target.id === "yourKitchenEntity") {
+    state.yourKitchenEntity = event.target.value;
+    state.yourKitchenTeam = "All";
+    state.yourKitchenMember = "All";
+    state.yourKitchenX = "";
+    state.yourKitchenY = "";
+    render();
+  } else if (event.target.id === "yourKitchenTeam") {
+    state.yourKitchenTeam = event.target.value;
+    state.yourKitchenMember = "All";
+    render();
+  } else if (event.target.id === "yourKitchenMember") {
+    state.yourKitchenMember = event.target.value;
+    render();
+  } else if (event.target.id === "yourKitchenX") {
+    state.yourKitchenX = event.target.value;
+    render();
+  } else if (event.target.id === "yourKitchenY") {
+    state.yourKitchenY = event.target.value;
+    render();
+  } else if (event.target.id === "yourFormulaStat" && event.target.value) {
+    const input = els.yourKitchenPanel.querySelector("#yourVariableFormula");
+    state.yourKitchenFormula = `${state.yourKitchenFormula}${state.yourKitchenFormula.trim() ? " " : ""}${event.target.value}`;
+    input.value = state.yourKitchenFormula;
+    input.focus();
+    event.target.value = "";
+  }
+});
+
+els.yourKitchenPanel.addEventListener("click", (event) => {
+  if (event.target.closest("[data-create-variable]")) {
+    createYourKitchenVariable();
+    return;
+  }
+  const chartButton = event.target.closest("[data-your-chart]");
+  if (chartButton) {
+    state.yourKitchenChart = chartButton.dataset.yourChart;
+    render();
+    return;
+  }
+  const tokenButton = event.target.closest("[data-formula-token]");
+  if (tokenButton) {
+    const token = tokenButton.dataset.formulaToken;
+    const input = els.yourKitchenPanel.querySelector("#yourVariableFormula");
+    const spacer = state.yourKitchenFormula && !state.yourKitchenFormula.endsWith(" ") && token !== ")" ? " " : "";
+    state.yourKitchenFormula = `${state.yourKitchenFormula}${spacer}${token}${token === "(" ? "" : " "}`;
+    input.value = state.yourKitchenFormula;
+    input.focus();
+    return;
+  }
+  const deleteButton = event.target.closest("[data-delete-variable]");
+  if (deleteButton) {
+    state.yourKitchenVariables = state.yourKitchenVariables.filter((variable) => variable.key !== deleteButton.dataset.deleteVariable);
+    state.yourKitchenError = "";
+    render();
+  }
+});
+
+els.yourKitchenPanel.addEventListener("submit", (event) => {
+  if (event.target.id !== "yourVariableForm") return;
+  event.preventDefault();
+  createYourKitchenVariable();
 });
 
 els.kitchenPanel.addEventListener("click", (event) => {

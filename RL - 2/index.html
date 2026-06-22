@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=kitchen-header-20260622">
+  <link rel="stylesheet" href="styles.css?v=s6-team-themes-20260622">
 </head>
 <body>
   <header class="topbar">
@@ -35,6 +35,10 @@
         <input id="includeScrims" type="checkbox">
         <span>Include scrims</span>
       </label>
+      <div id="seasonPhaseControl" class="phase-control" role="group" aria-label="Season phase">
+        <button type="button" data-season-phase="regular" class="active">Regular Season</button>
+        <button type="button" data-season-phase="playoffs">Playoffs</button>
+      </div>
       <label id="excludeTwosControl" class="check-control hidden">
         <input id="excludeTwosEra" type="checkbox">
         <span>Exclude 2's Era</span>
@@ -43,11 +47,9 @@
         <button class="active" type="button" data-view="teams">Teams</button>
         <button type="button" data-view="players">Players</button>
         <button type="button" data-view="standings">Standings</button>
-        <button type="button" data-view="lifetimeTeams">Lifetime Teams</button>
-        <button type="button" data-view="lifetimePlayers">Lifetime Players</button>
-        <button type="button" data-view="awards">Awards</button>
-        <button type="button" data-view="kitchen">Selena's Kitchen</button>
         <button type="button" data-view="teamInfo">Team Info</button>
+        <button type="button" data-view="awards">Awards</button>
+        <button type="button" data-view="analytics">Analytics</button>
       </div>
     </section>
 
@@ -106,8 +108,13 @@
     </section>
 
     <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
+    <section id="analyticsModeControl" class="analytics-mode-control hidden" aria-label="Analytics view">
+      <button type="button" data-analytics-mode="selena" class="active">Selena's Kitchen</button>
+      <button type="button" data-analytics-mode="your">Your Kitchen</button>
+    </section>
     <section id="kitchenPanel" class="kitchen-panel hidden" aria-label="Selena's Kitchen"></section>
     <section id="teamInfoPanel" class="team-info-panel hidden" aria-label="Team information"></section>
+    <section id="yourKitchenPanel" class="your-kitchen-panel hidden" aria-label="Your Kitchen"></section>
 
     <section class="table-shell">
       <div class="table-head">
@@ -131,6 +138,6 @@
 
   <script src="dashboard-data.js"></script>
   <script src="manual-history.js?v=s5-playoffs-20260622"></script>
-  <script src="app.js?v=kitchen-header-20260622"></script>
+  <script src="app.js?v=s6-team-themes-20260622"></script>
 </body>
 </html>
