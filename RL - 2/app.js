@@ -249,6 +249,7 @@ const state = {
   seasonPhase: "regular",
   analyticsMode: "selena",
   awardFilter: "All",
+  awardSeasonFilter: "All",
   kitchenSelectedPlayer: "",
   kitchenSortKey: "perPerGame",
   kitchenSortDir: "desc",
@@ -279,7 +280,7 @@ const teamColumns = [
   ["gameLosses", "Game L"],
   ["gameWinPct", "Game Win %"],
   ["goals", "Goals"],
-  ["goalsPerGame", "G/G"],
+  ["goalsPerGame", "Gl/G"],
   ["assists", "Ast"],
   ["assistsPerGame", "A/G"],
   ["saves", "Saves"],
@@ -315,7 +316,7 @@ const playerColumns = [
   ["gameLosses", "Game L"],
   ["gameWinPct", "Game Win %"],
   ["goals", "Goals"],
-  ["goalsPerGame", "G/G"],
+  ["goalsPerGame", "Gl/G"],
   ["assists", "Ast"],
   ["assistsPerGame", "A/G"],
   ["saves", "Saves"],
@@ -469,19 +470,60 @@ const awardDefinitions = [
   { award: "Finals MVP", season: "S5", stat: "score", avgStat: "avgScore", totalLabel: "Winner", avgLabel: "", winners: ["Ramen"], team: "Weenie Hut Jrs", amount: "Finals MVP", perGameAmount: "" },
   { award: "World Cup Champions", season: "2026", stat: "score", avgStat: "avgScore", totalLabel: "Champion", avgLabel: "", winners: ["Ax1mov", "selena.", "Bubbles3913", "KWNSquid"], team: "World Cup 2026", amount: "Champion", perGameAmount: "" },
 ];
-const s5Awards = awardDefinitions.flatMap((definition) => definition.winners.map((player) => ({
-  award: definition.award,
-  player,
-  team: definition.team,
-  season: definition.season,
-  amount: definition.amount,
-  perGameAmount: definition.perGameAmount,
-}))).filter((award) => data.players.some((row) => row.name === award.player));
+
+const nonRaceAwardNames = new Set(["Finals MVP", "World Cup Champions", "Season Champion"]);
+
+function seasonChampionDefinitions() {
+  const seen = new Set();
+  return (data.manualHistory?.playoffs || [])
+    .filter((row) => isChampionshipRound(row) && row.round !== "Championship Game")
+    .flatMap((row) => {
+      const winnerKey = playoffWinnerKey(row);
+      const championTeam = winnerKey ? row[winnerKey] : "";
+      const season = baseSeasonName(row.season).replace(/\s+Playoffs$/i, "");
+      if (!championTeam || !/^S\d+$/.test(season)) return [];
+      const key = `${season}|${championTeam}`;
+      if (seen.has(key)) return [];
+      seen.add(key);
+      const winners = data.players
+        .filter((player) => player.season === season && (player.teams || []).includes(championTeam))
+        .map((player) => player.name)
+        .sort((a, b) => a.localeCompare(b));
+      if (!winners.length) return [];
+      return [{
+        award: "Season Champion",
+        season,
+        stat: "score",
+        avgStat: "avgScore",
+        totalLabel: "Champion",
+        avgLabel: "",
+        winners,
+        team: championTeam,
+        amount: "Champion",
+        perGameAmount: "",
+      }];
+    });
+}
+
+function allAwardDefinitions() {
+  return [...awardDefinitions, ...seasonChampionDefinitions()];
+}
+
+function playerAwardRows() {
+  return allAwardDefinitions().flatMap((definition) => definition.winners.map((player) => ({
+    award: definition.award,
+    player,
+    team: definition.team,
+    season: definition.season,
+    amount: definition.amount,
+    perGameAmount: definition.perGameAmount,
+  }))).filter((award) => data.players.some((row) => row.name === award.player));
+}
 const teamLeagueStats = [
   ["score", "Total Score"],
   ["avgScore", "Score/G"],
   ["perPerGame", "PER/G"],
-  ["goalsPerGame", "Goals/G"],
+  ["goalsPerGame", "Gl/G"],
   ["goalsConcededPerGame", "Allowed/G", "", "asc"],
   ["assistsPerGame", "Assists/G"],
   ["goalDiff", "Goal Diff"],
@@ -540,7 +582,7 @@ const rosterColumns = [
   ["teamsText", "Team(s)"],
   ["games", "GP"],
   ["goals", "Goals"],
-  ["goalsPerGame", "G/G"],
+  ["goalsPerGame", "Gl/G"],
   ["assistsPerGame", "A/G"],
   ["savesPerGame", "Sv/G"],
   ["shotsPerGame", "Sh/G"],
@@ -567,7 +609,7 @@ const playerSeasonColumns = [
   ["assists", "Assists"],
   ["saves", "Saves"],
   ["shots", "Shots"],
-  ["goalsPerGame", "G/G"],
+  ["goalsPerGame", "Gl/G"],
   ["assistsPerGame", "A/G"],
   ["savesPerGame", "Sv/G"],
   ["shotsPerGame", "Sh/G"],
@@ -1629,13 +1671,13 @@ function latestRegularSeason() {
 }
 
 function awardRaceDefinitionsForSeason(season) {
-  const explicit = awardDefinitions.filter((award) => award.season !== "2026" && award.season === season && award.award !== "Finals MVP");
+  const explicit = allAwardDefinitions().filter((award) => award.season !== "2026" && award.season === season && !nonRaceAwardNames.has(award.award));
   if (explicit.length) return explicit;
-  const templateSeason = [...new Set(awardDefinitions.map((award) => award.season))]
+  const templateSeason = [...new Set(allAwardDefinitions().map((award) => award.season))]
     .filter((item) => item !== "2026")
     .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0];
-  return awardDefinitions
-    .filter((award) => award.season === templateSeason && award.award !== "Finals MVP")
+  return allAwardDefinitions()
+    .filter((award) => award.season === templateSeason && !nonRaceAwardNames.has(award.award))
     .map((award) => ({ ...award, season, winners: [], team: "", amount: "", perGameAmount: "" }));
 }
 
@@ -1769,12 +1811,21 @@ function dashboardTitle() {
 }
 
 function awardNames() {
-  return ["All", ...new Set(awardDefinitions.map((award) => award.award))];
+  return ["All", ...new Set(allAwardDefinitions().map((award) => award.award))];
+}
+
+function awardSeasons() {
+  return ["All", ...new Set(allAwardDefinitions().map((award) => award.season))].sort((a, b) => {
+    if (a === "All") return -1;
+    if (b === "All") return 1;
+    return a.localeCompare(b, undefined, { numeric: true });
+  });
 }
 
 function awardHistoryRows() {
-  return awardDefinitions
+  return allAwardDefinitions()
   .filter((award) => state.awardFilter === "All" || award.award === state.awardFilter)
+  .filter((award) => state.awardSeasonFilter === "All" || award.season === state.awardSeasonFilter)
   .map((award) => ({
     season: award.season,
     award: award.award,
@@ -1785,25 +1836,71 @@ function awardHistoryRows() {
   }));
 }
 
+function awardMilestoneRows() {
+  return lifetimePlayers()
+    .flatMap((player) => playerMilestones(player).map((milestone) => ({
+      player: player.name,
+      label: milestone.label,
+      threshold: milestone.threshold,
+      value: milestone.value,
+    })))
+    .sort((a, b) => a.label.localeCompare(b.label) || b.threshold - a.threshold || b.value - a.value || a.player.localeCompare(b.player));
+}
+
 function renderAwardFilters() {
-  const counts = awardDefinitions.reduce((acc, award) => {
+  const awards = allAwardDefinitions();
+  const counts = awards.reduce((acc, award) => {
     acc[award.award] = (acc[award.award] || 0) + 1;
     return acc;
   }, {});
+  const seasonCounts = awards.reduce((acc, award) => {
+    acc[award.season] = (acc[award.season] || 0) + 1;
+    return acc;
+  }, {});
+  const milestones = awardMilestoneRows();
   els.awardFilters.innerHTML = `
     <div class="awards-panel">
-      <div>
-        <h2>Awards History</h2>
-        <p>Filter by award to compare winners across seasons.</p>
+      <div class="awards-panel-head">
+        <div>
+          <h2>Awards History</h2>
+          <p>Filter by season or award, then sort the table by any column.</p>
+        </div>
       </div>
+      <h3>Season</h3>
+      <div class="award-filter-grid award-season-grid">
+        ${awardSeasons().map((season) => `
+          <button type="button" class="award-filter${state.awardSeasonFilter === season ? " active" : ""}" data-award-season-filter="${escapeHtml(season)}">
+            <strong>${escapeHtml(season)}</strong>
+            <span>${season === "All" ? awards.length : seasonCounts[season]} awards</span>
+          </button>
+        `).join("")}
+      </div>
+      <h3>Award</h3>
       <div class="award-filter-grid">
         ${awardNames().map((award) => `
           <button type="button" class="award-filter${state.awardFilter === award ? " active" : ""}" data-award-filter="${escapeHtml(award)}">
             <strong>${escapeHtml(award)}</strong>
-            <span>${award === "All" ? awardDefinitions.length : counts[award]} entries</span>
+            <span>${award === "All" ? awards.length : counts[award]} entries</span>
           </button>
         `).join("")}
       </div>
+      ${milestones.length ? `
+        <section class="awards-milestones">
+          <div>
+            <h3>Career Milestones</h3>
+            <p>Career totals earned across regular seasons.</p>
+          </div>
+          <div class="milestone-grid">
+            ${milestones.map((milestone) => `
+              <article class="milestone-card">
+                <span>${escapeHtml(milestone.label)}</span>
+                <strong>${escapeHtml(displayName(milestone.player, "name"))}</strong>
+                <small>${escapeHtml(fmt(milestone.threshold))} reached / career total ${escapeHtml(fmt(milestone.value))}</small>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+      ` : ""}
     </div>
   `;
   els.awardFilters.classList.remove("hidden");
@@ -1891,7 +1988,7 @@ function detailContext() {
       eyebrow: "Award race",
       title: `${state.page.season} ${state.page.award}`,
       columns: awardRaceColumns,
-      rows: awardRaceRows(definition),
+      rows: awardRaceRows(definition).slice(0, 10),
       tableTitle: "Contenders",
       action: (row) => row.name ? ({ type: "player", player: row.name }) : null,
     };
@@ -1925,7 +2022,7 @@ function detailContext() {
 }
 
 function dashboardAction(row) {
-  if (state.view === "awards") return { type: "awardRace", award: row.award, season: row.season };
+  if (state.view === "awards") return nonRaceAwardNames.has(row.award) ? null : { type: "awardRace", award: row.award, season: row.season };
   if (isTeamView()) {
     return { type: "team", team: row.name, season: isLifetimeView() ? "Lifetime" : row.season };
   }
@@ -2020,7 +2117,7 @@ function renderFigures(rows) {
 }
 
 function playerAwards(player) {
-  return s5Awards.filter((award) => award.player === player);
+  return playerAwardRows().filter((award) => award.player === player);
 }
 
 const playerMilestoneDefinitions = [
@@ -2144,6 +2241,10 @@ function teamColorInfoMarkup(label, value) {
   return `<div class="team-info-color"><i style="--swatch:${escapeHtml(color.hex)}"></i><span>${label} - ${escapeHtml(color.code)}</span><strong>${escapeHtml(color.name)}</strong></div>`;
 }
 
+function teamLogoFor(teamName, season) {
+  return teamPageThemeAssets[`${baseSeasonName(season)}|${teamName}`] || "";
+}
+
 function renderTeamInfoPage() {
   const rows = teamInfoRowsForSeason();
   els.teamInfoPanel.innerHTML = `
@@ -2154,7 +2255,8 @@ function renderTeamInfoPage() {
     ${rows.length ? `<div class="team-info-grid">
       ${rows.map((row) => `
         <button type="button" class="team-info-card" data-action="${encodeURIComponent(JSON.stringify({ type: "team", team: row.team, season: row.season }))}">
-          <div class="team-info-card-heading"><h3>${escapeHtml(displayName(row.team, "team"))}</h3><span>${escapeHtml(row.season)}</span></div>
+          ${teamLogoFor(row.team, row.season) ? `<img class="team-info-logo" src="${escapeHtml(teamLogoFor(row.team, row.season))}" alt="${escapeHtml(displayName(row.team, "team"))} logo">` : ""}
+          <div class="team-info-card-heading"><h3>${escapeHtml(displayName(row.team, "team"))}</h3></div>
           <div class="team-info-stadium"><span>Home Stadium</span><strong>${escapeHtml(row.homeStadium || "Not available")}</strong></div>
           <div class="team-info-colors">
             ${teamColorInfoMarkup("Primary", row.primary)}
@@ -2489,6 +2591,10 @@ function applyTeamPageTheme() {
   document.body.style.setProperty("--team-primary-readable", theme.primaryReadable);
   document.body.style.setProperty("--team-secondary-readable", theme.secondaryReadable);
   document.body.style.setProperty("--team-secondary-text", theme.secondaryText);
+  const darkSecondary = colorLuminance(theme.secondary.hex) < 0.08;
+  document.body.style.setProperty("--team-banner-label", darkSecondary ? "#05070b" : theme.secondaryReadable);
+  document.body.style.setProperty("--team-back-bg", darkSecondary ? theme.secondary.hex : theme.secondaryReadable);
+  document.body.style.setProperty("--team-back-text", darkSecondary ? "#ffffff" : theme.secondaryText);
 }
 
 function draftRowsForPlayer(player) {
@@ -2601,7 +2707,7 @@ function renderDetailExtras() {
   const milestones = playerMilestones(totals);
   const totalCards = [
     ["Total Score", totals.score],
-    ["Total Shots", totals.shots],
+    ["Total Goals", totals.goals],
     ["Total Assists", totals.assists],
     ["Total Saves", totals.saves],
   ];
@@ -2624,7 +2730,7 @@ function renderDetailExtras() {
         <article class="award-card">
           <strong>${escapeHtml(award.award)}</strong>
           <span>${escapeHtml(award.season)} - ${escapeHtml(award.team)}</span>
-          <small>Amount: ${escapeHtml(award.amount)} / Per Game: ${escapeHtml(award.perGameAmount)}</small>
+          <small>Amount: ${escapeHtml(award.amount)}${award.perGameAmount ? ` / Per Game: ${escapeHtml(award.perGameAmount)}` : ""}</small>
         </article>
       `).join("")}
     </div>
@@ -2642,17 +2748,17 @@ function renderDetailExtras() {
       `).join("")}
     </div>
   ` : `<p class="empty-note">No draft info added yet.</p>`;
-  const honorsHtml = milestones.length ? `
-    <div class="honor-list">
+  const milestonesHtml = milestones.length ? `
+    <div class="milestone-list">
       ${milestones.map((milestone) => `
-        <article class="honor-card">
+        <article class="milestone-card">
           <span>${escapeHtml(milestone.label)}</span>
           <strong>${escapeHtml(fmt(milestone.threshold))}</strong>
           <small>Career total: ${escapeHtml(fmt(milestone.value))}</small>
         </article>
       `).join("")}
     </div>
-  ` : `<p class="empty-note">No milestone honors yet.</p>`;
+  ` : `<p class="empty-note">No milestones yet.</p>`;
 
   els.detailExtras.innerHTML = `
     <div class="extras-grid">
@@ -2675,13 +2781,13 @@ function renderDetailExtras() {
         <h2>Awards</h2>
         ${awardsHtml}
       </section>
-      <section>
+      <section class="draft-info-section">
         <h2>Draft Info</h2>
         ${draftHtml}
       </section>
       <section>
-        <h2>Honors</h2>
-        ${honorsHtml}
+        <h2>Milestones</h2>
+        ${milestonesHtml}
       </section>
     </div>
   `;
@@ -2707,7 +2813,7 @@ function renderPlayoffStats() {
       <h2>${selectedPlayoffSeason || "Historical"} Playoff Brackets</h2>
       <div class="compact-stat-list">
         ${manualPlayoffs.map((row) => row.result
-          ? `<button type="button"${isChampionshipRound(row) ? ` class="championship-match"` : ""}${playoffSeriesAction(row) ? ` data-action="${encodeURIComponent(JSON.stringify(playoffSeriesAction(row)))}"` : ""}><strong>${escapeHtml(row.round)}${row.game ? ` ${escapeHtml(row.game)}` : ""}${row.mvp ? ` / MVP: ${escapeHtml(displayName(row.mvp, "name"))}` : ""}</strong><span class="playoff-matchup">${playoffTeamMarkup(row, "teamA")}<b>${escapeHtml(row.result)}</b>${playoffTeamMarkup(row, "teamB")}</span></button>`
+          ? `<button type="button"${isChampionshipRound(row) ? ` class="championship-match"` : ""}${playoffSeriesAction(row) ? ` data-action="${encodeURIComponent(JSON.stringify(playoffSeriesAction(row)))}"` : ""}><strong>${escapeHtml(row.round)}${row.game ? ` ${escapeHtml(row.game)}` : ""}${row.mvp ? ` / MVP: ${escapeHtml(displayName(row.mvp, "name"))}` : ""}</strong><span class="playoff-matchup"><span class="playoff-team playoff-team-left">${playoffTeamMarkup(row, "teamA")}</span><b>${escapeHtml(row.result)}</b><span class="playoff-team playoff-team-right">${playoffTeamMarkup(row, "teamB")}</span></span></button>`
           : `<button type="button"><strong>${escapeHtml(row.teamA)}</strong></button>`).join("")}
       </div>
     </section>
@@ -2800,7 +2906,15 @@ function columnHasPageData(rows, key) {
 
 function pageColumns(rows, columns) {
   if (!rows.length) return columns;
-  return columns.filter(([key]) => columnHasPageData(rows, key));
+  const impliedSeason = state.page.type === "dashboard"
+    && !isLifetimeView()
+    && !isPlayoffSeason(state.season)
+    && ["teams", "players"].includes(state.view);
+  return columns.filter(([key]) => {
+    if (key === "season" && (impliedSeason || state.page.type === "playerSeason" || state.page.type === "team")) return false;
+    if (key === "teamsText" && state.page.type === "team" && state.page.season !== "Lifetime") return false;
+    return columnHasPageData(rows, key);
+  });
 }
 
 function renderTable(rows, columns, title, rowAction = null) {
@@ -2808,12 +2922,14 @@ function renderTable(rows, columns, title, rowAction = null) {
   const table = els.head.closest("table");
   table.classList.remove("leader-card-table");
   table.classList.toggle("award-history-table", title === "Awards History");
+  table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
+  table.classList.toggle("award-race-table", title === "Contenders");
   els.head.closest(".table-wrap").classList.remove("leader-card-wrap");
   els.tableTitle.textContent = title;
   els.rowCount.textContent = `${rows.length} ${rows.length === 1 ? "row" : "rows"}`;
   renderTableLegend(rows, visibleColumns);
   els.head.innerHTML = `<tr>${visibleColumns.map(([key, label]) => `
-    <th data-sort="${key}"${state.sortKey === key ? ` class="sorted-column"` : ""}>${label}${state.sortKey === key ? (state.sortDir === "asc" ? " ^" : " v") : ""}</th>
+    <th data-sort="${key}" class="col-${key}${state.sortKey === key ? ` sorted-column` : ""}">${label}${state.sortKey === key ? (state.sortDir === "asc" ? " ^" : " v") : ""}</th>
   `).join("")}</tr>`;
   els.body.innerHTML = rows.map((row) => {
     const action = rowAction ? rowAction(row) : null;
@@ -2831,7 +2947,9 @@ function renderTable(rows, columns, title, rowAction = null) {
     if (row.__careerHighs?.has(key)) value = `<em class="career-high">${value}</em>`;
     if (row.__leagueLeaders?.has(key)) value = `<strong class="season-leader">${value}</strong>`;
     if (row.__gtrlsRecords?.has(key)) value = `${value}<sup class="season-record">*</sup>`;
-    return `<td${state.sortKey === key ? ` class="sorted-column"` : ""}>${value}</td>`;
+    const classes = [`col-${key}`];
+    if (state.sortKey === key) classes.push("sorted-column");
+    return `<td class="${classes.join(" ")}">${value}</td>`;
   }).join("")}</tr>`;
   }).join("");
 }
@@ -2895,7 +3013,7 @@ function render() {
 
   if (state.view === "awards") {
     renderKpis([]);
-    renderTable(awardHistoryRows(), awardHistoryColumns, "Awards History", dashboardAction);
+    renderTable(sortRows(awardHistoryRows()), awardHistoryColumns, "Awards History", dashboardAction);
     renderAwardFilters();
     renderPlayoffStats();
     return;
@@ -3244,6 +3362,13 @@ els.detailExtras.addEventListener("click", (event) => {
     render();
     return;
   }
+  const awardSeasonFilter = event.target.closest("[data-award-season-filter]");
+  if (awardSeasonFilter) {
+    state.awardSeasonFilter = awardSeasonFilter.dataset.awardSeasonFilter;
+    state.page = { type: "dashboard" };
+    render();
+    return;
+  }
   const target = event.target.closest("[data-action]");
   if (!target) return;
   state.page = JSON.parse(decodeURIComponent(target.dataset.action));
@@ -3262,8 +3387,10 @@ els.detailExtras.addEventListener("click", (event) => {
 
 els.awardFilters.addEventListener("click", (event) => {
   const awardFilter = event.target.closest("[data-award-filter]");
-  if (!awardFilter) return;
-  state.awardFilter = awardFilter.dataset.awardFilter;
+  const awardSeasonFilter = event.target.closest("[data-award-season-filter]");
+  if (!awardFilter && !awardSeasonFilter) return;
+  if (awardFilter) state.awardFilter = awardFilter.dataset.awardFilter;
+  if (awardSeasonFilter) state.awardSeasonFilter = awardSeasonFilter.dataset.awardSeasonFilter;
   state.page = { type: "dashboard" };
   render();
 });
