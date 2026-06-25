@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=team-info-logos-large-20260623">
+  <link rel="stylesheet" href="styles.css?v=schedule-no-scroll-20260625">
 </head>
 <body>
   <header class="topbar">
@@ -39,6 +39,17 @@
         <button type="button" data-season-phase="regular" class="active">Regular Season</button>
         <button type="button" data-season-phase="playoffs">Playoffs</button>
       </div>
+      <div id="s6StageControl" class="phase-control hidden" role="group" aria-label="Season 6 stage">
+        <button type="button" data-s6-stage="group" class="active">Group Stage</button>
+        <button type="button" data-s6-stage="swiss">Swiss</button>
+        <button type="button" data-s6-stage="overall">Overall</button>
+      </div>
+      <div id="s5StageControl" class="phase-control hidden" role="group" aria-label="Season 5 split">
+        <button type="button" data-s5-stage="split1" class="active">Split 1</button>
+        <button type="button" data-s5-stage="split2">Split 2</button>
+        <button type="button" data-s5-stage="swiss">Swiss</button>
+        <button type="button" data-s5-stage="overall">Overall</button>
+      </div>
       <label id="excludeTwosControl" class="check-control hidden">
         <input id="excludeTwosEra" type="checkbox">
         <span>Exclude 2's Era</span>
@@ -47,6 +58,7 @@
         <button class="active" type="button" data-view="teams">Teams</button>
         <button type="button" data-view="players">Players</button>
         <button type="button" data-view="standings">Standings</button>
+        <button type="button" data-view="schedule">Schedule</button>
         <button type="button" data-view="teamInfo">Team Info</button>
         <button type="button" data-view="awards">Awards</button>
         <button type="button" data-view="analytics">Analytics</button>
@@ -71,6 +83,13 @@
         <h2>Award Races</h2>
         <div id="awardRaceGrid" class="mini-leader-grid"></div>
       </div>
+    </section>
+
+    <section id="s6PoolControl" class="s6-pool-strip hidden" role="group" aria-label="Season 6 pool">
+      <span>Group Stage Filter</span>
+      <button type="button" data-s6-pool="overall" class="active">Overall</button>
+      <button type="button" data-s6-pool="gravy">Gravy Pool</button>
+      <button type="button" data-s6-pool="train">Train Pool</button>
     </section>
 
     <section class="figures hidden" aria-label="Key figures">
@@ -108,6 +127,7 @@
     </section>
 
     <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
+    <section id="scheduleFilters" class="award-filters hidden" aria-label="Schedule filters"></section>
     <section id="analyticsModeControl" class="analytics-mode-control hidden" aria-label="Analytics view">
       <button type="button" data-analytics-mode="selena" class="active">Selena's Kitchen</button>
       <button type="button" data-analytics-mode="your">Your Kitchen</button>
@@ -137,7 +157,7 @@
   </main>
 
   <script src="dashboard-data.js"></script>
-  <script src="manual-history.js?v=s5-playoffs-20260622"></script>
-  <script src="app.js?v=season-champion-awards-20260623"></script>
+  <script src="manual-history.js?v=s5-swiss-schedule-20260625"></script>
+  <script src="app.js?v=co-award-average-only-20260625"></script>
 </body>
 </html>

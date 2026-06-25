@@ -96,6 +96,7 @@ main {
 .controls,
 .detail-bar,
 .kpis,
+.s6-pool-strip,
 .figures,
 .leaderboards,
 .table-shell {
@@ -212,7 +213,7 @@ input {
 .segmented {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
   padding: 4px;
   border: 1px solid var(--line);
@@ -267,6 +268,42 @@ input {
 
 .phase-control button:disabled {
   cursor: not-allowed;
+}
+
+#s5StageControl {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.s6-pool-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+}
+
+.s6-pool-strip span {
+  color: var(--muted);
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.s6-pool-strip button {
+  min-width: 118px;
+  border: 1px solid var(--line);
+  background: #111820;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.s6-pool-strip button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #05070a;
 }
 
 .analytics-mode-control {
@@ -2235,6 +2272,72 @@ input {
   font-weight: 800;
 }
 
+.schedule-winner-team {
+  color: var(--team-color, var(--accent));
+  font-weight: 900;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--team-color, var(--accent)) 38%, transparent);
+}
+
+.schedule-winning-score {
+  color: var(--accent-2);
+  font-weight: 950;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 45%, transparent);
+}
+
+.schedule-table .col-stage,
+.schedule-table .col-pool,
+.schedule-table .col-round,
+.schedule-table .col-result,
+.schedule-table .col-vod {
+  white-space: nowrap;
+}
+
+.schedule-table th,
+.schedule-table td {
+  padding: 10px 10px;
+}
+
+.schedule-table th:first-child,
+.schedule-table td:first-child {
+  min-width: 112px;
+  max-width: 132px;
+}
+
+.schedule-table .col-stage {
+  width: 112px;
+}
+
+.schedule-table .col-pool {
+  width: 66px;
+}
+
+.schedule-table .col-round {
+  width: 82px;
+}
+
+.schedule-table .col-team,
+.schedule-table .col-opponent {
+  width: 23%;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.schedule-table .col-result {
+  width: 108px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.schedule-table .col-vod {
+  width: 58px;
+  text-align: center;
+}
+
+.schedule-empty {
+  color: color-mix(in srgb, var(--muted) 65%, transparent);
+}
+
 .postseason-badge {
   font-size: 1rem;
   line-height: 1;
@@ -2295,6 +2398,11 @@ table {
   width: 100%;
   border-collapse: collapse;
   min-width: 1820px;
+}
+
+table.schedule-table {
+  min-width: 0;
+  table-layout: fixed;
 }
 
 th,
@@ -2629,6 +2737,15 @@ tbody tr.clickable td:first-child {
   .kpis,
   .figures {
     grid-template-columns: 1fr;
+  }
+
+  .s6-pool-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .s6-pool-strip button {
+    width: 100%;
   }
 
   .table-head,

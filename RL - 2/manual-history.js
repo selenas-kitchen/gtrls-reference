@@ -723,24 +723,543 @@
     teamRank,
   }));
 
+  const s5PoolByStage = {
+    split1: new Map([
+      ["Big Musty Milkers", "Gravy"], ["Bird Bath Bombers", "Gravy"], ["Milk Before Cereal", "Gravy"], ["Pitch Pirates", "Gravy"], ["The Hornets", "Gravy"],
+      ["Triple Scoop", "Train"], ["Weenie Hut Jrs", "Train"], ["Wouldabeendope", "Train"], ["Danger Pings", "Train"], ["D' n' the V's", "Train"],
+    ].map(([name, pool]) => [team(name), pool])),
+    split2: new Map([
+      ["Weenie Hut Jrs", "Gravy"], ["Triple Scoop", "Gravy"], ["Big Musty Milkers", "Gravy"], ["Milk Before Cereal", "Gravy"], ["Wouldabeendope", "Gravy"],
+      ["The Hornets", "Train"], ["Pitch Pirates", "Train"], ["Bird Bath Bombers", "Train"], ["D' n' the V's", "Train"], ["Danger Pings", "Train"],
+    ].map(([name, pool]) => [team(name), pool])),
+  };
+
+  const s6PoolByTeam = new Map([
+    ["Giga's In Paris", "Gravy"], ["Hook Line & Blinker", "Gravy"], ["ESC", "Gravy"], ["Quack Wok", "Gravy"], ["Best Friends Club", "Gravy"], ["Spirit Airlines", "Gravy"],
+    ["Past Our Prime", "Train"], ["The Cox", "Train"], ["Ball Chasin & Sauce Tastin", "Train"], ["Supernova Abyss", "Train"], ["Crossbar Cartel", "Train"], ["Deceptitards", "Train"],
+  ].map(([name, pool]) => [team(name), pool]));
+
+  function cleanResult(value) {
+    return String(value || "").replace(/\s+/g, " ").replace(/(\d)\s*-\s*(\d)/g, "$1 - $2").trim();
+  }
+
+  function scheduleWinner(homeName, result, awayName) {
+    const match = cleanResult(result).match(/(\d+)\s*-\s*(\d+)/);
+    if (!match) return "";
+    const left = Number(match[1]);
+    const right = Number(match[2]);
+    if (left === right) return "";
+    return left > right ? homeName : awayName;
+  }
+
+  function schedulePool(season, stage, homeName, awayName) {
+    if (season === "S5") return s5PoolByStage[stage]?.get(homeName) || s5PoolByStage[stage]?.get(awayName) || "";
+    if (season === "S6") return s6PoolByTeam.get(homeName) || s6PoolByTeam.get(awayName) || "";
+    return "";
+  }
+
+  function parseScheduleBlock(season, stage, raw) {
+    const rows = [];
+    let round = "";
+    let dateRange = "";
+    raw.split(/\r?\n/).forEach((line) => {
+      const parts = line.split(/\t+/).map((item) => item.trim()).filter(Boolean);
+      if (!parts.length) return;
+      const joined = parts.join(" ");
+      if (/^(SCHEDULE|HOME|AWAY|Score|Results)$/i.test(joined)) return;
+      if (/^(Game|Week|Round)\s+\d+/i.test(parts[0])) {
+        round = parts[0];
+        const date = parts.find((part) => /\d{1,2}\/\d{1,2}/.test(part));
+        if (date) dateRange = date;
+        return;
+      }
+      if (/^Byes?:/i.test(joined) || /^DNP Week/i.test(joined) || /All-Star Break/i.test(joined)) {
+        rows.push({ season, stage, round, dateRange, home: "", result: "", away: "", winner: "", note: joined, pool: "", source: "manual" });
+        return;
+      }
+      const resultIndex = parts.findIndex((part) => /(?:\(\d+\)\s*)?\d+\s*-\s*\d+(?:\s*\(\d+\))?/.test(part));
+      if (resultIndex < 1 || resultIndex >= parts.length - 1) return;
+      const homeName = team(parts[resultIndex - 1].replace(/\.$/, ""));
+      const awayName = team(parts[resultIndex + 1].replace(/\.$/, ""));
+      const result = cleanResult(parts[resultIndex]);
+      rows.push({
+        season,
+        stage,
+        round,
+        dateRange,
+        home: homeName,
+        result,
+        away: awayName,
+        winner: team(scheduleWinner(homeName, result, awayName)),
+        note: "",
+        pool: schedulePool(season, stage, homeName, awayName),
+        source: "manual",
+      });
+    });
+    return rows;
+  }
+
   const schedules = [
-    ["World Cup", "Round 1", "Sled Dawgs", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
-    ["World Cup", "Round 1", "Hoosier Daddy", "1 - 3", "Bigger Nehavior", "Bigger Nehavior", ""],
-    ["World Cup", "Round 2", "Sled Dawgs", "3 - 2", "Hoosier Daddy", "Sled Dawgs", ""],
-    ["World Cup", "Round 2", "Reef Donkeys", "3 - 1", "Bigger Nehavior", "Reef Donkeys", "12 - 5 aggregate"],
-    ["World Cup", "Round 3", "Bigger Nehavior", "3 - 2", "Sled Dawgs", "Bigger Nehavior", ""],
-    ["World Cup", "Round 3", "Hoosier Daddy", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
-    ["World Cup", "Championship", "Reef Donkeys", "4 - 0", "Bigger Nehavior", "Reef Donkeys", ""],
-  ].map(([season, round, home, result, away, winner, note]) => ({
-    season,
-    round,
-    home: team(home),
-    result,
-    away: team(away),
-    winner: team(winner),
-    note,
-    source: "manual",
-  }));
+    ...[
+      ["World Cup", "Round 1", "Sled Dawgs", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
+      ["World Cup", "Round 1", "Hoosier Daddy", "1 - 3", "Bigger Nehavior", "Bigger Nehavior", ""],
+      ["World Cup", "Round 2", "Sled Dawgs", "3 - 2", "Hoosier Daddy", "Sled Dawgs", ""],
+      ["World Cup", "Round 2", "Reef Donkeys", "3 - 1", "Bigger Nehavior", "Reef Donkeys", "12 - 5 aggregate"],
+      ["World Cup", "Round 3", "Bigger Nehavior", "3 - 2", "Sled Dawgs", "Bigger Nehavior", ""],
+      ["World Cup", "Round 3", "Hoosier Daddy", "0 - 3", "Reef Donkeys", "Reef Donkeys", ""],
+      ["World Cup", "Championship", "Reef Donkeys", "4 - 0", "Bigger Nehavior", "Reef Donkeys", ""],
+    ].map(([season, round, home, result, away, winner, note]) => ({
+      season,
+      stage: "overall",
+      round,
+      dateRange: "",
+      home: team(home),
+      result,
+      away: team(away),
+      winner: team(winner),
+      note,
+      pool: "",
+      source: "manual",
+    })),
+    ...parseScheduleBlock("S1", "regular", `
+Game 1
+WIN	Two Inches Deep	3-0	Mostly Gay	LOSS
+WIN	Coming, Melissa!	3-0	Demon Semen	LOSS
+LOSS	2 Goals, 1 Cup	1-3	Glizzy Gobblers	WIN
+Game 2
+LOSS	Demon Semen	0-3	Two Inches Deep	WIN
+WIN	Glizzy Gobblers	3-0	Mostly Gay	LOSS
+LOSS	2 Goals, 1 Cup	1-3	Coming, Melissa!	WIN
+Game 3
+WIN	Two Inches Deep	3-1	Glizzy Gobblers	LOSS
+WIN	Demon Semen	3-2	2 Goals, 1 Cup	LOSS
+LOSS	Mostly Gay	0-3	Coming, Melissa!	WIN
+Game 4
+LOSS	2 Goals, 1 Cup	0-3	Two Inches Deep	WIN
+LOSS	Coming, Melissa!	2-3	Glizzy Gobblers	WIN
+WIN	Mostly Gay	3-1	Demon Semen	LOSS
+Game 5
+WIN	Two Inches Deep	3-1	Coming, Melissa!	LOSS
+WIN	Mostly Gay	3-1	2 Goals, 1 Cup	LOSS
+WIN	Glizzy Gobblers	3-0	Demon Semen	LOSS
+Game 6
+WIN	Two Inches Deep	3-0	Mostly Gay	LOSS
+WIN	Coming, Melissa!	3-0	Demon Semen	LOSS
+WIN	Glizzy Gobblers	3-0	2 Goals, 1 Cup	LOSS
+Game 7
+Demon Semen	0-0	Two Inches Deep
+WIN	Glizzy Gobblers	3-1	Mostly Gay	LOSS
+LOSS	2 Goals, 1 Cup	1-3	Coming, Melissa!	WIN
+Game 8
+LOSS	Two Inches Deep	1-3	Glizzy Gobblers	WIN
+LOSS	Demon Semen	2-3	2 Goals, 1 Cup	WIN
+LOSS	Mostly Gay	0-3	Coming, Melissa!	WIN
+Game 9
+WIN	2 Goals, 1 Cup	0-3	Two Inches Deep	WIN
+LOSS	Coming, Melissa!	2-3	Glizzy Gobblers	WIN
+WIN	Mostly Gay	3-0	Demon Semen	LOSS
+Game 10
+LOSS	Two Inches Deep	1-3	Coming, Melissa!	WIN
+Mostly Gay	0-0	2 Goals, 1 Cup
+WIN	Glizzy Gobblers	3-1	Demon Semen	LOSS
+`),
+    ...parseScheduleBlock("S2", "regular", `
+Game 1
+WIN	Epstein's Waitlist	(15) 3-1 (10)	Rough Sax	LOSS
+WIN	Gravy Stain Boys	(8) 3-1 (5)	MegaWatt	LOSS
+WIN	Smooth Jizz	(13) 3-2 (10)	Win-Dixies	LOSS
+Game 2
+WIN	Epstein's Waitlist	(7) 3-0 (1)	Gravy Stain Boys	LOSS
+WIN	Rough Sax	(17) 3-2 (13)	Smooth Jizz	LOSS
+LOSS	MegaWatt	(7) 0-3 (11)	Win-Dixies	WIN
+Game 3
+WIN	Epstein's Waitlist	(13) 3-1 (4)	MegaWatt	LOSS
+WIN	Rough Sax	(10) 3-0 (5)	Win-Dixies	LOSS
+WIN	Gravy Stain Boys	(9) 3-2 (5)	Smooth Jizz	LOSS
+Game 4
+WIN	Epstein's Waitlist	(7) 3-0 (4)	Smooth Jizz	LOSS
+WIN	Rough Sax	(9) 3-0 (4)	MegaWatt	LOSS
+WIN	Gravy Stain Boys	(10) 3-0 (1)	Win-Dixies	LOSS
+Game 5
+WIN	Epstein's Waitlist	(9) 3-0 (3)	Win-Dixies	LOSS
+LOSS	Rough Sax	(7) 1-3 (12)	Gravy Stain Boys	WIN
+LOSS	MegaWatt	(4) 0-3 (7)	Smooth Jizz	WIN
+Game 6
+LOSS	Rough Sax	(7) 0-3 (12)	Epstein's Waitlist	WIN
+LOSS	MegaWatt	(9) 1-3 (11)	Gravy Stain Boys	WIN
+LOSS	Win-Dixies	(4) 0-3 (7)	Smooth Jizz	WIN
+Game 7
+WIN	Gravy Stain Boys	(9) 3-1 (4)	Epstein's Waitlist	LOSS
+LOSS	Smooth Jizz	(10) 2-3 (12)	Rough Sax	WIN
+WIN	Win-Dixies	(12) 3-1 (9)	MegaWatt	LOSS
+Game 8
+LOSS	MegaWatt	(5) 1-3 (8)	Epstein's Waitlist	WIN
+WIN	Win-Dixies	(12) 3-2 (9)	Rough Sax	LOSS
+LOSS	Smooth Jizz	(4) 0-3 (11)	Gravy Stain Boys	WIN
+Game 9
+LOSS	Smooth Jizz	(8) 2-3 (12)	Epstein's Waitlist	WIN
+LOSS	MegaWatt	(3) 0-3 (11)	Rough Sax	WIN
+WIN	Win-Dixies	(8) 3-2 (14)	Gravy Stain Boys	LOSS
+Game 10
+LOSS	Win-Dixies	(2) 0-3 (8)	Epstein's Waitlist	WIN
+WIN	Gravy Stain Boys	(14) 3-0 (3)	Rough Sax	LOSS
+LOSS	Smooth Jizz	(12) 2-3 (15)	MegaWatt	WIN
+`),
+    ...parseScheduleBlock("S3", "regular", `
+Game 1
+WIN	Orange Cat Behavior	(7) 3-1 (4)	Wave Crash	LOSS
+LOSS	Syndicate O' Scallywags	(10) 2-3 (14)	Dead In The Water	WIN
+WIN	The Lamplighters	(10) 3-1 (4)	The Donald Bumps	LOSS
+LOSS	Midwest Cornstars	(12) 1-3 (14)	Red Rockets SC	WIN
+WIN	The Honkers	(13) 3-0 (4)	Cool	LOSS
+Game 2
+WIN	Orange Cat Behavior	(11) 3-0 (6)	Syndicate O' Scallywags	LOSS
+LOSS	Wave Crash	(2) 1-3 (9)	The Lamplighters	WIN
+WIN	Dead In The Water	(12) 3-2 (7)	Midwest Cornstars	LOSS
+LOSS	The Donald Bumps	(12) 2-3 (13)	The Honkers	WIN
+WIN	Red Rockets SC	(14) 3-1 (10)	Cool	LOSS
+Game 3
+WIN	The Lamplighters	(12) 3-2 (14)	Orange Cat Behavior	LOSS
+LOSS	Syndicate O' Scallywags	(11) 1-3 (13)	Midwest Cornstars	WIN
+LOSS	The Honkers	(8) 1-3 (12)	Wave Crash	WIN
+LOSS	Cool	(10) 1-3 (15)	Dead In The Water	WIN
+WIN	Red Rockets SC	(10) 3-1 (5)	The Donald Bumps	LOSS
+Game 4
+LOSS	Orange Cat Behavior	(5) 0-3 (11)	Midwest Cornstars	WIN
+LOSS	The Honkers	(3) 0-3 (9)	The Lamplighters	WIN
+LOSS	Cool	(9) 1-3 (20)	Syndicate O' Scallywags	WIN
+WIN	Wave Crash	(14) 3-1 (12)	Red Rockets SC	LOSS
+LOSS	Dead In The Water	(6) 0-3 (11)	The Donald Bumps	WIN
+Game 5
+WIN	The Honkers	(13) 3-1 (9)	Orange Cat Behavior	LOSS
+WIN	Midwest Cornstars	(13) 3-0 (3)	Cool	LOSS
+WIN	The Lamplighters	(10) 3-2 (11)	Red Rockets SC	LOSS
+WIN	Syndicate O' Scallywags	(11) 3-1 (8)	The Donald Bumps	LOSS
+LOSS	Dead In The Water	(12) 2-3 (11)	Wave Crash	WIN
+Game 6
+WIN	Orange Cat Behavior	(15) 3-0 (3)	Cool	LOSS
+WIN	Red Rockets SC	(14) 3-2 (11)	The Honkers	LOSS
+LOSS	The Donald Bumps	(7) 0-3 (11)	Midwest Cornstars	WIN
+WIN	Dead In The Water	(8) 3-0 (1)	The Lamplighters	LOSS
+WIN	Wave Crash	(14) 3-2 (12)	Syndicate O' Scallywags	LOSS
+Game 7
+WIN	Red Rockets SC	(13) 3-1 (9)	Orange Cat Behavior	LOSS
+LOSS	Cool	(3) 0-3 (9)	The Donald Bumps	WIN
+WIN	The Honkers	(10) 3-1 (8)	Dead In The Water	LOSS
+LOSS	Midwest Cornstars	(11) 2-3 (16)	Wave Crash	WIN
+WIN	The Lamplighters	(15) 3-2 (13)	Syndicate O' Scallywags	LOSS
+Game 8
+LOSS	Orange Cat Behavior	(1) 0-3 (4)	The Donald Bumps	WIN
+LOSS	Dead In The Water	(6) 1-3 (12)	Red Rockets SC	WIN
+WIN	Wave Crash	(18) 3-0 (3)	Cool	LOSS
+WIN	Syndicate O' Scallywags	(13) 3-2 (18)	The Honkers	LOSS
+WIN	The Lamplighters	(10) 3-2 (12)	Midwest Cornstars	LOSS
+Game 9
+LOSS	Dead In The Water	(5) 1-3 (7)	Orange Cat Behavior	WIN
+WIN	The Donald Bumps	(12) 3-1 (9)	Wave Crash	LOSS
+WIN	Red Rockets SC	(14) 3-1 (7)	Syndicate O' Scallywags	LOSS
+LOSS	Cool	(9) 2-3 (11)	The Lamplighters	WIN
+LOSS	The Honkers	(8) 2-3 (13)	Midwest Cornstars	WIN
+`),
+    ...parseScheduleBlock("S4", "regular", `
+Week 1	3/24-3/30
+LOSS	Bean Bandits	(10) 1-3 (11)	Team Kawaii	WIN
+DNP	Cock N' Load	(0) 0-0 (0)	Passing's 4 Wimps SC	DNP
+LOSS	Cucksirs	(8) 1-3 (14)	Stinky Pinkies	WIN
+WIN	Team ZAZ	(9) 3-1 (6)	The Autisticats	LOSS
+WIN	Tire Benders	(8) 3-2 (7)	Open Net A-Miss-Ianados	LOSS
+LOSS	Three Inch Fury	(7) 1-3 (10)	Sweaty Sweepers	WIN
+Bye: Brock & The Brockettes
+Week 2	3/31-4/06
+WIN	Sweaty Sweepers	(14) 3-1 (10)	The Autisticats	LOSS
+WIN	Brock & The Brockettes	(15) 3-2 (15)	Stinky Pinkies	LOSS
+LOSS	Three Inch Fury	(12) 2-3 (13)	Passing's 4 Wimps SC	WIN
+WIN	Tire Benders	(13) 3-2 (11)	Team Kawaii	LOSS
+WIN	Cucksirs	(9) 3-0 (2)	Cock N' Load	LOSS
+DNP	Team ZAZ	(0) 0-0 (0)	Bean Bandits	DNP
+Bye: Open Net A-Miss-Ianados
+Week 3	4/07-4/13
+WIN	Team Kawaii	(8) 3-1 (6)	Passing's 4 Wimps SC	LOSS
+LOSS	Bean Bandits	(3) 0-3 (13)	Stinky Pinkies	WIN
+LOSS	Cock N' Load	(8) 1-3 (11)	The Autisticats	WIN
+WIN	Cucksirs	(10) 3-2 (9)	Open Net A-Miss-Ianados	LOSS
+LOSS	Team ZAZ	(3) 0-3 (9)	Sweaty Sweepers	WIN
+WIN	Tire Benders	(10) 3-0 (6)	Brock & The Brockettes	LOSS
+Bye: Three Inch Fury
+Week 4	4/14-4/20
+LOSS	Open Net A-Miss-Ianados	(8) 1-3 (14)	Stinky Pinkies	WIN
+WIN	Sweaty Sweepers	(13) 3-0 (3)	Passing's 4 Wimps SC	LOSS
+WIN	Brock & The Brockettes	(14) 3-2 (10)	Team Kawaii	LOSS
+DNP	Three Inch Fury	(0) 0-0 (0)	Bean Bandits	DNP
+WIN	Tire Benders	(12) 3-1 (10)	Cock N' Load	LOSS
+LOSS	Team ZAZ	(12) 2-3 (13)	Cucksirs	WIN
+Bye: The Autisticats
+Week 5	4/21-4/27
+WIN	Passing's 4 Wimps SC	(24) 3-2 (21)	Stinky Pinkies	LOSS
+LOSS	Team Kawaii	(9) 1-3 (13)	The Autisticats	WIN
+WIN	Bean Bandits	(10) 3-1 (6)	Open Net A-Miss-Ianados	LOSS
+LOSS	Cock N' Load	(8) 1-3 (16)	Sweaty Sweepers	WIN
+DNP	Cucksirs	(0) 0-0 (0)	Brock & The Brockettes	DNP
+LOSS	Team ZAZ	(15) 2-3 (17)	Three Inch Fury	WIN
+Bye: Tire Benders
+Week 6	4/28-5/04
+WIN	The Autisticats	(11) 3-1 (6)	Passing's 4 Wimps SC	LOSS
+WIN	Open Net A-Miss-Ianados	(10) 3-0 (3)	Team Kawaii	LOSS
+WIN	Sweaty Sweepers	(13) 3-2 (14)	Bean Bandits	LOSS
+WIN	Brock & The Brockettes	(11) 3-0 (2)	Cock N' Load	LOSS
+LOSS	Three Inch Fury	(4) 0-3 (8)	Cucksirs	WIN
+LOSS	Tire Benders	(7) 1-3 (12)	Team ZAZ	WIN
+Bye: Stinky Pinkies
+Week 7	5/05-5/11
+WIN	Stinky Pinkies	(11) 3-1 (6)	The Autisticats	LOSS
+WIN	Passing's 4 Wimps SC	(8) 3-2 (6)	Open Net A-Miss-Ianados	LOSS
+LOSS	Team Kawaii	(4) 0-3 (13)	Sweaty Sweepers	WIN
+WIN	Bean Bandits	(11) 3-1 (7)	Brock & The Brockettes	LOSS
+DNP	Cock N' Load	(0) 0-0 (0)	Three Inch Fury	DNP
+LOSS	Cucksirs	(8) 1-3 (12)	Tire Benders	WIN
+Bye: Team ZAZ
+Week 8	5/26-6/01
+WIN	Stinky Pinkies	(12) 3-0 (4)	Team Kawaii	LOSS
+DNP	The Autisticats	(0) 0-0 (0)	Bean Bandits	DNP
+DNP	Open Net A-Miss-Ianados	(0) 0-0 (0)	Cock N' Load	DNP
+WIN	Sweaty Sweepers	(9) 3-0 (5)	Cucksirs	LOSS
+DNP	Brock & The Brockettes	(0) 0-0 (0)	Team ZAZ	DNP
+LOSS	Three Inch Fury	(5) 0-3 (8)	Tire Benders	WIN
+Bye: Passing's 4 Wimps SC
+Week 9	6/02-6/08
+WIN	The Autisticats	(7) 3-2 (6)	Open Net A-Miss-Ianados	LOSS
+LOSS	Stinky Pinkies	(7) 0-3 (12)	Sweaty Sweepers	WIN
+LOSS	Passing's 4 Wimps SC	(12) 2-3 (17)	Brock & The Brockettes	WIN
+LOSS	Team Kawaii	(14) 2-3 (14)	Three Inch Fury	WIN
+LOSS	Bean Bandits	(3) 0-3 (14)	Tire Benders	WIN
+WIN	Cock N' Load	(15) 3-1 (7)	Team ZAZ	LOSS
+Bye: Cucksirs
+Week 10	6/09-6/15
+DNP	Passing's 4 Wimps SC	(0) 0-0 (0)	Bean Bandits	DNP
+LOSS	Stinky Pinkies	(14) 2-3 (16)	Cock N' Load	WIN
+LOSS	The Autisticats	(2) 0-3 (12)	Cucksirs	WIN
+LOSS	Open Net A-Miss-Ianados	(3) 2-3 (11)	Team ZAZ	WIN
+LOSS	Sweaty Sweepers	(5) 1-3 (10)	Tire Benders	WIN
+LOSS	Brock & The Brockettes	(10) 2-3 (15)	Three Inch Fury	WIN
+Bye: Team Kawaii
+Week 11	6/16-6/22
+LOSS	Open Net A-Miss-Ianados	(8) 0-3 (12)	Sweaty Sweepers	WIN
+LOSS	The Autisticats	(8) 1-3 (11)	Brock & The Brockettes	WIN
+LOSS	Stinky Pinkies	(9) 2-3 (11)	Three Inch Fury	WIN
+WIN	Passing's 4 Wimps SC	(10) 3-2 (9)	Tire Benders	LOSS
+LOSS	Team Kawaii	(7) 1-3 (8)	Team ZAZ	WIN
+DNP	Bean Bandits	(0) 0-0 (0)	Cucksirs	DNP
+Bye: Cock N' Load
+Week 12	6/23-6/29
+WIN	Team Kawaii	(13) 3-1 (10)	Cock N' Load	LOSS
+WIN	Passing's 4 Wimps SC	(9) 3-0 (4)	Cucksirs	LOSS
+WIN	Stinky Pinkies	(8) 3-0 (3)	Team ZAZ	LOSS
+LOSS	The Autisticats	(5) 1-3 (16)	Tire Benders	WIN
+WIN	Open Net A-Miss-Ianados	(19) 3-2 (17)	Three Inch Fury	LOSS
+WIN	Sweaty Sweepers	(11) 3-0 (5)	Brock & The Brockettes	LOSS
+Bye: Bean Bandits
+Week 13	6/30-7/06
+WIN	Brock & The Brockettes	(5) 3-2 (8)	Open Net A-Miss-Ianados	LOSS
+WIN	Three Inch Fury	(7) 3-1 (7)	The Autisticats	LOSS
+WIN	Tire Benders	(10) 3-1 (7)	Stinky Pinkies	LOSS
+WIN	Team ZAZ	(18) 3-2 (14)	Passing's 4 Wimps SC	LOSS
+WIN	Cucksirs	(15) 3-1 (6)	Team Kawaii	LOSS
+DNP	Cock N' Load	(0) 0-0 (0)	Bean Bandits	DNP
+Bye: Sweaty Sweepers
+`),
+    ...parseScheduleBlock("S5", "split1", `
+Week 1	10/12-10/18
+Win	Danger Pings	(9) 3-1 (7)	Weenie Hut Jrs.	Loss
+Loss	D' n' the V's	(7) 0-3 (10)	Wouldabeendope	Win
+Loss	The Hornets	(14) 2-3 (14)	Big Musty Milkers	Win
+Win	Bird Bath Bombers	(10) 3-0 (1)	Pitch Pirates	Loss
+Win	Weenie Hut Jrs.	(13) 3-2 (6)	Triple Scoop	Loss
+Week 2	10/12-10/18
+Loss	Danger Pings	(6) 2-3 (10)	D' n' the V's	Win
+Win	Big Musty Milkers	(10) 3-2 (6)	Milk Before Cereal	Loss
+Loss	The Hornets	(5) 0-3 (17)	Bird Bath Bombers	Win
+Win	Triple Scoop	(11) 3-1 (10)	Wouldabeendope	Loss
+Week 3	10/19-10/25
+Win	Weenie Hut Jrs.	(12) 3-2 (12)	D' n' the V's	Loss
+Loss	Milk Before Cereal	(5) 0-3 (10)	Pitch Pirates	Win
+Win	Big Musty Milkers	(16) 3-2 (11)	Bird Bath Bombers	Loss
+Loss	D' n' the V's	(4) 0-3 (11)	Triple Scoop	Win
+Week 4	10/26-11/1
+Win	Wouldabeendope	(9) 3-0 (4)	Danger Pings	Loss
+Loss	Bird Bath Bombers	(11) 2-3 (13)	Milk Before Cereal	Win
+Loss	Pitch Pirates	(7) 1-3 (10)	The Hornets	Win
+Win	Triple Scoop	(13) 3-2 (10)	Danger Pings	Loss
+Week 5	11/2-11/8
+Loss	Wouldabeendope	(5) 1-3 (10)	Weenie Hut Jrs.	Win
+Win	Milk Before Cereal	(12) 3-0 (5)	The Hornets	Loss
+Loss	Pitch Pirates	(7) 2-3 (8)	Big Musty Milkers	Win
+`),
+    ...parseScheduleBlock("S5", "split2", `
+Week 6	11/9-11/15
+Loss	Danger Pings	(5) 2-3 (9)	Pitch Pirates	Win
+Win	Bird Bath Bombers	(20) 3-2 (11)	D' n' the V's	Loss
+Win	Big Musty Milkers	(11) 3-0 (4)	Wouldabeendope	Loss
+Loss	Triple Scoop	(3) 0-3 (9)	Weenie Hut Jrs	Win
+Loss	Pitch Pirates	(7) 1-3 (11)	The Hornets	Win
+Week 7	11/16-11/22
+Loss	Danger Pings	(9) 0-3 (15)	Bird Bath Bombers	Win
+Loss	Wouldabeendope	(5) 0-3 (11)	Milk Before Cereal	Win
+Loss	Big Musty Milkers	(4) 0-3 (10)	Triple Scoop	Win
+Win	The Hornets	(10) 3-1 (6)	D' n' the V's	Loss
+Week 8	11/23-11/29
+Win	Pitch Pirates	(11) 3-2 (12)	Bird Bath Bombers	Loss
+Loss	Milk Before Cereal	(12) 2-3 (15)	Weenie Hut Jrs	Win
+Loss	Wouldabeendope	(6) 1-3 (8)	Triple Scoop	Win
+Win	D' n' the V's	(10) 3-2 (6)	Danger Pings	Loss
+Week 9	11/30-12/6
+Loss	Bird Bath Bombers	(10) 0-3 (15)	The Hornets	Win
+Win	Weenie Hut Jrs	(12) 3-2 (8)	Big Musty Milkers	Loss
+Win	Triple Scoop	(7) 3-0 (2)	Milk Before Cereal	Loss
+Loss	D' n' the V's	(11) 2-3 (15)	Pitch Pirates	Win
+Week 10	12/7-12/13
+Win	The Hornets	(9) 3-0 (4)	Danger Pings	Loss
+Win	Weenie Hut Jrs	(12) 3-2 (9)	Wouldabeendope	Loss
+Loss	Milk Before Cereal	(9) 1-3 (15)	Big Musty Milkers	Win
+`),
+    ...parseScheduleBlock("S5", "swiss", `
+Round 1
+Weenie Hut Jrs	(10) 3-0 (2)	Danger Pings
+Triple Scoop	(13) 3-2 (10)	D' n' the V's
+Bird Bath Bombers	(15) 3-1 (9)	Wouldabeendope
+Pitch Pirates	(10) 3-0 (6)	Milk Before Cereal
+Round 2
+Weenie Hut Jrs	(15) 3-0 (7)	Pitch Pirates
+Triple Scoop	(12) 3-1 (10)	Bird Bath Bombers
+Milk Before Cereal	(10) 3-0 (7)	Danger Pings
+Wouldabeendope	(3) 0-3 (12)	D' n' the V's
+`),
+    ...[
+      ["Results", "Weenie Hut Jrs", "", "", "2-0 / Upper"],
+      ["Results", "Triple Scoop", "", "", "2-0 / Upper"],
+      ["Results", "Pitch Pirates", "", "", "1-1 / Lower"],
+      ["Results", "Bird Bath Bombers", "", "", "1-1 / Lower"],
+      ["Results", "Milk Before Cereal", "", "", "1-1 / Lower"],
+      ["Results", "D' n' the V's", "", "", "1-1 / Lower"],
+      ["Results", "Wouldabeendope", "", "", "0-2 / Eliminated"],
+      ["Results", "Danger Pings", "", "", "0-2 / Eliminated"],
+      ["Split Winners", "Big Musty Milkers", "", "", "Split Winners / Upper"],
+      ["Split Winners", "The Hornets", "", "", "Split Winners / Upper"],
+    ].map(([round, home, result, away, note]) => ({
+      season: "S5",
+      stage: "swiss",
+      round,
+      dateRange: "",
+      home: team(home),
+      result,
+      away: team(away),
+      winner: "",
+      note,
+      pool: "",
+      source: "manual",
+    })),
+    ...parseScheduleBlock("S6", "group", `
+Week 1
+Loss	Crossbar Cartel	(6) 0-3 (11)	The Cox	Win
+Loss	Deceptitards	(11) 2-3 (10)	Supernova Abyss	Win
+Win	Past Our Prime	(15) 3-2 (14)	Ball Chasin & Sauce Tastin	Loss
+ESC	(0) 0-0 (0)	Giga's In Paris
+Win	Hook Line & Blinker	(12) 3-2 (8)	Quack Wok	Loss
+Byes: Spirit Airlines, Best Friends Club
+Week 2
+Hook Line & Blinker	(0) 0-0 (0)	Giga's In Paris
+Win	Best Friends Club	(12) 3-2 (13)	Spirit Airlines	Loss
+Win	Quack Wok	(6) 3-0 (3)	ESC	Loss
+Ball Chasin & Sauce Tastin	(0) 0-0 (0)	The Cox
+Crossbar Cartel	(0) 0-0 (0)	Past Our Prime
+Byes: Supernova Abyss, Deceptitards
+Week 3
+Win	Ball Chasin & Sauce Tastin	(12) 3-2 (15)	Deceptitards	Loss
+Supernova Abyss	(0) 0-0 (0)	Crossbar Cartel
+The Cox	(0) 0-0 (0)	Past Our Prime
+Spirit Airlines	(0) 0-0 (0)	ESC
+Quack Wok	(0) 0-0 (0)	Best Friends Club
+Byes: Hook Line & Blinker, Giga's In Paris
+Week 4
+Win	ESC	(20) 3-2 (7)	Best Friends Club	Loss
+Loss	Spirit Airlines	(6) 0-3 (12)	Hook Line & Blinker	Win
+Win	Giga's In Paris	(15) 3-1 (5)	Quack Wok	Loss
+Supernova Abyss	(0) 0-0 (0)	Ball Chasin & Sauce Tastin
+Past Our Prime	(0) 0-0 (0)	Deceptitards
+Byes: Crossbar Cartel, The Cox
+Week 5
+Loss	Crossbar Cartel	(5) 1-3 (11)	Ball Chasin & Sauce Tastin	Win
+Loss	Deceptitards	(4) 0-3 (13)	The Cox	Win
+Win	Past Our Prime	(12) 3-2 (11)	Supernova Abyss	Loss
+Win	Giga's In Paris	(8) 3-0 (2)	Spirit Airlines	Loss
+Loss	Best Friends Club	(8) 2-3 (15)	Hook Line & Blinker	Win
+Byes: Quack Wok, ESC
+Week 6
+Hook Line & Blinker	(0) 0-0 (0)	ESC
+Loss	Best Friends Club	(5) 1-3 (11)	Giga's In Paris	Win
+Quack Wok	(0) 0-0 (0)	Spirit Airlines
+Loss	The Cox	(12) 1-3 (14)	Supernova Abyss	Win
+Loss	Deceptitards	(13) 2-3 (14)	Crossbar Cartel	Win
+Byes: Past Our Prime, Ball Chasin & Sauce Tastin
+`),
+    ...parseScheduleBlock("S6", "swiss", `
+Round 1
+G1	(0) 0-0 (0)	T6
+G2	(0) 0-0 (0)	T5
+G3	(0) 0-0 (0)	T4
+T1	(0) 0-0 (0)	G6
+T2	(0) 0-0 (0)	G5
+T3	(0) 0-0 (0)	G4
+Round 2
+(0) 0-0 (0)
+(0) 0-0 (0)
+(0) 0-0 (0)
+Round 3
+(0) 0-0 (0)
+(0) 0-0 (0)
+(0) 0-0 (0)
+Round 4
+(0) 0-0 (0)	Promoted Team
+(0) 0-0 (0)
+(0) 0-0 (0)
+Demoted Team	(0) 0-0 (0)
+(0) 0-0 (0)
+`),
+    ...[
+      ["Round 2", "1-0 Match 1", "(0) 0 - 0 (0)", "1-0 Match 2", ""],
+      ["Round 2", "1-0 Match 3", "(0) 0 - 0 (0)", "1-0 Match 4", ""],
+      ["Round 2", "1-0 Match 5", "(0) 0 - 0 (0)", "1-0 Match 6", ""],
+      ["Round 2", "0-1 Match 1", "(0) 0 - 0 (0)", "0-1 Match 2", ""],
+      ["Round 2", "0-1 Match 3", "(0) 0 - 0 (0)", "0-1 Match 4", ""],
+      ["Round 2", "0-1 Match 5", "(0) 0 - 0 (0)", "0-1 Match 6", ""],
+      ["Round 3", "2-0 Bye 1", "", "", "+2"],
+      ["Round 3", "2-0 Bye 2", "", "", "+2"],
+      ["Round 3", "2-0 Bye 3", "", "", "+2"],
+      ["Round 3", "1-1 Match 1", "(0) 0 - 0 (0)", "1-1 Match 2", ""],
+      ["Round 3", "1-1 Match 3", "(0) 0 - 0 (0)", "1-1 Match 4", ""],
+      ["Round 3", "1-1 Match 5", "(0) 0 - 0 (0)", "1-1 Match 6", ""],
+      ["Round 3", "0-2 Bye 1", "", "", "+0"],
+      ["Round 3", "0-2 Bye 2", "", "", "+0"],
+      ["Round 3", "0-2 Bye 3", "", "", "+0"],
+      ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "Promoted Team", "Highest 2-1 team by points is promoted to play highest 2-0 team by points."],
+      ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],
+      ["Round 4", "2-1 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],
+      ["Round 4", "1-2 Team", "(0) 0 - 0 (0)", "1-2 Team", ""],
+      ["Round 4", "Demoted Team", "(0) 0 - 0 (0)", "0-2 Team", "Lowest 1-2 team by points is demoted to play lowest 0-2 team by points."],
+      ["Round 4", "0-2 Team", "(0) 0 - 0 (0)", "0-2 Team", "Winners/losers feed U, Q, L, E slots after Round 4."],
+    ].map(([round, home, result, away, note]) => ({
+      season: "S6",
+      stage: "swiss",
+      round,
+      dateRange: "",
+      home,
+      result,
+      away,
+      winner: "",
+      note,
+      pool: "",
+      source: "manual",
+    })),
+  ];
 
   const playoffs = [
     ["S1 Playoffs", "Note", "See Keppen for details.", "", ""],
