@@ -1330,6 +1330,23 @@ Demoted Team	(0) 0-0 (0)
   teams.forEach(finalizeCommon);
   applyTeamRecordsToPlayers();
   players.forEach(finalizeCommon);
+  const schedulePairKey = (home, away) => [team(home), team(away)].sort().join("|");
+  const s6GroupVods = new Map([
+    [schedulePairKey("Deceptitards", "Supernova Abyss"), "https://www.youtube.com/watch?v=Y7nUHphGQFI"],
+    [schedulePairKey("Past Our Prime", "Supernova Abyss"), "https://www.youtube.com/watch?v=wSkg_r4RAbQ"],
+    [schedulePairKey("The Cox", "Crossbar Cartel"), "https://www.youtube.com/watch?v=txE-LvdOnQQ"],
+    [schedulePairKey("ESC", "Best Friends Club"), "https://www.youtube.com/watch?v=uWLodujT-r4"],
+    [schedulePairKey("Spirit Airlines", "Hook Line & Blinker"), "https://www.youtube.com/watch?v=VHpBSBQgAa8"],
+    [schedulePairKey("Best Friends Club", "Spirit Airlines"), "https://www.youtube.com/watch?v=sX44mwvKDEU"],
+    [schedulePairKey("Hook Line & Blinker", "Quack Wok"), "https://www.youtube.com/watch?v=fEsYbXPfkFg"],
+    [schedulePairKey("Past Our Prime", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=z_EsuN_HO4I"],
+    [schedulePairKey("Giga's In Paris", "Best Friends Club"), "https://www.youtube.com/watch?v=uovRVsUuQXE"],
+  ]);
+  schedules.forEach((row) => {
+    if (row.season !== "S6" || row.stage !== "group") return;
+    const vod = s6GroupVods.get(schedulePairKey(row.home, row.away));
+    if (vod) row.vod = vod;
+  });
 
   window.RL_MANUAL_HISTORY = { teams, players, teamInfo, playoffs, draft, schedules };
 })();

@@ -253,8 +253,10 @@ const state = {
   s6Pool: "overall",
   scheduleTeamFilter: "All",
   analyticsMode: "selena",
+  archiveMode: "awards",
   awardFilter: "All",
   awardSeasonFilter: "All",
+  milestoneFilter: "All",
   kitchenSelectedPlayer: "",
   kitchenSortKey: "perPerGame",
   kitchenSortDir: "desc",
@@ -269,6 +271,7 @@ const state = {
   yourKitchenVariableName: "",
   yourKitchenError: "",
   page: { type: "dashboard" },
+  previousContext: null,
 };
 
 const teamColumns = [
@@ -600,7 +603,8 @@ const els = {
   playoffStats: document.querySelector("#playoffStats"),
 };
 
-const trophyTeams = new Set(["WEENIE HUT JRS", "SWEATY SWEEPERS", "GRAVY STAIN BOYS", "RED ROCKETS SC"]);
+const trophyTeams = new Set(["TWO INCHES DEEP", "WEENIE HUT JRS", "SWEATY SWEEPERS", "GRAVY STAIN BOYS", "RED ROCKETS SC"]);
+const disputedChampionTeams = new Set(["TWO INCHES DEEP"]);
 const silverTrophyTeams = new Set(["BMM", "THREE INCH FURY", "EPSTEIN'S WAITLIST", "COOL"]);
 const shootingEligibilityShots = 15;
 const awardDefinitions = [
@@ -638,37 +642,76 @@ const awardDefinitions = [
 ];
 
 const nonRaceAwardNames = new Set(["Finals MVP", "World Cup Champions", "Season Champion"]);
+const manualSeasonChampions = [
+  { season: "S1", team: "Two Inches Deep", amount: "Champion*" },
+];
 
 function seasonChampionDefinitions() {
   const seen = new Set();
-  return (data.manualHistory?.playoffs || [])
+  const championDefinition = (season, championTeam, amount = "Champion") => {
+    const key = `${season}|${championTeam}`;
+    if (seen.has(key)) return null;
+    seen.add(key);
+    const winners = data.players
+      .filter((player) => player.season === season && (player.teams || []).includes(championTeam))
+      .map((player) => player.name)
+      .sort((a, b) => a.localeCompare(b));
+    if (!winners.length) return null;
+    return {
+      award: "Season Champion",
+      season,
+      stat: "score",
+      avgStat: "avgScore",
+      totalLabel: "Champion",
+      avgLabel: "",
+      winners,
+      team: championTeam,
+      amount,
+      perGameAmount: "",
+    };
+  };
+  const manualDefinitions = manualSeasonChampions
+    .map((champion) => championDefinition(champion.season, champion.team, champion.amount))
+    .filter(Boolean);
+  const playoffDefinitions = (data.manualHistory?.playoffs || [])
     .filter((row) => isChampionshipRound(row) && row.round !== "Championship Game")
     .flatMap((row) => {
       const winnerKey = playoffWinnerKey(row);
       const championTeam = winnerKey ? row[winnerKey] : "";
       const season = baseSeasonName(row.season).replace(/\s+Playoffs$/i, "");
       if (!championTeam || !/^S\d+$/.test(season)) return [];
-      const key = `${season}|${championTeam}`;
-      if (seen.has(key)) return [];
-      seen.add(key);
-      const winners = data.players
-        .filter((player) => player.season === season && (player.teams || []).includes(championTeam))
-        .map((player) => player.name)
-        .sort((a, b) => a.localeCompare(b));
-      if (!winners.length) return [];
-      return [{
-        award: "Season Champion",
-        season,
-        stat: "score",
-        avgStat: "avgScore",
-        totalLabel: "Champion",
-        avgLabel: "",
-        winners,
-        team: championTeam,
-        amount: "Champion",
-        perGameAmount: "",
-      }];
+      const definition = championDefinition(season, championTeam);
+      return definition ? [definition] : [];
     });
+  return [...manualDefinitions, ...playoffDefinitions];
+}
+
+function allStarDefinitions() {
+  return ["S1", "S2", "S3", "S4", "S5"].flatMap((season) => {
+    const limit = season === "S1" ? 6 : 8;
+    const rows = seasonPlayerRows(season)
+      .filter((row) => Number.isFinite(row.avgScore) && row.games > 0)
+      .sort((a, b) => b.avgScore - a.avgScore || b.score - a.score || a.name.localeCompare(b.name))
+      .slice(0, limit);
+    if (!rows.length) return [];
+    return [{
+      award: `${season} All-Star`,
+      season,
+      stat: "score",
+      avgStat: "avgScore",
+      sortStat: "avgScore",
+      totalLabel: "All-Star",
+      avgLabel: "Score/G",
+      winners: rows.map((row) => row.name),
+      team: rows.map((row) => row.teamsText || row.teams?.join(", ") || "").filter(Boolean).join(", "),
+      teamList: rows.map((row) => row.teamsText || row.teams?.join(", ") || ""),
+      amount: "",
+      perGameAmount: rows.map((row) => fmtGameAvg(row.avgScore)).join(", "),
+      perGameList: rows.map((row) => fmtGameAvg(row.avgScore)),
+      generated: true,
+      nonRace: true,
+    }];
+  });
 }
 
 function allAwardDefinitions() {
@@ -679,17 +722,29 @@ function allAwardDefinitions() {
       .filter((award) => !explicitKeys.has(`${season}|${award.award}`))
       .map(computedAwardDefinition)
       .filter(Boolean));
-  return [...awardDefinitions, ...generatedRaceAwards, ...seasonChampionDefinitions()];
+  return [...awardDefinitions, ...generatedRaceAwards, ...allStarDefinitions(), ...seasonChampionDefinitions()];
+}
+
+function formattedAwardTeam(definition, index = null) {
+  if (Array.isArray(definition.teamList)) {
+    if (Number.isInteger(index)) return displayName(definition.teamList[index] || "", "team");
+    return definition.teamList.filter(Boolean).map((team) => displayName(team, "team")).join(", ");
+  }
+  const team = String(definition.team || "");
+  if (definition.winners?.length > 1 && team.includes(", ")) {
+    return team.split(", ").filter(Boolean).map((teamName) => displayName(teamName, "team")).join(", ");
+  }
+  return displayName(team, "team");
 }
 
 function playerAwardRows() {
-  return allAwardDefinitions().flatMap((definition) => definition.winners.map((player) => ({
+  return allAwardDefinitions().flatMap((definition) => definition.winners.map((player, index) => ({
     award: awardDisplayName(definition),
     player,
-    team: definition.team,
+    team: formattedAwardTeam(definition, index),
     season: definition.season,
-    amount: definition.winners.length > 1 && !nonRaceAwardNames.has(definition.award) ? "" : definition.amount,
-    perGameAmount: definition.perGameAmount,
+    amount: definition.winners.length > 1 && !isNonRaceAwardName(definition.award) ? "" : definition.amount,
+    perGameAmount: Array.isArray(definition.perGameList) ? definition.perGameList[index] : definition.perGameAmount,
   }))).filter((award) => data.players.some((row) => row.name === award.player));
 }
 const teamLeagueStats = [
@@ -752,6 +807,7 @@ const playerCareerHighStats = new Set([
 
 const rosterColumns = [
   ["name", "Player"],
+  ["role", "Role"],
   ["teamsText", "Team(s)"],
   ["games", "GP"],
   ["goals", "Goals"],
@@ -820,6 +876,13 @@ const awardHistoryColumns = [
   ["team", "Team"],
   ["amount", "Amount"],
   ["perGameAmount", "Per Game Amount"],
+];
+
+const milestoneArchiveColumns = [
+  ["label", "Milestone"],
+  ["player", "Player"],
+  ["threshold", "Threshold"],
+  ["value", "Career Total"],
 ];
 
 const awardRaceColumns = [
@@ -901,6 +964,46 @@ function syncTabButtons() {
   els.tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === navView));
 }
 
+function resetExcludeTwosIfNeeded() {
+  if (isLifetimeView()) return;
+  state.excludeTwosEra = false;
+  if (els.excludeTwosEra) els.excludeTwosEra.checked = false;
+}
+
+function snapshotContext() {
+  return {
+    page: { ...state.page },
+    view: state.view,
+    season: state.season,
+    seasonPhase: state.seasonPhase,
+    sortKey: state.sortKey,
+    sortDir: state.sortDir,
+    s5Stage: state.s5Stage,
+    s5Pool: state.s5Pool,
+    s6Stage: state.s6Stage,
+    s6Pool: state.s6Pool,
+    scheduleTeamFilter: state.scheduleTeamFilter,
+  };
+}
+
+function restoreContext(context) {
+  if (!context) return false;
+  Object.assign(state, {
+    page: context.page,
+    view: context.view,
+    season: context.season,
+    seasonPhase: context.seasonPhase,
+    sortKey: context.sortKey,
+    sortDir: context.sortDir,
+    s5Stage: context.s5Stage,
+    s5Pool: context.s5Pool,
+    s6Stage: context.s6Stage,
+    s6Pool: context.s6Pool,
+    scheduleTeamFilter: context.scheduleTeamFilter,
+  });
+  return true;
+}
+
 function excludedFromLifetime(rowOrSeason) {
   const season = typeof rowOrSeason === "string" ? rowOrSeason : rowOrSeason?.season;
   if (typeof rowOrSeason === "object" && rowOrSeason?.excludeFromLifetime) return true;
@@ -946,10 +1049,47 @@ function fmtGameAvg(value, suffix = "") {
 }
 
 function displayName(value, key = "") {
+  const formatted = formatDisplayName(value, key);
   const badgeKey = String(value || "").toUpperCase();
-  if ((key === "name" || key === "team" || key === "opponent") && trophyTeams.has(badgeKey)) return `${value} \u{1F3C6}`;
-  if ((key === "name" || key === "team" || key === "opponent") && silverTrophyTeams.has(badgeKey)) return `${value} \u{1F948}`;
-  return value ?? "";
+  if ((key === "name" || key === "team" || key === "opponent") && trophyTeams.has(badgeKey)) return `${formatted} \u{1F3C6}${disputedChampionTeams.has(badgeKey) ? "*" : ""}`;
+  if ((key === "name" || key === "team" || key === "opponent") && silverTrophyTeams.has(badgeKey)) return `${formatted} \u{1F948}`;
+  return formatted;
+}
+
+const displayNameOverrides = new Map([
+  ["THE HORNETS", "The Hornets"],
+  ["TRIPLE SCOOP", "Triple Scoop"],
+  ["BMM", "Big Musty Milkers"],
+  ["BBB", "Bird Bath Bombers"],
+  ["PITCH PIRATES", "Pitch Pirates"],
+  ["MILK BEFORE CEREAL", "Milk Before Cereal"],
+  ["DANGER PINGS", "Danger Pings"],
+  ["D' N' THE V'S", "D' n' the V's"],
+  ["WEENIE HUT JRS", "Weenie Hut Jrs"],
+  ["TEAM ZAZ", "Team ZAZ"],
+  ["ESC", "ESC"],
+]);
+
+function titleCaseDisplay(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (match) => match.toUpperCase())
+    .replace(/\bSc\b/g, "SC")
+    .replace(/\bMvp\b/g, "MVP")
+    .replace(/\bDnp\b/g, "DNP")
+    .replace(/\bUs\b/g, "US")
+    .replace(/'S\b/g, "'s");
+}
+
+function formatDisplayName(value, key = "") {
+  const text = String(value ?? "");
+  if (!text) return "";
+  if (key === "team" || key === "opponent" || key === "teamA" || key === "teamB") {
+    const override = displayNameOverrides.get(text) || displayNameOverrides.get(text.toUpperCase());
+    if (override) return override;
+    return /^[A-Z0-9\s'&.-]+$/.test(text) ? titleCaseDisplay(text) : text;
+  }
+  return text;
 }
 
 function playoffWinnerKey(row) {
@@ -1018,6 +1158,29 @@ function scheduleResultMarkup(row) {
   const left = leftScore > rightScore ? `<strong class="schedule-winning-score">${escapeHtml(match[2])}</strong>` : escapeHtml(match[2]);
   const right = rightScore > leftScore ? `<strong class="schedule-winning-score">${escapeHtml(match[3])}</strong>` : escapeHtml(match[3]);
   return `${escapeHtml(match[1])}${left} - ${right}${escapeHtml(match[4])}`;
+}
+
+function scheduleVodMarkup(row) {
+  const url = String(row.vod || "").trim();
+  if (!url) return "";
+  return `
+    <a class="vod-link" data-vod-link href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="Open VOD">
+      <img src="assets/icons/youtube.png" alt="YouTube VOD">
+    </a>
+  `;
+}
+
+function teamTextLinks(row) {
+  if (state.page.type !== "player" || !row.teams?.length) {
+    return escapeHtml(row.teamsText || "");
+  }
+  if (row.__isCareer) {
+    return row.teams.map((teamName) => escapeHtml(displayName(teamName, "team"))).join(", ");
+  }
+  return row.teams.map((teamName) => {
+    const action = { type: "team", team: teamName, season: row.season };
+    return `<button type="button" class="inline-team-link" data-action="${encodeURIComponent(JSON.stringify(action))}">${escapeHtml(displayName(teamName, "team"))}</button>`;
+  }).join(", ");
 }
 
 function escapeHtml(value) {
@@ -1258,9 +1421,9 @@ function s5StageLabel() {
   return "Overall";
 }
 
-function activeStageLabel() {
-  if (state.season === "S6") return s6StageLabel();
-  if (state.season === "S5") return s5StageLabel();
+function activeStageLabel(season = state.season) {
+  if (season === "S6") return s6StageLabel();
+  if (season === "S5") return s5StageLabel();
   return "";
 }
 
@@ -1657,10 +1820,18 @@ function hasManualPlayerTeamSeason(player, team, season) {
   return manualPlayerRows().some((row) => row.name === player && row.season === season && (row.teams || []).includes(team));
 }
 
+function playerRoleRows(rows) {
+  const rated = [...rows]
+    .filter((row) => typeof row.rating === "number")
+    .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name));
+  const roles = new Map(rated.map((row, index) => [row.name, `${index + 1}`]));
+  return rows.map((row) => ({ ...row, role: roles.get(row.name) || "" }));
+}
+
 function teamRoster(team, season) {
-  if (season === "S6") return s6StagePlayerRows(state.s6Stage, "overall")
+  if (season === "S6") return playerRoleRows(s6StagePlayerRows(state.s6Stage, "overall")
     .filter((row) => (row.teams || []).includes(team))
-    .sort((a, b) => b.games - a.games || b.goals - a.goals);
+    .sort((a, b) => b.games - a.games || b.goals - a.goals));
   if (season === "S5" && state.s5Stage === "swiss") return [];
   const byPlayer = new Map();
   data.players
@@ -1675,7 +1846,7 @@ function teamRoster(team, season) {
       if (!byPlayer.has(game.player)) byPlayer.set(game.player, emptyPlayerAggregate(game.player, season));
       addGameToPlayerAggregate(byPlayer.get(game.player), game);
     });
-  return [...byPlayer.values()].map(finalizePlayerAggregate).sort((a, b) => b.games - a.games || b.goals - a.goals);
+  return playerRoleRows([...byPlayer.values()].map(finalizePlayerAggregate).sort((a, b) => b.games - a.games || b.goals - a.goals));
 }
 
 function playerCareer(player) {
@@ -1994,9 +2165,35 @@ function baseAwardName(name) {
   return String(name || "").replace(/^Co-/i, "");
 }
 
+const awardIconAssets = new Map([
+  ["Ballon d'Car", "assets/award-icons/ballon-dcar.png"],
+  ["Goalie of the Year", "assets/award-icons/goalie-of-the-year.png"],
+  ["Wingman", "assets/award-icons/wingman.png"],
+  ["Golden Wheel", "assets/award-icons/golden-wheel.png"],
+  ["Silver Striker", "assets/award-icons/silver-striker.png"],
+]);
+
+function awardIconFor(name) {
+  return awardIconAssets.get(baseAwardName(name)) || "";
+}
+
+function awardIconMarkup(name, className = "award-icon") {
+  const src = awardIconFor(name);
+  return src ? `<img class="${className}" src="${escapeHtml(src)}" alt="" aria-hidden="true">` : "";
+}
+
+function awardLabelMarkup(name, className = "award-icon") {
+  return `<span class="award-title">${awardIconMarkup(name, className)}<span>${escapeHtml(name)}</span></span>`;
+}
+
+function isNonRaceAwardName(name) {
+  const award = baseAwardName(name);
+  return nonRaceAwardNames.has(award) || /All-Star$/i.test(award);
+}
+
 function awardDisplayName(definition) {
   if (!definition) return "";
-  return definition.winners?.length > 1 && !nonRaceAwardNames.has(definition.award) ? `Co-${definition.award}` : definition.award;
+  return definition.winners?.length > 1 && !isNonRaceAwardName(definition.award) ? `Co-${definition.award}` : definition.award;
 }
 
 function awardDefinitionByName(name, season = "") {
@@ -2009,7 +2206,7 @@ function silverStrikerEligible(row) {
 }
 
 function awardRaceRows(definition) {
-  if (!definition || definition.season === "2026" || definition.award === "Finals MVP") {
+  if (!definition || definition.season === "2026" || isNonRaceAwardName(definition.award)) {
     return (definition?.winners || []).map((name, index) => ({ rank: index + 1, name, teamsText: definition.team, games: "", total: definition.amount, average: definition.perGameAmount, extra: "" }));
   }
   const contenders = seasonPlayerRows(definition.season)
@@ -2385,10 +2582,12 @@ function renderMiniLeaderGrid(target, items, actionType = null) {
     const action = actionType ? ` data-action="${encodeURIComponent(JSON.stringify(actionType(item)))}"` : "";
     const color = item.teamColor || teamColor(item.team || item.name, item.season || state.season);
     const style = ` style="--team-color:${escapeHtml(color)}"`;
+    const nameType = item.type === "team" || item.entity === "team" ? "team" : "name";
+    const label = awardIconFor(item.label) ? awardLabelMarkup(item.label, "mini-award-icon") : escapeHtml(item.label);
     return `
       <button type="button" class="mini-leader-card"${style}${action}>
-        <span>${escapeHtml(item.label)}</span>
-        <strong>${escapeHtml(displayName(item.name, "name"))}</strong>
+        <span class="${awardIconFor(item.label) ? "mini-award-label" : ""}">${label}</span>
+        <strong>${escapeHtml(displayName(item.name, nameType))}</strong>
         <small>${escapeHtml(item.meta)}</small>
       </button>
     `;
@@ -2411,7 +2610,7 @@ function renderLeagueLeaderPanels(rows) {
     teamPanel.querySelector("h2").textContent = "Career Team Leaders";
     const teamItems = careerTeamLeaderStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
       const leader = leaderFor(lifetimeTeams(), key, direction);
-      return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: fmtStat(leader[key], key, suffix) }] : [];
+      return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: fmtStat(leader[key], key, suffix), type: "team" }] : [];
     });
     renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
     awardPanel.classList.add("hidden");
@@ -2435,7 +2634,7 @@ function renderLeagueLeaderPanels(rows) {
   const regularTeamRows = state.season === "All" ? rowsForDataset("teams", "All") : rowsForDataset("teams", panelSeason);
   const teamItems = teamLeagueStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
     const leader = leaderFor(regularTeamRows, key, direction);
-    return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: `${fmtStat(leader[key], key, suffix)} - ${leader.season}` }] : [];
+    return leader ? [{ key, direction, label, name: leader.name, team: leader.name, meta: `${fmtStat(leader[key], key, suffix)} - ${leader.season}`, type: "team" }] : [];
   });
   if (showTeamPanel) renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
 
@@ -2489,7 +2688,7 @@ function dashboardTitle() {
     standings: "Season Standings",
     lifetimeTeams: "Lifetime Team Stats",
     lifetimePlayers: "Lifetime Player Stats",
-    awards: "Awards History",
+    awards: "Archives",
     schedule: "Schedule",
     kitchen: "Selena's Kitchen",
     teamInfo: "Team Info",
@@ -2523,8 +2722,8 @@ function awardHistoryRows() {
     award: awardDisplayName(award),
     awardKey: award.award,
     winnerText: award.winners.length ? award.winners.map((winner) => displayName(winner, "name")).join(", ") : "N/A",
-    team: award.team,
-    amount: award.winners.length > 1 && !nonRaceAwardNames.has(award.award) ? "" : award.amount,
+    team: formattedAwardTeam(award),
+    amount: award.winners.length > 1 && !isNonRaceAwardName(award.award) ? "" : award.amount,
     perGameAmount: award.perGameAmount,
   }));
 }
@@ -2540,6 +2739,25 @@ function awardMilestoneRows() {
     .sort((a, b) => a.label.localeCompare(b.label) || b.threshold - a.threshold || b.value - a.value || a.player.localeCompare(b.player));
 }
 
+function milestoneArchiveRows() {
+  return awardMilestoneRows()
+    .filter((milestone) => state.milestoneFilter === "All" || milestone.label === state.milestoneFilter)
+    .map((milestone) => ({
+    label: `${fmt(milestone.threshold)} ${milestone.label}`,
+    player: milestone.player,
+    threshold: milestone.threshold,
+    value: milestone.value,
+  }));
+}
+
+function milestoneNames() {
+  return ["All", ...new Set(awardMilestoneRows().map((milestone) => milestone.label))].sort((a, b) => {
+    if (a === "All") return -1;
+    if (b === "All") return 1;
+    return a.localeCompare(b);
+  });
+}
+
 function renderAwardFilters() {
   const awards = allAwardDefinitions();
   const counts = awards.reduce((acc, award) => {
@@ -2550,15 +2768,19 @@ function renderAwardFilters() {
     acc[award.season] = (acc[award.season] || 0) + 1;
     return acc;
   }, {});
-  const milestones = awardMilestoneRows();
   els.awardFilters.innerHTML = `
     <div class="awards-panel">
       <div class="awards-panel-head">
         <div>
-          <h2>Awards History</h2>
-          <p>Filter by season or award, then sort the table by any column.</p>
+          <h2>Archives</h2>
+          <p>Review awards and career milestones, then sort the active table by any column.</p>
         </div>
       </div>
+      <div class="archive-toggle" role="group" aria-label="Archive type">
+        <button type="button" class="${state.archiveMode === "awards" ? "active" : ""}" data-archive-mode="awards">Awards</button>
+        <button type="button" class="${state.archiveMode === "milestones" ? "active" : ""}" data-archive-mode="milestones">Milestones</button>
+      </div>
+      ${state.archiveMode === "awards" ? `
       <h3>Season</h3>
       <div class="award-filter-grid award-season-grid">
         ${awardSeasons().map((season) => `
@@ -2571,29 +2793,24 @@ function renderAwardFilters() {
       <h3>Award</h3>
       <div class="award-filter-grid">
         ${awardNames().map((award) => `
-          <button type="button" class="award-filter${state.awardFilter === award ? " active" : ""}" data-award-filter="${escapeHtml(award)}">
-            <strong>${escapeHtml(award)}</strong>
+        <button type="button" class="award-filter${state.awardFilter === award ? " active" : ""}" data-award-filter="${escapeHtml(award)}">
+            <strong>${awardLabelMarkup(award, "award-filter-icon")}</strong>
             <span>${award === "All" ? awards.length : counts[award]} entries</span>
           </button>
         `).join("")}
       </div>
-      ${milestones.length ? `
-        <section class="awards-milestones">
-          <div>
-            <h3>Career Milestones</h3>
-            <p>Career totals earned across regular seasons.</p>
-          </div>
-          <div class="milestone-grid">
-            ${milestones.map((milestone) => `
-              <article class="milestone-card">
-                <span>${escapeHtml(milestone.label)}</span>
-                <strong>${escapeHtml(displayName(milestone.player, "name"))}</strong>
-                <small>${escapeHtml(fmt(milestone.threshold))} reached / career total ${escapeHtml(fmt(milestone.value))}</small>
-              </article>
-            `).join("")}
-          </div>
-        </section>
-      ` : ""}
+      ` : `
+      <h3>Milestones</h3>
+      <p>Career milestone archive across regular seasons.</p>
+      <div class="award-filter-grid">
+        ${milestoneNames().map((milestone) => `
+          <button type="button" class="award-filter${state.milestoneFilter === milestone ? " active" : ""}" data-milestone-filter="${escapeHtml(milestone)}">
+            <strong>${escapeHtml(milestone === "All" ? "All Milestones" : milestone)}</strong>
+            <span>${milestone === "All" ? awardMilestoneRows().length : awardMilestoneRows().filter((row) => row.label === milestone).length} entries</span>
+          </button>
+        `).join("")}
+      </div>
+      `}
     </div>
   `;
   els.awardFilters.classList.remove("hidden");
@@ -2626,7 +2843,7 @@ function decorateRosterCareerHighs(rows) {
 
 function detailContext() {
   if (state.page.type === "team") {
-    const stageLabel = activeStageLabel();
+    const stageLabel = activeStageLabel(state.page.season);
     const seasonLabel = state.page.season === "Lifetime" ? "All seasons" : `${state.page.season}${stageLabel ? ` ${stageLabel}` : ""}`;
     const teamRow = teamSeasonRow(state.page.team, state.page.season);
     const pageTheme = activeTeamPageTheme();
@@ -2733,7 +2950,10 @@ function detailContext() {
 }
 
 function dashboardAction(row) {
-  if (state.view === "awards") return nonRaceAwardNames.has(row.award) ? null : { type: "awardRace", award: row.award, season: row.season };
+  if (state.view === "awards") {
+    if (state.archiveMode === "milestones") return row.player ? { type: "player", player: row.player } : null;
+    return isNonRaceAwardName(row.awardKey || row.award) ? null : { type: "awardRace", award: row.awardKey || row.award, season: row.season };
+  }
   if (isTeamView()) {
     return { type: "team", team: row.name, season: isLifetimeView() ? "Lifetime" : row.season };
   }
@@ -2762,6 +2982,7 @@ function renderSeasonOptions() {
     button.classList.toggle("active", button.dataset.seasonPhase === state.seasonPhase);
     button.disabled = selected === "Lifetime" || (button.dataset.seasonPhase === "playoffs" && !playoffsAvailable);
   });
+  els.excludeTwosEra.checked = state.excludeTwosEra;
   const stagedViews = ["teams", "players", "standings", "schedule"];
   const showS6Stage = selected === "S6" && state.seasonPhase === "regular" && stagedViews.includes(navViewForState());
   const showS5Stage = selected === "S5" && state.seasonPhase === "regular" && stagedViews.includes(navViewForState());
@@ -2853,6 +3074,7 @@ function playerAwards(player) {
 }
 
 const playerMilestoneDefinitions = [
+  ["score", "Points", [10000, 50000, 100000]],
   ["goals", "Goals", [100, 200, 300]],
   ["saves", "Saves", [100, 200]],
   ["assists", "Assists", [50]],
@@ -3470,9 +3692,9 @@ function renderDetailExtras() {
     <div class="award-list">
       ${awards.map((award) => `
         <article class="award-card">
-          <strong>${escapeHtml(award.award)}</strong>
+          <strong>${awardLabelMarkup(award.award, "award-card-icon")}</strong>
           <span>${escapeHtml(award.season)} - ${escapeHtml(award.team)}</span>
-          <small>Amount: ${escapeHtml(award.amount)}${award.perGameAmount ? ` / Per Game: ${escapeHtml(award.perGameAmount)}` : ""}</small>
+          <small>${award.amount ? `Amount: ${escapeHtml(award.amount)}` : ""}${award.perGameAmount ? `${award.amount ? " / " : ""}Per Game: ${escapeHtml(award.perGameAmount)}` : ""}</small>
         </article>
       `).join("")}
     </div>
@@ -3650,7 +3872,7 @@ function renderTable(rows, columns, title, rowAction = null) {
   const visibleColumns = pageColumns(rows, columns);
   const table = els.head.closest("table");
   table.classList.remove("leader-card-table");
-  table.classList.toggle("award-history-table", title === "Awards History");
+  table.classList.toggle("award-history-table", title === "Awards Archive" || title === "Milestones Archive");
   table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
   table.classList.toggle("award-race-table", title === "Contenders");
   table.classList.toggle("schedule-table", state.view === "schedule" && state.page.type === "dashboard");
@@ -3669,12 +3891,16 @@ function renderTable(rows, columns, title, rowAction = null) {
     const isScheduleRow = state.view === "schedule";
     const nameKeys = new Set(["name", "team", "opponent", "player", "teamA", "teamB", "captain", "pick1", "pick2"]);
     const isPlayoffTeam = (key === "teamA" || key === "teamB") && row.round && row.teamA && row.teamB;
-    const raw = nameKeys.has(key) ? displayName(row[key], key === "teamA" || key === "teamB" || key === "team" || (isScheduleRow && key === "opponent") ? "team" : "name") : row[key];
+    const isTeamNameCell = key === "teamA" || key === "teamB" || key === "team" || (key === "name" && (isTeamView() || state.yourKitchenEntity === "teams")) || (isScheduleRow && key === "opponent");
+    const raw = nameKeys.has(key) ? displayName(row[key], isTeamNameCell ? "team" : "name") : row[key];
     let value = isUnavailableValue(row, key) ? "n/a" : (key === "season" ? `<span class="pill">${escapeHtml(raw)}</span>` : escapeHtml(fmtStat(raw, key, percent ? "%" : "")));
+    if (key === "award") value = awardLabelMarkup(String(raw || ""), "award-table-icon");
     if (isPlayoffTeam) value = playoffTeamMarkup(row, key);
     if (isScheduleRow && key === "stage") value = escapeHtml(scheduleStageLabel(row.stage));
     if (isScheduleRow && (key === "team" || key === "opponent")) value = scheduleTeamCell(row, key);
     if (isScheduleRow && key === "result") value = scheduleResultMarkup(row);
+    if (isScheduleRow && key === "vod") value = scheduleVodMarkup(row);
+    if (key === "teamsText" && state.page.type === "player") value = teamTextLinks(row);
     if (isScheduleRow && value === "") value = `<span class="schedule-empty">-</span>`;
     if (action?.type === "playoffSeries" && key === "round") {
       value = `<button type="button" class="table-drilldown" data-action="${encodeURIComponent(JSON.stringify(action))}"><strong>${value}</strong><span>View games</span></button>`;
@@ -3696,7 +3922,7 @@ function renderTableLegend(rows, columns = []) {
   const hasLeagueLeader = rows.some((row) => hasVisibleMark(row, "__leagueLeaders"));
   const hasGtrlsRecord = rows.some((row) => hasVisibleMark(row, "__gtrlsRecords"));
   const items = [];
-  if (hasLeagueLeader) items.push(`<span><strong class="season-leader">Bold</strong> led GTRLS</span>`);
+  if (hasLeagueLeader) items.push(`<span><strong class="season-leader">Pink</strong> led GTRLS</span>`);
   if (hasCareerHigh) items.push(`<span><em class="career-high">Italic</em> career high</span>`);
   if (hasGtrlsRecord) items.push(`<span><sup class="season-record">*</sup> GTRLS record</span>`);
   els.tableLegend.innerHTML = items.join("");
@@ -3750,7 +3976,9 @@ function render() {
 
   if (state.view === "awards") {
     renderKpis([]);
-    renderTable(sortRows(awardHistoryRows()), awardHistoryColumns, "Awards History", dashboardAction);
+    const archiveRows = state.archiveMode === "milestones" ? milestoneArchiveRows() : awardHistoryRows();
+    const archiveColumns = state.archiveMode === "milestones" ? milestoneArchiveColumns : awardHistoryColumns;
+    renderTable(sortRows(archiveRows), archiveColumns, state.archiveMode === "milestones" ? "Milestones Archive" : "Awards Archive", dashboardAction);
     renderAwardFilters();
     renderPlayoffStats();
     return;
@@ -3843,6 +4071,7 @@ els.seasonSelect.addEventListener("change", (event) => {
   if (state.view === "lifetimeTeams") state.view = "teams";
   if (state.view === "lifetimePlayers") state.view = "players";
   state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(selected) ? playoffSeasonName(selected) : selected;
+  resetExcludeTwosIfNeeded();
   if (state.view === "standings") {
     state.sortKey = "standingsRank";
     state.sortDir = "asc";
@@ -3939,6 +4168,7 @@ els.tabButtons.forEach((button) => {
       state.season = latestRegularSeason();
       state.seasonPhase = "regular";
     }
+    resetExcludeTwosIfNeeded();
     state.sortKey = state.view === "awards" || state.view === "kitchen" || state.view === "yourKitchen" || state.view === "schedule" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
     state.sortDir = "desc";
     if (state.view === "standings" || state.view === "schedule") state.sortDir = "asc";
@@ -3976,9 +4206,12 @@ els.backButton.addEventListener("click", () => {
     state.sortKey = "season";
     state.sortDir = "desc";
   } else if (state.page.type === "draft") {
-    state.page = { type: "dashboard" };
-    state.sortKey = isTeamView() ? "wins" : "goals";
-    state.sortDir = "desc";
+    if (!restoreContext(state.previousContext)) {
+      state.page = { type: "dashboard" };
+      state.sortKey = isTeamView() ? "wins" : "goals";
+      state.sortDir = "desc";
+    }
+    state.previousContext = null;
   } else if (state.page.type === "scheduleSeries") {
     state.page = { type: "dashboard" };
     state.view = "schedule";
@@ -3993,9 +4226,11 @@ els.backButton.addEventListener("click", () => {
 });
 
 els.body.addEventListener("click", (event) => {
+  if (event.target.closest("[data-vod-link]")) return;
   const row = event.target.closest("[data-action]");
   if (!row) return;
   const action = JSON.parse(decodeURIComponent(row.dataset.action));
+  if (action.type === "draft") state.previousContext = snapshotContext();
   state.page = action;
   if (action.type === "team") {
     state.sortKey = "goals";
@@ -4043,7 +4278,9 @@ document.querySelector(".kpis").addEventListener("click", (event) => {
 els.searchSuggestions.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
-  state.page = JSON.parse(decodeURIComponent(target.dataset.action));
+  const action = JSON.parse(decodeURIComponent(target.dataset.action));
+  if (action.type === "draft") state.previousContext = snapshotContext();
+  state.page = action;
   state.searchText = "";
   els.searchInput.value = "";
   render();
@@ -4052,14 +4289,18 @@ els.searchSuggestions.addEventListener("click", (event) => {
 els.playoffStats.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
-  state.page = JSON.parse(decodeURIComponent(target.dataset.action));
+  const action = JSON.parse(decodeURIComponent(target.dataset.action));
+  if (action.type === "draft") state.previousContext = snapshotContext();
+  state.page = action;
   render();
 });
 
 els.teamInfoPanel.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
-  state.page = JSON.parse(decodeURIComponent(target.dataset.action));
+  const action = JSON.parse(decodeURIComponent(target.dataset.action));
+  if (action.type === "draft") state.previousContext = snapshotContext();
+  state.page = action;
   state.sortKey = "goals";
   state.sortDir = "desc";
   render();
@@ -4195,21 +4436,23 @@ els.detailExtras.addEventListener("click", (event) => {
   }
   const target = event.target.closest("[data-action]");
   if (!target) return;
-  state.page = JSON.parse(decodeURIComponent(target.dataset.action));
-  if (state.page.type === "draft") {
+  const action = JSON.parse(decodeURIComponent(target.dataset.action));
+  if (action.type === "draft") state.previousContext = snapshotContext();
+  state.page = action;
+  if (action.type === "draft") {
     state.sortKey = "draftOrder";
     state.sortDir = "asc";
-  } else if (state.page.type === "player") {
+  } else if (action.type === "player") {
     state.sortKey = "season";
     state.sortDir = "asc";
-  } else if (state.page.type === "seasonLeaders") {
+  } else if (action.type === "seasonLeaders") {
     state.sortKey = "stat";
     state.sortDir = "asc";
-  } else if (state.page.type === "schedule") {
+  } else if (action.type === "schedule") {
     state.view = "schedule";
-    state.season = state.page.season;
+    state.season = action.season;
     state.seasonPhase = "regular";
-    state.scheduleTeamFilter = state.page.team || "All";
+    state.scheduleTeamFilter = action.team || "All";
     state.page = { type: "dashboard" };
     state.sortKey = "season";
     state.sortDir = "asc";
@@ -4218,6 +4461,22 @@ els.detailExtras.addEventListener("click", (event) => {
 });
 
 els.awardFilters.addEventListener("click", (event) => {
+  const archiveMode = event.target.closest("[data-archive-mode]");
+  if (archiveMode) {
+    state.archiveMode = archiveMode.dataset.archiveMode;
+    state.sortKey = state.archiveMode === "milestones" ? "label" : "season";
+    state.sortDir = state.archiveMode === "milestones" ? "asc" : "desc";
+    state.page = { type: "dashboard" };
+    render();
+    return;
+  }
+  const milestoneFilter = event.target.closest("[data-milestone-filter]");
+  if (milestoneFilter) {
+    state.milestoneFilter = milestoneFilter.dataset.milestoneFilter;
+    state.page = { type: "dashboard" };
+    render();
+    return;
+  }
   const awardFilter = event.target.closest("[data-award-filter]");
   const awardSeasonFilter = event.target.closest("[data-award-season-filter]");
   if (!awardFilter && !awardSeasonFilter) return;
