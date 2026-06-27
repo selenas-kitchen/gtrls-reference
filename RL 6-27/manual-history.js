@@ -1186,7 +1186,7 @@ Win	ESC	(20) 3-2 (7)	Best Friends Club	Loss
 Loss	Spirit Airlines	(6) 0-3 (12)	Hook Line & Blinker	Win
 Win	Giga's In Paris	(15) 3-1 (5)	Quack Wok	Loss
 Supernova Abyss	(0) 0-0 (0)	Ball Chasin & Sauce Tastin
-Win	Past Our Prime	(9) 3-1 (8)	Deceptitards	Loss
+Past Our Prime	(0) 0-0 (0)	Deceptitards
 Byes: Crossbar Cartel, The Cox
 Week 5
 Loss	Crossbar Cartel	(5) 1-3 (11)	Ball Chasin & Sauce Tastin	Win
@@ -1196,7 +1196,7 @@ Win	Giga's In Paris	(8) 3-0 (2)	Spirit Airlines	Loss
 Loss	Best Friends Club	(8) 2-3 (15)	Hook Line & Blinker	Win
 Byes: Quack Wok, ESC
 Week 6
-Win	Hook Line & Blinker	(12) 3-0 (3)	ESC	Loss
+Hook Line & Blinker	(0) 0-0 (0)	ESC
 Loss	Best Friends Club	(5) 1-3 (11)	Giga's In Paris	Win
 Quack Wok	(0) 0-0 (0)	Spirit Airlines
 Loss	The Cox	(12) 1-3 (14)	Supernova Abyss	Win
