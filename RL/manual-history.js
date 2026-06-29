@@ -1343,6 +1343,18 @@ Demoted Team	(0) 0-0 (0)
     [schedulePairKey("Hook Line & Blinker", "Quack Wok"), "https://www.youtube.com/watch?v=fEsYbXPfkFg"],
     [schedulePairKey("Past Our Prime", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=z_EsuN_HO4I"],
     [schedulePairKey("Giga's In Paris", "Best Friends Club"), "https://www.youtube.com/watch?v=uovRVsUuQXE"],
+    [schedulePairKey("Giga's In Paris", "Spirit Airlines"), "https://www.youtube.com/watch?v=oPA0gzdo-zo"],
+    [schedulePairKey("Hook Line & Blinker", "Giga's In Paris"), "https://www.youtube.com/watch?v=iQ7sjD1R7HE"],
+    [schedulePairKey("Past Our Prime", "Deceptitards"), "https://www.youtube.com/watch?v=TnQqzCn_plw"],
+    [schedulePairKey("ESC", "Quack Wok"), "https://www.youtube.com/watch?v=G5oINJpWxUE"],
+    [schedulePairKey("Deceptitards", "Crossbar Cartel"), "https://www.youtube.com/watch?v=m7Aapz8ZP7U"],
+    [schedulePairKey("Crossbar Cartel", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=5xvwG31QOVc"],
+    [schedulePairKey("Best Friends Club", "Hook Line & Blinker"), "https://www.youtube.com/watch?v=1Qq0HT8Cmmo"],
+    [schedulePairKey("Supernova Abyss", "The Cox"), "https://www.youtube.com/watch?v=c5Y1s2NDy0E"],
+    [schedulePairKey("Deceptitards", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=CzggEeX75LQ"],
+    [schedulePairKey("Deceptitards", "The Cox"), "https://www.youtube.com/watch?v=76i3c9yqtcc"],
+    [schedulePairKey("Hook Line & Blinker", "ESC"), "https://www.youtube.com/watch?v=6jQiKVr0SmE"],
+    [schedulePairKey("Giga's In Paris", "Quack Wok"), "https://www.youtube.com/watch?v=snUl6xOLJ_0"],
   ]);
   schedules.forEach((row) => {
     if (row.season !== "S6" || row.stage !== "group") return;
