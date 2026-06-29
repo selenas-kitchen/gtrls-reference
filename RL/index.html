@@ -4,17 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=captain-feature-soft-highlights-20260627">
+  <link rel="stylesheet" href="styles.css?v=kitchen-graph-zones-20260629">
 </head>
 <body>
   <header class="topbar">
     <div class="brand-lockup">
-      <img class="brand-logo" src="assets/gravy-train-logo.jpg" alt="Gravy Train Rocket League Series logo">
-      <div>
-        <p class="eyebrow">selena's kitchen</p>
-        <h1>Gravy Train Rocket League Series</h1>
-      </div>
+      <button id="homeLogoButton" class="home-logo-button" type="button" aria-label="Return to main landing page">
+        <img class="brand-logo" src="assets/main-mini-logo.png?v=20260629" alt="Gravy Train Rocket League Series logo">
+      </button>
     </div>
+    <nav class="social-links" aria-label="GTRLS social links">
+      <a href="https://www.twitch.tv/gravytrainrls" target="_blank" rel="noopener noreferrer" aria-label="Open Gravy Train RLS on Twitch">
+        <img src="assets/social/twitch.jpg?v=20260629" alt="Twitch">
+      </a>
+      <a href="https://www.youtube.com/@GravyTrainRLS" target="_blank" rel="noopener noreferrer" aria-label="Open Gravy Train RLS on YouTube">
+        <img src="assets/social/youtube.png?v=20260629" alt="YouTube">
+      </a>
+      <a href="https://discord.gg/YGecYABtu" target="_blank" rel="noopener noreferrer" aria-label="Join the GTRLS Discord">
+        <img src="assets/social/discord.jpg?v=20260629" alt="Discord">
+      </a>
+    </nav>
     <div class="meta">
       <span id="generatedAt">Last Update: loading...</span>
     </div>
@@ -38,11 +47,6 @@
       <div id="seasonPhaseControl" class="phase-control" role="group" aria-label="Season phase">
         <button type="button" data-season-phase="regular" class="active">Regular Season</button>
         <button type="button" data-season-phase="playoffs">Playoffs</button>
-      </div>
-      <div id="s6StageControl" class="phase-control hidden" role="group" aria-label="Season 6 stage">
-        <button type="button" data-s6-stage="group" class="active">Group Stage</button>
-        <button type="button" data-s6-stage="swiss">Swiss</button>
-        <button type="button" data-s6-stage="overall">Overall</button>
       </div>
       <div id="s5StageControl" class="phase-control hidden" role="group" aria-label="Season 5 split">
         <button type="button" data-s5-stage="split1" class="active">Split 1</button>
@@ -88,13 +92,6 @@
         <h2>Award Races</h2>
         <div id="awardRaceGrid" class="mini-leader-grid"></div>
       </div>
-    </section>
-
-    <section id="s6PoolControl" class="s6-pool-strip hidden" role="group" aria-label="Season 6 pool">
-      <span>Group Stage Filter</span>
-      <button type="button" data-s6-pool="overall" class="active">Overall</button>
-      <button type="button" data-s6-pool="gravy">Gravy Pool</button>
-      <button type="button" data-s6-pool="train">Train Pool</button>
     </section>
 
     <section class="figures hidden" aria-label="Key figures">
@@ -149,6 +146,19 @@
           <span id="rowCount">0 rows</span>
         </div>
       </div>
+      <section class="stage-filter-row" aria-label="Stage and pool filters">
+        <div id="s6StageControl" class="phase-control hidden" role="group" aria-label="Season 6 stage">
+          <button type="button" data-s6-stage="group" class="active">Group Stage</button>
+          <button type="button" data-s6-stage="swiss">Swiss</button>
+          <button type="button" data-s6-stage="overall">Overall</button>
+        </div>
+        <div id="s6PoolControl" class="s6-pool-strip hidden" role="group" aria-label="Season 6 pool">
+          <span>Group Stage Filter</span>
+          <button type="button" data-s6-pool="overall" class="active">Overall</button>
+          <button type="button" data-s6-pool="gravy">Gravy Pool</button>
+          <button type="button" data-s6-pool="train">Train Pool</button>
+        </div>
+      </section>
       <div class="table-wrap">
         <table>
           <thead id="statsHead"></thead>
@@ -163,6 +173,6 @@
 
   <script src="dashboard-data.js"></script>
   <script src="manual-history.js?v=s6-vods-20260629"></script>
-  <script src="app.js?v=kitchen-live-per-20260627"></script>
+  <script src="app.js?v=kitchen-graph-zones-20260629"></script>
 </body>
 </html>

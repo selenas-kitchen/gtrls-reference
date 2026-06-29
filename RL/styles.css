@@ -25,34 +25,129 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+body.main-page-background {
+  background:
+    linear-gradient(rgba(5, 7, 10, 0.28), rgba(5, 7, 10, 0.76)),
+    url("assets/backgrounds/main-page.png?v=s6-backgrounds-20260629") center center / cover fixed no-repeat,
+    var(--bg);
+}
+
+body.main-page-background .controls,
+body.main-page-background .detail-bar,
+body.main-page-background .kpis,
+body.main-page-background .leaderboards,
+body.main-page-background .table-shell,
+body.main-page-background .detail-extras,
+body.main-page-background .kitchen-card,
+body.main-page-background .your-kitchen-card,
+body.main-page-background .team-info-card {
+  background: rgba(7, 10, 16, 0.88);
+  backdrop-filter: blur(3px);
+}
+
+body.team-page-background {
+  background:
+    linear-gradient(rgba(5, 7, 10, 0.18), rgba(5, 7, 10, 0.78)),
+    var(--team-page-background) center center / cover fixed no-repeat,
+    var(--bg);
+}
+
+body.team-page-background .detail-bar,
+body.team-page-background .table-shell,
+body.team-page-background .detail-extras {
+  backdrop-filter: blur(3px);
+}
+
 .topbar {
-  min-height: 154px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 22px clamp(18px, 4vw, 54px);
-  background: #05070a;
+  min-height: 0;
+  display: block;
+  padding: 10px clamp(14px, 3vw, 34px) 0;
+  background: transparent;
   color: #ffffff;
-  border-bottom: 3px solid var(--accent-2);
-  box-shadow: inset 0 -1px 0 var(--accent), 0 8px 26px rgba(0, 184, 212, 0.12);
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .brand-lockup {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 20px;
+}
+
+.home-logo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 86px;
+  height: 86px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(5, 7, 10, 0.42);
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 0 0 1px rgba(32, 223, 245, 0.6), 0 0 18px rgba(0, 232, 255, 0.34), 0 0 28px rgba(255, 42, 161, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.home-logo-button:hover,
+.home-logo-button:focus-visible {
+  background: rgba(5, 7, 10, 0.68);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 20px rgba(0, 232, 255, 0.55), 0 0 34px rgba(255, 42, 161, 0.32);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .brand-logo {
-  width: 108px;
-  height: 108px;
+  width: 78px;
+  height: 78px;
   flex: 0 0 auto;
-  border: 2px solid var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 8px;
   object-fit: cover;
-  box-shadow: 0 0 0 2px #05070a, 0 0 18px rgba(0, 232, 255, 0.55), 0 0 28px rgba(255, 42, 161, 0.3);
+  box-shadow: none;
+}
+
+.social-links {
+  position: fixed;
+  top: 10px;
+  right: clamp(14px, 3vw, 34px);
+  z-index: 42;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  pointer-events: auto;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 5px;
+  border: 1px solid rgba(32, 223, 245, 0.58);
+  border-radius: 10px;
+  background: rgba(5, 7, 10, 0.48);
+  box-shadow: 0 0 16px rgba(0, 232, 255, 0.23), 0 0 22px rgba(255, 42, 161, 0.16);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.social-links a:hover,
+.social-links a:focus-visible {
+  background: rgba(5, 7, 10, 0.72);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px rgba(0, 232, 255, 0.48), 0 0 28px rgba(255, 42, 161, 0.28);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.social-links img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 .eyebrow {
@@ -82,15 +177,27 @@ h2 {
 }
 
 .meta {
-  color: #dce8ed;
-  font-size: 0.9rem;
+  position: fixed;
+  right: clamp(14px, 3vw, 34px);
+  bottom: 14px;
+  z-index: 40;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 850;
   white-space: nowrap;
+  padding: 9px 12px;
+  border: 1px solid rgba(32, 223, 245, 0.65);
+  border-radius: 8px;
+  background: rgba(5, 7, 10, 0.72);
+  text-shadow: 0 0 10px rgba(32, 223, 245, 0.34);
+  box-shadow: 0 0 18px rgba(0, 232, 255, 0.16), 0 0 22px rgba(255, 42, 161, 0.13);
+  pointer-events: auto;
 }
 
 main {
   width: min(1400px, 100%);
-  margin: 0 auto;
-  padding: 24px clamp(14px, 3vw, 34px) 42px;
+  margin: -68px auto 0;
+  padding: 0 clamp(14px, 3vw, 34px) 64px;
 }
 
 .controls,
@@ -190,7 +297,7 @@ main {
   grid-template-columns: minmax(150px, 210px) minmax(200px, 1fr) minmax(132px, auto) minmax(260px, auto) minmax(132px, auto);
   gap: 14px;
   align-items: end;
-  padding: 16px;
+  padding: 16px 16px 16px 112px;
 }
 
 label {
@@ -304,6 +411,40 @@ input {
 
 #s5StageControl {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+#s6StageControl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stage-filter-row {
+  display: none;
+  grid-template-columns: minmax(320px, 440px) minmax(360px, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin: 0 16px 12px;
+  padding: 12px 0 0;
+  background: transparent;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.stage-filter-row:has(.phase-control:not(.hidden), .s6-pool-strip:not(.hidden)) {
+  display: grid;
+}
+
+.stage-filter-row .phase-control,
+.stage-filter-row .s6-pool-strip {
+  margin: 0;
+  box-shadow: none;
+}
+
+.stage-filter-row .s6-pool-strip {
+  justify-content: flex-end;
+  padding: 0;
+  background: transparent;
+  border: 0;
 }
 
 .s6-pool-strip {
@@ -1403,6 +1544,10 @@ input {
   stroke-linejoin: round;
 }
 
+.kitchen-scatter .performance-zone {
+  pointer-events: none;
+}
+
 .kitchen-dot circle {
   fill: var(--team-color);
   stroke: #fff;
@@ -1460,14 +1605,17 @@ input {
 }
 
 .kitchen-player-info {
-  min-height: 86px;
+  height: 150px;
+  box-sizing: border-box;
   display: grid;
   gap: 8px;
+  align-content: start;
   border: 1px solid var(--line);
   border-left: 5px solid var(--accent);
   border-radius: 8px;
   background: #fff;
   padding: 12px 14px;
+  overflow: hidden;
 }
 
 .kitchen-player-info > span {
@@ -2563,6 +2711,49 @@ input {
 .award-history-table th:nth-child(5) { width: 18%; }
 .award-history-table th:nth-child(6) { width: 18%; }
 
+.world-cup-table {
+  width: min(100%, 760px);
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.world-cup-table th,
+.world-cup-table td {
+  padding: 8px 9px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.world-cup-table th:first-child,
+.world-cup-table td:first-child {
+  position: static;
+  min-width: 0;
+  max-width: none;
+  box-shadow: none;
+}
+
+.world-cup-table .col-season {
+  width: 13%;
+}
+
+.world-cup-table .col-award {
+  width: 27%;
+}
+
+.world-cup-table .col-player {
+  width: 22%;
+}
+
+.world-cup-table .col-team {
+  width: 23%;
+}
+
+.world-cup-table .col-amount {
+  width: 15%;
+}
+
 .playoff-bracket-table {
   min-width: 0;
   table-layout: fixed;
@@ -3298,22 +3489,42 @@ tbody tr.clickable td:first-child {
 
 @media (max-width: 820px) {
   .topbar {
-    display: grid;
-    align-items: start;
+    padding-top: 10px;
   }
 
   .brand-lockup {
-    align-items: flex-start;
-    gap: 14px;
+    align-items: center;
+  }
+
+  .home-logo-button {
+    width: 70px;
+    height: 70px;
   }
 
   .brand-logo {
-    width: 84px;
-    height: 84px;
+    width: 62px;
+    height: 62px;
+  }
+
+  .social-links {
+    top: 10px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .social-links a {
+    width: 38px;
+    height: 38px;
+    padding: 4px;
   }
 
   .meta {
+    right: 12px;
+    bottom: 10px;
+    max-width: 50vw;
     white-space: normal;
+    text-align: right;
+    font-size: 0.78rem;
   }
 
   .controls,
@@ -3321,6 +3532,18 @@ tbody tr.clickable td:first-child {
   .kpis,
   .figures {
     grid-template-columns: 1fr;
+  }
+
+  .controls {
+    padding-left: 16px;
+  }
+
+  .stage-filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-filter-row .s6-pool-strip {
+    justify-content: stretch;
   }
 
   .s6-pool-strip {

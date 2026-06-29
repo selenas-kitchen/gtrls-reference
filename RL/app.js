@@ -583,6 +583,7 @@ const championshipGameColumns = [
 const playoffWinnerPattern = /(\d+)\s*-\s*(\d+)/;
 
 const els = {
+  homeLogoButton: document.querySelector("#homeLogoButton"),
   generatedAt: document.querySelector("#generatedAt"),
   seasonSelect: document.querySelector("#seasonSelect"),
   searchInput: document.querySelector("#searchInput"),
@@ -676,6 +677,7 @@ const awardDefinitions = [
 ];
 
 const nonRaceAwardNames = new Set(["Finals MVP", "World Cup Champions", "Season Champion"]);
+const ongoingAwardSeasons = new Set(["S6"]);
 const manualSeasonChampions = [
   { season: "S1", team: "Two Inches Deep", amount: "Champion*" },
 ];
@@ -728,35 +730,38 @@ function allStarDefinitions() {
       .sort((a, b) => b.avgScore - a.avgScore || b.score - a.score || a.name.localeCompare(b.name))
       .slice(0, limit);
     if (!rows.length) return [];
-    return [{
-      award: `${season} All-Star`,
+    return rows.map((row) => ({
+      award: "All-Star",
       season,
       stat: "score",
       avgStat: "avgScore",
       sortStat: "avgScore",
       totalLabel: "All-Star",
       avgLabel: "Score/G",
-      winners: rows.map((row) => row.name),
-      team: rows.map((row) => row.teamsText || row.teams?.join(", ") || "").filter(Boolean).join(", "),
-      teamList: rows.map((row) => row.teamsText || row.teams?.join(", ") || ""),
-      amount: "",
-      perGameAmount: rows.map((row) => fmtGameAvg(row.avgScore)).join(", "),
-      perGameList: rows.map((row) => fmtGameAvg(row.avgScore)),
+      winners: [row.name],
+      team: row.teamsText || row.teams?.join(", ") || "",
+      amount: "All-Star",
+      perGameAmount: fmtGameAvg(row.avgScore),
       generated: true,
       nonRace: true,
-    }];
+    }));
   });
 }
 
 function allAwardDefinitions() {
   const explicitKeys = new Set(awardDefinitions.map((award) => `${award.season}|${award.award}`));
   const generatedRaceAwards = visibleSeasons()
-    .filter((season) => /^S\d+$/.test(season))
+    .filter((season) => /^S\d+$/.test(season) && !ongoingAwardSeasons.has(season))
     .flatMap((season) => awardRaceDefinitionsForSeason(season)
       .filter((award) => !explicitKeys.has(`${season}|${award.award}`))
       .map(computedAwardDefinition)
       .filter(Boolean));
-  return [...awardDefinitions, ...generatedRaceAwards, ...allStarDefinitions(), ...seasonChampionDefinitions()];
+  return [...awardDefinitions, ...generatedRaceAwards, ...allStarDefinitions(), ...seasonChampionDefinitions()]
+    .filter((award) => !ongoingAwardSeasons.has(award.season) && !isWorldCupAwardName(award.award));
+}
+
+function worldCupDefinitions() {
+  return awardDefinitions.filter((award) => isWorldCupAwardName(award.award));
 }
 
 function formattedAwardTeam(definition, index = null) {
@@ -919,6 +924,14 @@ const milestoneArchiveColumns = [
   ["player", "Player"],
   ["threshold", "Threshold"],
   ["value", "Career Total"],
+];
+
+const worldCupArchiveColumns = [
+  ["season", "World Cup"],
+  ["award", "Award"],
+  ["player", "Player"],
+  ["team", "Team"],
+  ["amount", "Result"],
 ];
 
 const awardRaceColumns = [
@@ -2579,6 +2592,10 @@ function playerAwardFootnoteMarkup(player, season) {
   return `<span class="award-footnotes" aria-label="Awards">${footnotes.map((item) => `<span class="award-footnote" title="${escapeHtml(item.title)}">${escapeHtml(item.code)}</span>`).join("")}</span>`;
 }
 
+function isWorldCupAwardName(name) {
+  return baseAwardName(name) === "World Cup Champions";
+}
+
 function isNonRaceAwardName(name) {
   const award = baseAwardName(name);
   return nonRaceAwardNames.has(award) || /All-Star$/i.test(award);
@@ -2791,6 +2808,24 @@ function renderKitchenScatter(players, { id, title, season = state.season, fitPl
   const lineY1 = baselineY === null ? (regression.slope * graphXMin + regression.intercept) : baselineY;
   const lineY2 = baselineY === null ? (regression.slope * graphXMax + regression.intercept) : baselineY;
   const sCurveDm = median(fitPlayers.map((row) => Number(row.rating)).filter((value) => Number.isFinite(value) && value > 0));
+  const referenceYValue = (xValue) => {
+    if (showLogisticFit) return kitchenExpectedPerPerGame(xValue, sCurveDm);
+    if (baselineY !== null) return baselineY;
+    return regression.slope * xValue + regression.intercept;
+  };
+  const zonePoints = Array.from({ length: 64 }, (_, index) => {
+    const xValue = graphXMin + ((graphXMax - graphXMin) * (index / 63));
+    return {
+      x: scaleX(xValue),
+      y: scaleY(referenceYValue(xValue)),
+    };
+  });
+  const showPerformanceZones = showLogisticFit || baselineY !== null;
+  const zoneId = `kitchen-zone-${id}`;
+  const linePath = zonePoints.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const reverseLinePath = [...zonePoints].reverse().map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const greenZone = `${chart.left},${chart.top} ${chart.left + chart.width},${chart.top} ${reverseLinePath}`;
+  const redZone = `${linePath} ${chart.left + chart.width},${chart.top + chart.height} ${chart.left},${chart.top + chart.height}`;
   const logisticPoints = showLogisticFit
     ? Array.from({ length: 48 }, (_, index) => {
       const xValue = graphXMin + ((graphXMax - graphXMin) * (index / 47));
@@ -2832,6 +2867,22 @@ function renderKitchenScatter(players, { id, title, season = state.season, fitPl
         </div>
       </div>
       <svg viewBox="0 0 920 430" role="img" aria-label="${escapeHtml(title)} scatter plot">
+        ${showPerformanceZones ? `
+        <defs>
+          <linearGradient id="${zoneId}-green" x1="0" y1="${chart.top}" x2="0" y2="${chart.top + chart.height}" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#36ff86" stop-opacity="0.24"></stop>
+            <stop offset="62%" stop-color="#36ff86" stop-opacity="0.06"></stop>
+            <stop offset="100%" stop-color="#36ff86" stop-opacity="0"></stop>
+          </linearGradient>
+          <linearGradient id="${zoneId}-red" x1="0" y1="${chart.top}" x2="0" y2="${chart.top + chart.height}" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ff4a5f" stop-opacity="0"></stop>
+            <stop offset="38%" stop-color="#ff4a5f" stop-opacity="0.06"></stop>
+            <stop offset="100%" stop-color="#ff4a5f" stop-opacity="0.24"></stop>
+          </linearGradient>
+        </defs>
+        <polygon class="performance-zone performance-zone-good" points="${greenZone}" fill="url(#${zoneId}-green)"></polygon>
+        <polygon class="performance-zone performance-zone-bad" points="${redZone}" fill="url(#${zoneId}-red)"></polygon>
+        ` : ""}
         <line class="axis" x1="${chart.left}" y1="${chart.top}" x2="${chart.left}" y2="${chart.top + chart.height}"></line>
         <line class="axis" x1="${chart.left}" y1="${chart.top + chart.height}" x2="${chart.left + chart.width}" y2="${chart.top + chart.height}"></line>
         ${xTicks.map((tick) => `<g class="tick"><line x1="${scaleX(tick).toFixed(1)}" y1="${chart.top}" x2="${scaleX(tick).toFixed(1)}" y2="${chart.top + chart.height}"></line><text x="${scaleX(tick).toFixed(1)}" y="${chart.top + chart.height + 28}">${fmt(Math.round(tick))}</text></g>`).join("")}
@@ -2842,7 +2893,7 @@ function renderKitchenScatter(players, { id, title, season = state.season, fitPl
         <text class="axis-label x-label" x="${chart.left + (chart.width / 2)}" y="424">Rating</text>
         <text class="axis-label y-label" transform="translate(16 ${chart.top + (chart.height / 2)}) rotate(-90)">${escapeHtml(yLabel)}</text>
       </svg>
-      ${id === "per" ? `<div id="kitchenPlayerInfo" class="kitchen-player-info"><span>Select a player from the table or hover a dot.</span></div>` : ""}
+      <div class="kitchen-player-info" data-kitchen-player-info>${kitchenInfoHtml(null)}</div>
     </div>
   `;
 }
@@ -2997,7 +3048,17 @@ function renderKitchen() {
 }
 
 function kitchenInfoHtml(dataset) {
-  if (!dataset?.kitchenPlayer) return `<span>Select a player from the table or hover a dot.</span>`;
+  if (!dataset?.kitchenPlayer) return `
+    <strong>Select a player</strong>
+    <span>Choose a table row or hover a dot.</span>
+    <small>&nbsp;</small>
+    <dl>
+      <div><dt>Rating</dt><dd>-</dd></div>
+      <div><dt>PER/G</dt><dd>-</dd></div>
+      <div><dt>xPER/G</dt><dd>-</dd></div>
+      <div><dt>PER/G-</dt><dd>-</dd></div>
+    </dl>
+  `;
   return `
     <strong>${escapeHtml(displayName(dataset.kitchenPlayer, "name"))}</strong>
     <span>${escapeHtml(dataset.team || "")}${dataset.role ? ` | Role ${escapeHtml(dataset.role)}` : ""}</span>
@@ -3019,18 +3080,28 @@ function kitchenPlayerDataset(player) {
 
 function updateKitchenSelection(player, { temporary = false } = {}) {
   const activePlayer = player || "";
+  if (temporary) {
+    els.kitchenPanel.querySelectorAll(".is-hovered").forEach((node) => node.classList.remove("is-hovered"));
+  }
   els.kitchenPanel.querySelectorAll(".kitchen-dot, .kitchen-table tbody tr").forEach((node) => {
     const isActive = node.dataset.kitchenPlayer === activePlayer;
-    node.classList.toggle(temporary ? "is-hovered" : "is-selected", isActive);
-    if (!temporary) node.classList.remove("is-hovered");
+    if (temporary) {
+      node.classList.toggle("is-hovered", isActive);
+    } else {
+      node.classList.toggle("is-selected", isActive);
+      node.classList.remove("is-hovered");
+    }
   });
-  const info = els.kitchenPanel.querySelector("#kitchenPlayerInfo");
-  if (info) info.innerHTML = kitchenInfoHtml(kitchenPlayerDataset(activePlayer));
+  els.kitchenPanel.querySelectorAll("[data-kitchen-player-info]").forEach((info) => {
+    info.innerHTML = kitchenInfoHtml(kitchenPlayerDataset(activePlayer));
+  });
 }
 
 function clearKitchenHover() {
   els.kitchenPanel.querySelectorAll(".is-hovered").forEach((node) => node.classList.remove("is-hovered"));
-  updateKitchenSelection(state.kitchenSelectedPlayer);
+  els.kitchenPanel.querySelectorAll("[data-kitchen-player-info]").forEach((info) => {
+    info.innerHTML = kitchenInfoHtml(kitchenPlayerDataset(state.kitchenSelectedPlayer));
+  });
 }
 
 function latestRegularSeason() {
@@ -3217,6 +3288,16 @@ function awardHistoryRows() {
   }));
 }
 
+function worldCupArchiveRows() {
+  return worldCupDefinitions().flatMap((definition) => definition.winners.map((player) => ({
+    season: definition.season,
+    award: definition.award,
+    player,
+    team: "Reef Donkey",
+    amount: definition.amount || "Champion",
+  })));
+}
+
 function awardMilestoneRows() {
   return lifetimePlayers()
     .flatMap((player) => playerMilestones(player).map((milestone) => ({
@@ -3249,6 +3330,10 @@ function milestoneNames() {
 
 function renderAwardFilters() {
   const awards = allAwardDefinitions();
+  const awardNameOptions = awardNames();
+  const awardSeasonOptions = awardSeasons();
+  if (!awardNameOptions.includes(state.awardFilter)) state.awardFilter = "All";
+  if (!awardSeasonOptions.includes(state.awardSeasonFilter)) state.awardSeasonFilter = "All";
   const counts = awards.reduce((acc, award) => {
     acc[award.award] = (acc[award.award] || 0) + 1;
     return acc;
@@ -3268,11 +3353,12 @@ function renderAwardFilters() {
       <div class="archive-toggle" role="group" aria-label="Archive type">
         <button type="button" class="${state.archiveMode === "awards" ? "active" : ""}" data-archive-mode="awards">Awards</button>
         <button type="button" class="${state.archiveMode === "milestones" ? "active" : ""}" data-archive-mode="milestones">Milestones</button>
+        <button type="button" class="${state.archiveMode === "worldCups" ? "active" : ""}" data-archive-mode="worldCups">World Cup(s)</button>
       </div>
       ${state.archiveMode === "awards" ? `
       <h3>Season</h3>
       <div class="award-filter-grid award-season-grid">
-        ${awardSeasons().map((season) => `
+        ${awardSeasonOptions.map((season) => `
           <button type="button" class="award-filter${state.awardSeasonFilter === season ? " active" : ""}" data-award-season-filter="${escapeHtml(season)}">
             <strong>${escapeHtml(season)}</strong>
             <span>${season === "All" ? awards.length : seasonCounts[season]} awards</span>
@@ -3281,14 +3367,14 @@ function renderAwardFilters() {
       </div>
       <h3>Award</h3>
       <div class="award-filter-grid">
-        ${awardNames().map((award) => `
+        ${awardNameOptions.map((award) => `
         <button type="button" class="award-filter${state.awardFilter === award ? " active" : ""}" data-award-filter="${escapeHtml(award)}">
             <strong>${awardLabelMarkup(award, "award-filter-icon")}</strong>
             <span>${award === "All" ? awards.length : counts[award]} entries</span>
           </button>
         `).join("")}
       </div>
-      ` : `
+      ` : state.archiveMode === "milestones" ? `
       <h3>Milestones</h3>
       <p>Career milestone archive across regular seasons.</p>
       <div class="award-filter-grid">
@@ -3296,6 +3382,17 @@ function renderAwardFilters() {
           <button type="button" class="award-filter${state.milestoneFilter === milestone ? " active" : ""}" data-milestone-filter="${escapeHtml(milestone)}">
             <strong>${escapeHtml(milestone === "All" ? "All Milestones" : milestone)}</strong>
             <span>${milestone === "All" ? awardMilestoneRows().length : awardMilestoneRows().filter((row) => row.label === milestone).length} entries</span>
+          </button>
+        `).join("")}
+      </div>
+      ` : `
+      <h3>World Cup(s)</h3>
+      <p>World Cup champions are tracked separately from season awards.</p>
+      <div class="award-filter-grid award-season-grid">
+        ${worldCupDefinitions().map((cup) => `
+          <button type="button" class="award-filter active" disabled>
+            <strong>${escapeHtml(cup.season)}</strong>
+            <span>${cup.winners.length} champions</span>
           </button>
         `).join("")}
       </div>
@@ -3441,6 +3538,7 @@ function detailContext() {
 function dashboardAction(row) {
   if (state.view === "awards") {
     if (state.archiveMode === "milestones") return row.player ? { type: "player", player: row.player } : null;
+    if (state.archiveMode === "worldCups") return row.player ? { type: "player", player: row.player } : null;
     return isNonRaceAwardName(row.awardKey || row.award) ? null : { type: "awardRace", award: row.awardKey || row.award, season: row.season };
   }
   if (isTeamView()) {
@@ -4111,14 +4209,36 @@ function activeTeamPageTheme() {
   };
 }
 
+const teamPageBackgrounds = {
+  "S6|Best Friends Club": "assets/backgrounds/best-friends-club.png?v=s6-backgrounds-20260629",
+  "S6|Hook Line & Blinker": "assets/backgrounds/hook-line-blinker.png?v=s6-backgrounds-20260629",
+  "S6|Crossbar Cartel": "assets/backgrounds/crossbar-cartel.png?v=s6-backgrounds-20260629",
+  "S6|Ball Chasin & Sauce Tastin": "assets/backgrounds/ball-chasin.png?v=s6-backgrounds-20260629",
+  "S6|Spirit Airlines": "assets/backgrounds/spirit-airlines.png?v=s6-backgrounds-20260629",
+  "S6|The Cox": "assets/backgrounds/the-cox.png?v=s6-backgrounds-20260629",
+  "S6|Past Our Prime": "assets/backgrounds/past-our-prime.png?v=s6-backgrounds-20260629",
+  "S6|Quack Wok": "assets/backgrounds/quack-wok.png?v=s6-backgrounds-20260629",
+  "S6|Giga's In Paris": "assets/backgrounds/gigas-in-paris.png?v=s6-backgrounds-20260629",
+  "S6|Deceptitards": "assets/backgrounds/deceptitards.png?v=s6-backgrounds-20260629",
+  "S6|Supernova Abyss": "assets/backgrounds/supernova-abyss.png?v=s6-backgrounds-20260629",
+  "S6|ESC": "assets/backgrounds/esc.png?v=s6-backgrounds-20260629",
+};
+
+function teamPageBackgroundFor(teamName, season) {
+  return teamPageBackgrounds[`${season}|${teamName}`] || "";
+}
+
 function applyTeamPageTheme() {
   const theme = activeTeamPageTheme();
   document.body.classList.toggle("team-page-themed", !!theme);
-  ["--team-primary", "--team-secondary", "--team-primary-readable", "--team-secondary-readable", "--team-secondary-text"]
+  const teamBackground = state.page.type === "team" ? teamPageBackgroundFor(state.page.team, state.page.season) : "";
+  document.body.classList.toggle("team-page-background", !!teamBackground);
+  ["--team-primary", "--team-secondary", "--team-primary-readable", "--team-secondary-readable", "--team-secondary-text", "--team-page-background"]
     .forEach((property) => document.body.style.removeProperty(property));
   els.detailTeamLogo.classList.toggle("hidden", !theme?.logo);
   els.detailTeamLogo.src = theme?.logo || "";
   els.detailTeamLogo.alt = theme?.logo ? `${state.page.team} logo` : "";
+  if (teamBackground) document.body.style.setProperty("--team-page-background", `url("${teamBackground}")`);
   if (!theme) return;
   document.body.style.setProperty("--team-primary", theme.primary.hex);
   document.body.style.setProperty("--team-secondary", theme.secondary.hex);
@@ -4472,6 +4592,7 @@ function renderTable(rows, columns, title, rowAction = null) {
   const table = els.head.closest("table");
   table.classList.remove("leader-card-table");
   table.classList.toggle("award-history-table", title === "Awards Archive" || title === "Milestones Archive");
+  table.classList.toggle("world-cup-table", title === "World Cup Archive");
   table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
   table.classList.toggle("award-race-table", title === "Contenders");
   table.classList.toggle("schedule-table", state.view === "schedule" && state.page.type === "dashboard");
@@ -4534,6 +4655,7 @@ function render() {
   const inDetail = state.page.type !== "dashboard";
   if (state.view === "kitchen") state.analyticsMode = "selena";
   if (state.view === "yourKitchen") state.analyticsMode = "your";
+  document.body.classList.toggle("main-page-background", state.page.type !== "team");
   renderSeasonOptions();
   syncTabButtons();
   applyTeamPageTheme();
@@ -4582,9 +4704,22 @@ function render() {
 
   if (state.view === "awards") {
     renderKpis([]);
-    const archiveRows = state.archiveMode === "milestones" ? milestoneArchiveRows() : awardHistoryRows();
-    const archiveColumns = state.archiveMode === "milestones" ? milestoneArchiveColumns : awardHistoryColumns;
-    renderTable(sortRows(archiveRows), archiveColumns, state.archiveMode === "milestones" ? "Milestones Archive" : "Awards Archive", dashboardAction);
+    const archiveRows = state.archiveMode === "milestones"
+      ? milestoneArchiveRows()
+      : state.archiveMode === "worldCups"
+        ? worldCupArchiveRows()
+        : awardHistoryRows();
+    const archiveColumns = state.archiveMode === "milestones"
+      ? milestoneArchiveColumns
+      : state.archiveMode === "worldCups"
+        ? worldCupArchiveColumns
+        : awardHistoryColumns;
+    const archiveTitle = state.archiveMode === "milestones"
+      ? "Milestones Archive"
+      : state.archiveMode === "worldCups"
+        ? "World Cup Archive"
+        : "Awards Archive";
+    renderTable(sortRows(archiveRows), archiveColumns, archiveTitle, dashboardAction);
     renderAwardFilters();
     renderPlayoffStats();
     return;
@@ -4691,6 +4826,24 @@ els.seasonSelect.addEventListener("change", (event) => {
     state.sortKey = "standingsRank";
     state.sortDir = "asc";
   }
+  render();
+});
+
+els.homeLogoButton.addEventListener("click", () => {
+  state.page = { type: "dashboard" };
+  state.view = "teams";
+  state.season = latestRegularSeason();
+  state.seasonPhase = "regular";
+  state.s6Stage = "group";
+  state.s6Pool = "overall";
+  state.s5Pool = "overall";
+  state.searchText = "";
+  state.scheduleTeamFilter = "All";
+  state.scheduleUnplayedOnly = false;
+  state.sortKey = "wins";
+  state.sortDir = "desc";
+  els.searchInput.value = "";
+  resetLifetimeEraFiltersIfNeeded();
   render();
 });
 
@@ -5031,6 +5184,18 @@ els.kitchenPanel.addEventListener("mouseover", (event) => {
 });
 
 els.kitchenPanel.addEventListener("mouseout", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot || dot.contains(event.relatedTarget)) return;
+  clearKitchenHover();
+});
+
+els.kitchenPanel.addEventListener("pointerover", (event) => {
+  const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
+  if (!dot) return;
+  updateKitchenSelection(dot.dataset.kitchenPlayer, { temporary: true });
+});
+
+els.kitchenPanel.addEventListener("pointerout", (event) => {
   const dot = event.target.closest(".kitchen-dot[data-kitchen-player]");
   if (!dot || dot.contains(event.relatedTarget)) return;
   clearKitchenHover();
