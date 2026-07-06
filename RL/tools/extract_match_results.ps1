@@ -1,7 +1,8 @@
 param(
   [string]$AttachmentsDir = "C:\Users\thoma\Dropbox\GTRLS\match_results\media\attachments",
   [string]$OutCsv = "C:\Users\thoma\Dropbox\RL\match_results_player_stats_master.csv",
-  [string]$OutReviewCsv = "C:\Users\thoma\Dropbox\RL\match_results_review.csv"
+  [string]$OutReviewCsv = "C:\Users\thoma\Dropbox\RL\match_results_review.csv",
+  [switch]$CroppedScoreboard
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,17 +59,79 @@ function Get-UploadDateFromName([string]$Name, [datetime]$Fallback) {
 
 function Get-NumberInBand($Words, [double]$Y, [double]$XMin, [double]$XMax) {
   $values = $Words |
-    Where-Object { $_.x -ge $XMin -and $_.x -lt $XMax -and [math]::Abs($_.cy - $Y) -lt 18 -and $_.text -match "^-?\d+$" } |
+    Where-Object { $_.x -ge $XMin -and $_.x -lt $XMax -and [math]::Abs($_.cy - $Y) -lt $script:RowTolerance -and $_.text -match "^-?\d+$" } |
     Sort-Object x |
     ForEach-Object { $_.text }
   if (-not $values -or $values.Count -eq 0) { return 0 }
   [int]($values -join "")
 }
 
+if ($CroppedScoreboard) {
+  $script:TeamXMin = 20
+  $script:TeamXMax = 540
+  $script:TopTeamYMin = 20
+  $script:TopTeamYMax = 110
+  $script:BottomTeamYMin = 275
+  $script:BottomTeamYMax = 370
+  $script:TopPlayersYMin = 80
+  $script:TopPlayersYMax = 250
+  $script:BottomPlayersYMin = 330
+  $script:BottomPlayersYMax = 520
+  $script:NameXMin = 135
+  $script:NameXMax = 470
+  $script:TopScoreY = 60
+  $script:BottomScoreY = 320
+  $script:TeamScoreXMin = 20
+  $script:TeamScoreXMax = 140
+  $script:ScoreXMin = 465
+  $script:ScoreXMax = 595
+  $script:GoalsXMin = 600
+  $script:GoalsXMax = 695
+  $script:AssistsXMin = 700
+  $script:AssistsXMax = 795
+  $script:SavesXMin = 800
+  $script:SavesXMax = 895
+  $script:ShotsXMin = 900
+  $script:ShotsXMax = 990
+  $script:PingXMin = 995
+  $script:PingXMax = 1075
+  $script:RowTolerance = 30
+} else {
+  $script:TeamXMin = 500
+  $script:TeamXMax = 980
+  $script:TopTeamYMin = 170
+  $script:TopTeamYMax = 240
+  $script:BottomTeamYMin = 430
+  $script:BottomTeamYMax = 500
+  $script:TopPlayersYMin = 235
+  $script:TopPlayersYMax = 390
+  $script:BottomPlayersYMin = 495
+  $script:BottomPlayersYMax = 650
+  $script:NameXMin = 635
+  $script:NameXMax = 910
+  $script:TopScoreY = 210
+  $script:BottomScoreY = 470
+  $script:TeamScoreXMin = 515
+  $script:TeamScoreXMax = 610
+  $script:ScoreXMin = 960
+  $script:ScoreXMax = 1065
+  $script:GoalsXMin = 1080
+  $script:GoalsXMax = 1160
+  $script:AssistsXMin = 1180
+  $script:AssistsXMax = 1265
+  $script:SavesXMin = 1285
+  $script:SavesXMax = 1365
+  $script:ShotsXMin = 1385
+  $script:ShotsXMax = 1460
+  $script:PingXMin = 1475
+  $script:PingXMax = 1540
+  $script:RowTolerance = 18
+}
+
 function Get-TeamName($Lines, [double]$YMin, [double]$YMax) {
   $candidates = $Lines |
     Where-Object {
-      $_.x -ge 500 -and $_.x -le 980 -and $_.y -ge $YMin -and $_.y -le $YMax -and
+      $_.x -ge $script:TeamXMin -and $_.x -le $script:TeamXMax -and $_.y -ge $YMin -and $_.y -le $YMax -and
       $_.text -notmatch "SERIES|WINNER|SCORE|GOALS|ASSISTS|SAVES|SHOTS|PING|SPECTATING"
     } |
     Sort-Object @{ Expression = "y" }, @{ Expression = "x" }
@@ -79,7 +142,7 @@ function Get-TeamName($Lines, [double]$YMin, [double]$YMax) {
 
 function Get-PlayerRows($Words, [double]$YMin, [double]$YMax) {
   $scoreWords = $Words |
-    Where-Object { $_.x -ge 960 -and $_.x -lt 1065 -and $_.y -ge $YMin -and $_.y -le $YMax -and $_.text -match "^\d+$" } |
+    Where-Object { $_.x -ge $script:ScoreXMin -and $_.x -lt $script:ScoreXMax -and $_.y -ge $YMin -and $_.y -le $YMax -and $_.text -match "^\d+$" } |
     Sort-Object y, x
   $rows = @()
   foreach ($word in $scoreWords) {
@@ -95,7 +158,7 @@ function Get-PlayerRows($Words, [double]$YMin, [double]$YMax) {
     ForEach-Object {
       $rowY = $_.y
       $nameText = ($Words |
-        Where-Object { $_.x -ge 635 -and $_.x -lt 910 -and [math]::Abs($_.cy - $rowY) -lt 18 -and $_.height -ge 15 } |
+        Where-Object { $_.x -ge $script:NameXMin -and $_.x -lt $script:NameXMax -and [math]::Abs($_.cy - $rowY) -lt 18 -and $_.height -ge 15 } |
         Sort-Object x |
         ForEach-Object { $_.text }) -join " "
       [pscustomobject]@{ y = $_.y; player = (Normalize-Name $nameText) }
@@ -173,14 +236,14 @@ foreach ($file in $files) {
     $uploadDate = Get-UploadDateFromName $file.Name $file.CreationTime
     $seriesId = if ($file.BaseName -match "^(\d+)_") { $Matches[1] } else { "" }
 
-    $topTeam = Get-TeamName $lines 170 240
-    $bottomTeam = Get-TeamName $lines 430 500
-    $topPlayers = @(Get-PlayerRows $words 235 390)
-    $bottomPlayers = @(Get-PlayerRows $words 495 650)
-    $topScore = Get-NumberInBand $words 210 515 610
-    $bottomScore = Get-NumberInBand $words 470 515 610
+    $topTeam = Get-TeamName $lines $script:TopTeamYMin $script:TopTeamYMax
+    $bottomTeam = Get-TeamName $lines $script:BottomTeamYMin $script:BottomTeamYMax
+    $topPlayers = @(Get-PlayerRows $words $script:TopPlayersYMin $script:TopPlayersYMax)
+    $bottomPlayers = @(Get-PlayerRows $words $script:BottomPlayersYMin $script:BottomPlayersYMax)
+    $topScore = Get-NumberInBand $words $script:TopScoreY $script:TeamScoreXMin $script:TeamScoreXMax
+    $bottomScore = Get-NumberInBand $words $script:BottomScoreY $script:TeamScoreXMin $script:TeamScoreXMax
     if ($topScore -eq 0 -and $bottomScore -eq 0) {
-      $seriesWinnerScore = @($words | Where-Object { $_.x -ge 520 -and $_.x -le 600 -and $_.y -ge 175 -and $_.y -le 235 -and $_.text -match "^\d+$" } | Sort-Object x | Select-Object -First 1)
+      $seriesWinnerScore = @($words | Where-Object { $_.x -ge $script:TeamScoreXMin -and $_.x -le $script:TeamScoreXMax -and $_.y -ge $script:TopTeamYMin -and $_.y -le $script:TopTeamYMax -and $_.text -match "^\d+$" } | Sort-Object x | Select-Object -First 1)
       if ($seriesWinnerScore.Count) { $topScore = [int]$seriesWinnerScore[0].text }
     }
 
@@ -190,12 +253,12 @@ foreach ($file in $files) {
     )) {
       foreach ($playerRow in $entry.Players) {
         $y = $playerRow.y
-        $score = Get-NumberInBand $words $y 960 1065
-        $goals = Get-NumberInBand $words $y 1080 1160
-        $assists = Get-NumberInBand $words $y 1180 1265
-        $saves = Get-NumberInBand $words $y 1285 1365
-        $shots = Get-NumberInBand $words $y 1385 1460
-        $ping = Get-NumberInBand $words $y 1475 1540
+        $score = Get-NumberInBand $words $y $script:ScoreXMin $script:ScoreXMax
+        $goals = Get-NumberInBand $words $y $script:GoalsXMin $script:GoalsXMax
+        $assists = Get-NumberInBand $words $y $script:AssistsXMin $script:AssistsXMax
+        $saves = Get-NumberInBand $words $y $script:SavesXMin $script:SavesXMax
+        $shots = Get-NumberInBand $words $y $script:ShotsXMin $script:ShotsXMax
+        $ping = Get-NumberInBand $words $y $script:PingXMin $script:PingXMax
         $allRows.Add([pscustomobject]@{
           source_file = $file.Name
           series_id = $seriesId

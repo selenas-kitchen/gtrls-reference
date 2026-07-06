@@ -2193,6 +2193,37 @@ input {
   grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
 }
 
+.record-filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.record-filter-grid .award-filter {
+  width: clamp(96px, 10vw, 125px);
+  min-height: 46px;
+  border-radius: 6px;
+  border-left-width: 3px;
+  padding: 7px 8px;
+}
+
+.record-filter-grid .award-filter strong {
+  font-size: 0.76rem;
+}
+
+.record-filter-grid .award-filter span {
+  font-size: 0.66rem;
+  line-height: 1.2;
+}
+
+.record-era-note {
+  border-left: 4px solid var(--accent-2);
+  padding: 8px 10px;
+  background: #101820;
+  color: var(--ink) !important;
+  font-weight: 800;
+}
+
 .award-filter {
   min-height: 58px;
   display: grid;
@@ -2710,6 +2741,35 @@ input {
 .award-history-table th:nth-child(4) { width: 23%; }
 .award-history-table th:nth-child(5) { width: 18%; }
 .award-history-table th:nth-child(6) { width: 18%; }
+
+.records-archive-table {
+  width: min(100%, 860px);
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.records-archive-table th,
+.records-archive-table td {
+  padding: 7px 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.records-archive-table th:first-child,
+.records-archive-table td:first-child {
+  position: static;
+  min-width: 0;
+  max-width: none;
+  box-shadow: none;
+}
+
+.records-archive-table .col-record { width: 24%; }
+.records-archive-table .col-value { width: 13%; }
+.records-archive-table .col-holder { width: 25%; }
+.records-archive-table .col-team { width: 28%; }
+.records-archive-table .col-season { width: 10%; }
 
 .world-cup-table {
   width: min(100%, 760px);

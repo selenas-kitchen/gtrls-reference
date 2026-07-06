@@ -76,6 +76,13 @@ const teamAliasMap = new Map([
   ["DANGERPINGSX", "DANGER PINGS"],
   ["TRIPLESCOOP", "TRIPLE SCOOP"],
   ["TRIPLESCOOPY", "TRIPLE SCOOP"],
+  ["BBB", "BBB"],
+  ["BMM", "BMM"],
+  ["REDROCKETSSC", "RED ROCKETS SC"],
+  ["REDROCKETS", "RED ROCKETS SC"],
+  ["RRSC", "RED ROCKETS SC"],
+  ["MIDWESTCORNSTARS", "MIDWEST CORNSTARS"],
+  ["MC", "MIDWEST CORNSTARS"],
   ["3FURY", "Three Inch Fury"],
   ["THREEINCHFURY", "Three Inch Fury"],
   ["PASSINGS4WIMPS", "Passing's 4 Wimps SC"],
@@ -85,15 +92,24 @@ const teamAliasMap = new Map([
   ["THEDONALDBUMPS", "THE DONALD BUMPS"],
   ["LAMPLIGHTERS", "THE LAMPLIGHTERS"],
   ["THELAMPLIGHTERS", "THE LAMPLIGHTERS"],
+  ["TL", "THE LAMPLIGHTERS"],
   ["SYNDICATEOSCALYWAGS", "SYNDICATE O' SCALLYWAGS"],
   ["SYNDICATEOSCALLLYWAGS", "SYNDICATE O' SCALLYWAGS"],
   ["SYNDICATEOSCALLWAGS", "SYNDICATE O' SCALLYWAGS"],
   ["DEADINTHEWATER", "DEAD IN THE WATER"],
   ["THEGRAVYSTAINBOYS", "GRAVY STAIN BOYS"],
   ["GRAVYSTAINBOYS", "GRAVY STAIN BOYS"],
+  ["GSB", "GRAVY STAIN BOYS"],
   ["THEWINDIXIES", "WIN-DIXIES"],
   ["WINDIXIES", "WIN-DIXIES"],
+  ["WD", "WIN-DIXIES"],
+  ["EW", "EPSTEIN'S WAITLIST"],
+  ["EPSTEINSWAITLIST", "EPSTEIN'S WAITLIST"],
+  ["TC", "COOL"],
   ["MEGAWATT", "MEGAWATT"],
+  ["MW", "MEGAWATT"],
+  ["SJ", "SMOOTH JIZZ"],
+  ["SMOOTHJIZZ", "SMOOTH JIZZ"],
   ["SLEDDAWGS", "Snowbunnies"],
   ["SNOWBUNNIES", "Snowbunnies"],
 ]);
@@ -259,6 +275,9 @@ const state = {
   awardFilter: "All",
   awardSeasonFilter: "All",
   milestoneFilter: "All",
+  recordEra: "3s",
+  recordScope: "season",
+  recordEntity: "players",
   kitchenSelectedPlayer: "",
   kitchenTeamFilter: "All",
   kitchenRoleFilter: "All",
@@ -354,10 +373,12 @@ const standingsColumns = [
   ["pool", "Pool"],
   ["name", "Team"],
   ["matchRecord", "Match Record"],
+  ["matchesBack", "Matches Back"],
   ["standingsPoints", "Score"],
   ["goalDiff", "Goal +/-"],
   ["gameRecord", "Game Record"],
-  ["winPct", "Win %"],
+  ["matchWinPct", "Match Win %"],
+  ["gameWinPct", "Game Win %"],
   ["sweepsText", "SWPS-GM5L"],
   ["remainingMatches", "Remaining Matches"],
   ["maxScore", "Max Score"],
@@ -422,9 +443,9 @@ const s6PoolRanks = {
   "Best Friends Club": 5,
   "Spirit Airlines": 6,
   "Past Our Prime": 1,
-  "The Cox": 2,
-  "Ball Chasin & Sauce Tastin": 3,
-  "Supernova Abyss": 4,
+  "Ball Chasin & Sauce Tastin": 2,
+  "Supernova Abyss": 3,
+  "The Cox": 4,
   "Crossbar Cartel": 5,
   "Deceptitards": 6,
 };
@@ -458,35 +479,35 @@ const s5SplitPools = {
 
 const s6OverallTeamRows = [
   ["Best Friends Club", 1022.3, -25, 19, 17723, 32, 57, 20, 87, 107, 170, 5.4, 0.28, 4, 1, 3, 8, 11, 0, 2],
-  ["Hook Line & Blinker", 1088.0, 26, 16, 17928, 51, 25, 34, 51, 127, 91, 6.7, 0.42, 10, 4, 0, 12, 4, 2, 0],
-  ["Crossbar Cartel", 1032.7, -10, 12, 11551, 25, 35, 14, 50, 72, 103, 3.7, 0.30, 2, 1, 2, 4, 8, 0, 0],
-  ["Ball Chasin & Sauce Tastin", 1068.5, 2, 14, 14169, 37, 35, 27, 38, 112, 86, 4.5, 0.32, 5, 2, 1, 8, 6, 0, 1],
-  ["Spirit Airlines", 1022.8, -11, 11, 10159, 21, 32, 10, 42, 58, 98, 2.7, 0.24, 1, 0, 3, 2, 9, 0, 1],
+  ["Hook Line & Blinker", 1088.0, 33, 20, 22264, 63, 30, 43, 64, 161, 110, 8.3, 0.42, 12, 5, 0, 15, 5, 2, 0],
+  ["Crossbar Cartel", 1032.7, -15, 15, 13533, 26, 41, 15, 58, 84, 122, 3.6, 0.24, 2, 1, 3, 4, 11, 0, 0],
+  ["Ball Chasin & Sauce Tastin", 1068.5, 7, 19, 19283, 47, 40, 35, 60, 145, 121, 6.2, 0.33, 7, 3, 1, 11, 8, 0, 1],
+  ["Spirit Airlines", 1022.8, -13, 15, 13774, 31, 44, 14, 51, 94, 122, 3.6, 0.24, 3, 1, 3, 5, 10, 0, 1],
   ["The Cox", 1063.4, 12, 10, 12243, 36, 24, 23, 27, 96, 62, 4.5, 0.45, 6, 2, 1, 7, 3, 2, 0],
   ["Past Our Prime", 1074.0, 3, 14, 15959, 36, 33, 31, 56, 91, 109, 5.6, 0.40, 6, 3, 0, 9, 5, 0, 0],
   ["Quack Wok", 1065.2, -11, 12, 10894, 19, 30, 16, 45, 69, 87, 2.8, 0.23, 4, 1, 2, 6, 6, 1, 1],
-  ["Giga's In Paris", 1084.1, 22, 11, 11386, 34, 12, 19, 21, 110, 42, 3.6, 0.32, 7, 3, 0, 9, 2, 1, 0],
+  ["Giga's In Paris", 1084.1, 8, 18, 17453, 43, 35, 24, 52, 152, 106, 5.1, 0.28, 7, 3, 2, 10, 8, 1, 0],
   ["Deceptitards", 1027.7, -7, 22, 21753, 51, 58, 31, 77, 153, 170, 6.7, 0.31, 3, 0, 5, 7, 15, 0, 3],
-  ["Supernova Abyss", 1084.1, 0, 14, 14543, 35, 35, 25, 47, 108, 102, 4.8, 0.34, 5, 2, 1, 8, 6, 0, 1],
-  ["ESC", 1041.5, 1, 11, 10107, 26, 25, 15, 28, 85, 65, 2.8, 0.25, 2, 1, 2, 3, 8, 0, 0],
+  ["Supernova Abyss", 1084.1, 0, 22, 21247, 46, 46, 32, 73, 162, 147, 6.1, 0.28, 9, 3, 2, 13, 9, 1, 2],
+  ["ESC", 1041.5, 10, 18, 18372, 49, 39, 28, 59, 139, 124, 6.2, 0.35, 5, 2, 3, 7, 11, 1, 0],
 ];
 
 const s6OverallPlayerRows = [
   ["Best Friends Club", "I_have_a_bag", 19, 6776, 13, 4, 33, 43, 2.2, 0.12, 4, 1143],
   ["Best Friends Club", "greenarrowspark2", 19, 5761, 8, 9, 27, 32, 1.5, 0.08, 1, 968],
   ["Best Friends Club", "thelakeeffekt", 19, 5186, 11, 7, 27, 32, 1.7, 0.09, 3, 959],
-  ["Hook Line & Blinker", "Ramen", 16, 6893, 20, 11, 18, 43, 2.6, 0.16, 6, 1200],
-  ["Hook Line & Blinker", "Bubbles3913", 16, 7170, 22, 12, 24, 48, 3.3, 0.21, 6, 1120],
-  ["Hook Line & Blinker", "NeonLightning20", 16, 3865, 9, 11, 9, 36, 0.8, 0.05, 0, 857],
-  ["Crossbar Cartel", "Vizpick", 12, 4667, 9, 6, 20, 25, 1.6, 0.13, 2, 1202],
-  ["Crossbar Cartel", "MJD22-_-", 12, 4216, 10, 3, 21, 32, 1.7, 0.14, 2, 1075],
-  ["Crossbar Cartel", "sir_vantzzz", 12, 2668, 6, 5, 9, 15, 0.4, 0.03, 0, 820],
-  ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 14, 5773, 12, 12, 15, 48, 1.9, 0.13, 5, 1213],
-  ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 14, 4199, 13, 6, 11, 35, 1.3, 0.09, 3, 1011],
-  ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 14, 4197, 12, 9, 12, 29, 1.3, 0.10, 0, 965],
-  ["Spirit Airlines", "JAR", 11, 4716, 9, 6, 22, 26, 1.8, 0.17, 2, 1232],
-  ["Spirit Airlines", "dailcowgs94", 11, 3834, 9, 4, 16, 23, 1.3, 0.12, 0, 1078],
-  ["Spirit Airlines", "MadJanitor88", 11, 1609, 3, 0, 4, 9, -0.4, -0.04, 0, 855],
+  ["Hook Line & Blinker", "Ramen", 20, 8893, 26, 15, 23, 55, 3.4, 0.17, 9, 1200],
+  ["Hook Line & Blinker", "Bubbles3913", 20, 8655, 27, 16, 27, 65, 4.0, 0.20, 6, 1120],
+  ["Hook Line & Blinker", "NeonLightning20", 20, 4716, 10, 12, 14, 41, 0.9, 0.05, 0, 857],
+  ["Crossbar Cartel", "Vizpick", 15, 5408, 9, 7, 22, 30, 1.5, 0.10, 2, 1202],
+  ["Crossbar Cartel", "MJD22-_-", 15, 4911, 11, 3, 24, 36, 1.7, 0.11, 2, 1075],
+  ["Crossbar Cartel", "sir_vantzzz", 15, 3214, 6, 5, 12, 18, 0.3, 0.02, 0, 820],
+  ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 19, 7752, 13, 18, 25, 59, 2.6, 0.13, 6, 1213],
+  ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 19, 5865, 19, 7, 14, 50, 1.8, 0.09, 4, 1011],
+  ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 19, 5666, 15, 10, 21, 36, 1.9, 0.10, 1, 965],
+  ["Spirit Airlines", "JAR", 15, 6325, 14, 8, 25, 41, 2.4, 0.16, 4, 1232],
+  ["Spirit Airlines", "dailcowgs94", 15, 5246, 13, 5, 21, 35, 1.8, 0.12, 1, 1078],
+  ["Spirit Airlines", "MadJanitor88", 15, 2203, 4, 1, 5, 18, -0.5, -0.04, 0, 855],
   ["The Cox", "roo", 10, 6020, 18, 9, 16, 51, 2.8, 0.28, 5, 1248],
   ["The Cox", "CoalTrainLLC", 10, 4459, 17, 7, 7, 35, 1.9, 0.19, 2, 1111],
   ["The Cox", "Hyroshi", 10, 1764, 1, 7, 4, 10, -0.2, -0.02, 0, 819],
@@ -496,33 +517,33 @@ const s6OverallPlayerRows = [
   ["Quack Wok", "Original_6_Hawks", 12, 5085, 15, 2, 18, 29, 1.9, 0.16, 4, 1301],
   ["Quack Wok", "godfatherjones", 12, 3451, 0, 7, 18, 25, 0.6, 0.05, 2, 1125],
   ["Quack Wok", "LIL HATED ONE", 12, 2358, 4, 7, 9, 15, 0.3, 0.03, 0, 782],
-  ["Giga's In Paris", "Aximov", 11, 4906, 16, 6, 6, 53, 1.7, 0.16, 4, 1315],
-  ["Giga's In Paris", "Selenagomez415", 11, 4026, 11, 7, 9, 42, 1.4, 0.12, 5, 1125],
-  ["Giga's In Paris", "Mastergiga9", 11, 2454, 7, 6, 6, 15, 0.5, 0.04, 0, 728],
+  ["Giga's In Paris", "Aximov", 18, 7877, 23, 7, 21, 76, 3.0, 0.17, 5, 1315],
+  ["Giga's In Paris", "Selenagomez415", 18, 5977, 12, 8, 19, 59, 1.7, 0.09, 5, 1125],
+  ["Giga's In Paris", "Mastergiga9", 18, 3599, 8, 9, 12, 17, 0.4, 0.02, 0, 728],
   ["Deceptitards", "MegatronMD", 22, 9139, 24, 10, 29, 72, 3.4, 0.15, 4, 1433],
   ["Deceptitards", "ravenglitch", 22, 7066, 18, 9, 22, 51, 2.0, 0.09, 3, 972],
   ["Deceptitards", "DukeofDope7", 22, 5548, 9, 12, 26, 30, 1.3, 0.06, 0, 830],
-  ["Supernova Abyss", "KWNSquid", 14, 6451, 18, 5, 23, 48, 2.7, 0.19, 5, 1451],
-  ["Supernova Abyss", "ttv_starzyrl", 14, 4734, 10, 13, 15, 25, 1.5, 0.11, 2, 952],
-  ["Supernova Abyss", "MrStratty", 14, 3358, 7, 7, 9, 35, 0.6, 0.04, 1, 793],
-  ["ESC", "Epontious", 11, 5114, 14, 7, 16, 41, 2.1, 0.19, 3, 1452],
-  ["ESC", "SkittleZ", 11, 2513, 7, 1, 8, 20, 0.4, 0.03, 0, 962],
-  ["ESC", "Clamp2much", 11, 2480, 5, 7, 4, 24, 0.3, 0.02, 0, 770],
+  ["Supernova Abyss", "KWNSquid", 22, 9325, 21, 9, 35, 68, 3.4, 0.15, 10, 1451],
+  ["Supernova Abyss", "ttv_starzyrl", 22, 6951, 15, 14, 25, 47, 2.1, 0.10, 2, 952],
+  ["Supernova Abyss", "MrStratty", 22, 4971, 10, 9, 13, 47, 0.6, 0.03, 1, 793],
+  ["ESC", "Epontious", 18, 9027, 29, 9, 26, 73, 4.0, 0.22, 7, 1452],
+  ["ESC", "SkittleZ", 18, 4061, 9, 4, 15, 27, 0.6, 0.03, 0, 962],
+  ["ESC", "Clamp2much", 18, 5284, 11, 15, 18, 39, 1.6, 0.09, 0, 770],
 ];
 
 const s6GroupStandingsRows = [
-  ["Hook Line & Blinker", 1, 10, "4 - 0", 26, "12 - 4", 2, 0, "2 - 0"],
-  ["Giga's In Paris", 2, 7, "3 - 0", 22, "9 - 2", 1, 0, "1 - 0"],
-  ["The Cox", 3, 6, "2 - 1", 12, "7 - 3", 2, 0, "2 - 0"],
-  ["Past Our Prime", 4, 6, "3 - 0", 3, "9 - 5", 0, 0, "0 - 0"],
-  ["Ball Chasin & Sauce Tastin", 5, 5, "2 - 1", 2, "8 - 6", 0, 1, "0 - 1"],
-  ["Supernova Abyss", 6, 5, "2 - 1", 0, "8 - 6", 0, 1, "0 - 1"],
-  ["Quack Wok", 7, 4, "1 - 2", -11, "6 - 6", 1, 1, "1 - 1"],
-  ["Best Friends Club", 8, 4, "1 - 3", -25, "8 - 11", 0, 2, "0 - 2"],
-  ["Deceptitards", 9, 3, "0 - 5", -7, "7 - 15", 0, 3, "0 - 3"],
-  ["ESC", 10, 2, "1 - 2", 1, "3 - 8", 0, 0, "0 - 0"],
-  ["Crossbar Cartel", 11, 2, "1 - 2", -10, "4 - 8", 0, 0, "0 - 0"],
-  ["Spirit Airlines", 12, 1, "0 - 3", -11, "2 - 9", 0, 1, "0 - 1"],
+  ["Hook Line & Blinker", 1, 12, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
+  ["Supernova Abyss", 2, 9, "3 - 2", 0, "13 - 9", 1, 2, "1 - 2"],
+  ["Ball Chasin & Sauce Tastin", 3, 7, "3 - 1", 7, "11 - 8", 0, 1, "0 - 1"],
+  ["Giga's In Paris", 4, 7, "3 - 2", 8, "10 - 8", 1, 0, "1 - 0"],
+  ["Past Our Prime", 5, 6, "3 - 0", 3, "9 - 5", 0, 0, "0 - 0"],
+  ["The Cox", 6, 6, "2 - 1", 12, "7 - 3", 2, 0, "2 - 0"],
+  ["ESC", 7, 5, "2 - 3", 10, "7 - 11", 1, 0, "1 - 0"],
+  ["Quack Wok", 8, 4, "1 - 2", -11, "6 - 6", 1, 1, "1 - 1"],
+  ["Best Friends Club", 9, 4, "1 - 3", -25, "8 - 11", 0, 2, "0 - 2"],
+  ["Spirit Airlines", 10, 3, "1 - 3", -13, "5 - 10", 0, 1, "0 - 1"],
+  ["Deceptitards", 11, 3, "0 - 5", -7, "7 - 15", 0, 3, "0 - 3"],
+  ["Crossbar Cartel", 12, 2, "1 - 3", -15, "4 - 11", 0, 0, "0 - 0"],
 ];
 
 const s5SplitStandingsRows = {
@@ -934,6 +955,14 @@ const worldCupArchiveColumns = [
   ["amount", "Result"],
 ];
 
+const recordsArchiveColumns = [
+  ["record", "Record"],
+  ["value", "Value"],
+  ["holder", "Holder"],
+  ["team", "Team"],
+  ["season", "Season"],
+];
+
 const awardRaceColumns = [
   ["rank", "Rank"],
   ["name", "Player"],
@@ -942,6 +971,86 @@ const awardRaceColumns = [
   ["total", "Total"],
   ["average", "Avg"],
   ["extra", "Extra"],
+];
+
+const recordsArchiveEntries = [
+  { era: "2s", scope: "season", entity: "players", record: "Points", value: "25586", holder: "Seth", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Points (PPG)", value: "665.4", holder: "Brock", team: "Coming, Melissa!", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Goals", value: "109", holder: "Seth", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Goals (PPG)", value: "2.79", holder: "Seth", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Assists", value: "52", holder: "Clayton", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Assists (PPG)", value: "1.33", holder: "Clayton", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Saves", value: "62", holder: "Brock", team: "Coming, Melissa!", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Saves (PPG)", value: "1.63", holder: "Brock", team: "Coming, Melissa!", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Shots", value: "206", holder: "Seth", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Shots (PPG)", value: "5.28", holder: "Seth", team: "Glizzy Gobblers", season: "I" },
+  { era: "2s", scope: "season", entity: "players", record: "Shooting Percentage", value: "57.14%", holder: "Kellen", team: "Two Inches Deep", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Match Record", value: "9-1", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Game Record (Win%)", value: "26-9 (.722%)", holder: "Two Inches Deep", team: "Kellen, Troy", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Most Wins", value: "28", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Fewest Losses", value: "9", holder: "Two Inches Deep", team: "Kellen, Troy", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Goal Differential", value: "76", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Points", value: "44076", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Goals", value: "164", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Assists", value: "85", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Saves", value: "115", holder: "Coming, Melissa!", team: "Brock, Garcia", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Shots", value: "334", holder: "Glizzy Gobblers", team: "Clayton, Seth", season: "I" },
+  { era: "2s", scope: "season", entity: "teams", record: "Sweeps", value: "6", holder: "Two Inches Deep", team: "Kellen, Troy", season: "I" },
+  { era: "2s", scope: "game", entity: "players", record: "Points (P)", value: "1042", holder: "James", team: "MegaWatt", season: "II" },
+  { era: "2s", scope: "game", entity: "teams", record: "Points (T)", value: "1418", holder: "Ben, Kris", team: "The Win-Dixie's", season: "II" },
+  { era: "2s", scope: "game", entity: "players", record: "Goals (P)", value: "3", holder: "Ben, James, Kevin, Kris", team: "-", season: "II" },
+  { era: "2s", scope: "game", entity: "teams", record: "Goals (T)", value: "5", holder: "Garcia, Kevin", team: "The Gravy Stain Boys", season: "II" },
+  { era: "2s", scope: "game", entity: "players", record: "Assists (P)", value: "3", holder: "Garcia", team: "The Gravy Stain Boys", season: "II" },
+  { era: "2s", scope: "game", entity: "teams", record: "Assists (T)", value: "3", holder: "-", team: "GSB, WD", season: "II" },
+  { era: "2s", scope: "game", entity: "players", record: "Saves (P)", value: "7", holder: "James", team: "MegaWatt", season: "II" },
+  { era: "2s", scope: "game", entity: "teams", record: "Saves (T)", value: "9", holder: "James, Kellen", team: "MegaWatt", season: "II" },
+  { era: "2s", scope: "game", entity: "players", record: "Shots (P)", value: "10", holder: "Kris", team: "The Win-Dixie's", season: "II" },
+  { era: "2s", scope: "game", entity: "teams", record: "Shots (T)", value: "14", holder: "Ben, Kris", team: "The Win-Dixie's", season: "II" },
+  { era: "3s", scope: "season", entity: "players", record: "Points", value: "21876", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "PPG", value: "560.9", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "Goals", value: "66", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "GPG", value: "1.73", holder: "Kevin", team: "Midwest Cornstars", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "Assists", value: "32", holder: "Seth", team: "Red Rockets SC", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "APG", value: "0.84", holder: "Seth", team: "Red Rockets SC", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "Saves", value: "77", holder: "Ryan", team: "Smooth Jizz", season: "II" },
+  { era: "3s", scope: "season", entity: "players", record: "SvPG", value: "1.83", holder: "James, Ryan", team: "MW, SJ", season: "II" },
+  { era: "3s", scope: "season", entity: "players", record: "Shots", value: "191", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "ShPG", value: "4.90", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "Shooting Percentage", value: "43.84%", holder: "Kevin", team: "Midwest Cornstars", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "PER", value: "9.4", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "PERPG", value: "0.24", holder: "Ryan", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "season", entity: "players", record: "MVP's", value: "25", holder: "Seth", team: "Epstein's Waitlist", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Score", value: "17", holder: "MC, TL", team: "-", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Rating", value: "985.1", holder: "The Lamplighters", team: "Clayton, David, Ryan", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Match Record", value: "9-1", holder: "Epstein's Waitlist", team: "Henry, Logan, Seth", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Game Record (Win%)", value: "28-8 (.778%)", holder: "Epstein's Waitlist", team: "Henry, Logan, Seth", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Most Wins", value: "28", holder: "Epstein's Waitlist", team: "Henry, Logan, Seth", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Fewest Losses", value: "8", holder: "Epstein's Waitlist", team: "Henry, Logan, Seth", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Goal Differential", value: "46", holder: "The Gravy Stain Boys", team: "Alex, Clayton, Kevin", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "Points", value: "42031", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "PPG", value: "1106.1", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Goals", value: "114", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "GPG", value: "3.00", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Assists", value: "82", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "APG", value: "2.16", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Saves", value: "152", holder: "Smooth Jizz", team: "Adam, Jacob, Ryan", season: "II" },
+  { era: "3s", scope: "season", entity: "teams", record: "SvPG", value: "3.85", holder: "The Donald Bumps", team: "Alex, Cole, Issac", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Shots", value: "330", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "ShPG", value: "8.68", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Shoot%", value: "40.59%", holder: "The Lamplighters", team: "Clayton, David, Ryan", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "PER", value: "16.3", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "PERPG", value: "0.43", holder: "Red Rockets SC", team: "Austin, Logan, Seth", season: "III" },
+  { era: "3s", scope: "season", entity: "teams", record: "Sweeps", value: "5", holder: "Epstein's Waitlist", team: "Henry, Logan, Seth", season: "II" },
+  { era: "3s", scope: "game", entity: "players", record: "Points (P)", value: "1160", holder: "Schwifty", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "game", entity: "teams", record: "Points (T)", value: "1950", holder: "Brock, David, Drew", team: "Rough Sax", season: "II" },
+  { era: "3s", scope: "game", entity: "players", record: "Goals (P)", value: "6", holder: "Schwifty", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "game", entity: "teams", record: "Goals (T)", value: "8", holder: "Henry, Sam, Schwifty", team: "Syndicate O' Scallywags", season: "III" },
+  { era: "3s", scope: "game", entity: "players", record: "Assists (P)", value: "5", holder: "Garcia", team: "The Gravy Stain Boys", season: "II" },
+  { era: "3s", scope: "game", entity: "teams", record: "Assists (T)", value: "6", holder: "Kevin, Rick, Ross", team: "Midwest Cornstars", season: "III" },
+  { era: "3s", scope: "game", entity: "players", record: "Saves (P)", value: "7", holder: "Seth", team: "Red Rockets SC", season: "III" },
+  { era: "3s", scope: "game", entity: "teams", record: "Saves (T)", value: "12", holder: "Austin, Logan, Seth", team: "Red Rockets SC", season: "III" },
+  { era: "3s", scope: "game", entity: "players", record: "Shots (P)", value: "9", holder: "Seth", team: "Epstein's Waitlist", season: "II" },
+  { era: "3s", scope: "game", entity: "teams", record: "Shots (T)", value: "14", holder: "-", team: "EW, RRSC, TC", season: "II, III" },
 ];
 
 const draftColumns = [
@@ -1290,9 +1399,11 @@ function finalizeCommon(item) {
   const gameWins = typeof item.gameWins === "number" ? item.gameWins : item.wins;
   const gameLosses = typeof item.gameLosses === "number" ? item.gameLosses : item.losses;
   const gameTotal = Math.max(1, (gameWins || 0) + (gameLosses || 0));
-  item.matchWinPct = Math.round(((item.wins || 0) / matchTotal) * 1000) / 10;
-  item.gameWinPct = Math.round(((gameWins || 0) / gameTotal) * 1000) / 10;
-  item.winPct = item.matchWinPct;
+  const calculatedMatchWinPct = Math.round(((item.wins || 0) / matchTotal) * 1000) / 10;
+  const calculatedGameWinPct = Math.round(((gameWins || 0) / gameTotal) * 1000) / 10;
+  item.matchWinPct = typeof item.matchWinPct === "number" ? item.matchWinPct : calculatedMatchWinPct;
+  item.gameWinPct = typeof item.gameWinPct === "number" ? item.gameWinPct : calculatedGameWinPct;
+  item.winPct = typeof item.winPct === "number" ? item.winPct : item.matchWinPct;
   item.avgScore = Math.round((item.score / games) * 100) / 100;
   item.goalsPerGame = Math.round((item.goals / games) * 100) / 100;
   item.assistsPerGame = Math.round((item.assists / games) * 100) / 100;
@@ -3298,6 +3409,117 @@ function worldCupArchiveRows() {
   })));
 }
 
+function recordArchiveRows() {
+  return recordsArchiveEntries
+    .filter((row) => row.era === state.recordEra)
+    .filter((row) => row.scope === state.recordScope)
+    .filter((row) => row.entity === state.recordEntity)
+    .map(recordDisplayRow);
+}
+
+function recordDisplayRow(row) {
+  const normalized = {
+    ...row,
+    record: recordDisplayName(row.record),
+    holder: recordHolderDisplay(row.holder, row),
+    team: recordTeamDisplay(row.team),
+    season: recordSeasonDisplay(row.season),
+  };
+  if (row.entity === "teams") {
+    const teamSource = recordTeamSource(row);
+    const playerSource = recordTeamPlayerSource(row);
+    normalized.holder = recordTeamDisplay(teamSource);
+    normalized.team = recordTeamPlayersDisplay(teamSource, row, playerSource);
+  }
+  return normalized;
+}
+
+function recordDisplayName(record) {
+  return String(record || "").replace(/\s+\([PT]\)$/i, "");
+}
+
+function recordSeasonDisplay(season) {
+  return String(season || "")
+    .split(",")
+    .map((part) => part.trim())
+    .map((part) => ({ I: "1", II: "2", III: "3", IV: "4", V: "5", VI: "6" })[part] || part)
+    .join(", ");
+}
+
+function recordNameList(value, formatter = (name) => name) {
+  return String(value || "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map(formatter)
+    .join(", ");
+}
+
+function recordHolderDisplay(value, row) {
+  return recordNameList(value, (name) => {
+    const context = `${row.team || ""} ${row.holder || ""}`;
+    if (name === "Seth") return "Ax1mov";
+    if (name === "Garcia") return "Dukeofdope";
+    if (name === "Kevin" && context.includes("Midwest Cornstars")) return "RoyalxRenegade";
+    return name;
+  });
+}
+
+function recordRosterDisplay(value, row) {
+  if (String(value || "").trim() === "-") return "-";
+  return recordNameList(recordHolderDisplay(value, row), (name) => displayName(name, "name"));
+}
+
+function recordTeamDisplay(value) {
+  if (String(value || "").trim() === "-") return "-";
+  return recordNameList(value, (name) => formatDisplayName(canonicalTeamName(name), "team"));
+}
+
+function recordTeamSource(row) {
+  return row.scope === "game" ? row.team : row.holder;
+}
+
+function recordTeamPlayerSource(row) {
+  return row.scope === "game" ? row.holder : row.team;
+}
+
+function recordTeamPlayersDisplay(teamSource, row, fallbackPlayers) {
+  const teams = recordListParts(teamSource);
+  if (!teams.length || teams.every((team) => team === "-")) return recordRosterDisplay(fallbackPlayers, row);
+  const seasons = recordListParts(recordSeasonDisplay(row.season)).map((season) => `S${season}`);
+  const resolved = teams.map((team, index) => {
+    const season = recordSeasonForTeam(team, seasons, index);
+    if (!/^S\d+$/.test(season)) return "";
+    const roster = recordTeamRoster(canonicalTeamName(team), season);
+    const playerText = roster.length ? roster.map((player) => displayName(player.name, "name")).join(", ") : "";
+    if (!playerText) return "";
+    return teams.length > 1 ? `${formatDisplayName(canonicalTeamName(team), "team")}: ${playerText}` : playerText;
+  }).filter(Boolean);
+  return resolved.length ? resolved.join("; ") : recordRosterDisplay(fallbackPlayers, row);
+}
+
+function recordTeamRoster(team, season) {
+  const canonicalTeam = canonicalTeamName(team);
+  const playerRows = [...data.players.filter((row) => row.season !== "S6"), ...s6StagePlayerRows("overall", "overall")]
+    .filter((row) => row.season === season && (row.teams || []).map(canonicalTeamName).includes(canonicalTeam));
+  if (playerRows.length) return playerRows.sort((a, b) => b.games - a.games || b.goals - a.goals);
+  return teamRoster(canonicalTeam, season);
+}
+
+function recordListParts(value) {
+  return String(value || "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function recordSeasonForTeam(team, seasons, index) {
+  if (seasons.length === 1) return seasons[0];
+  const canonicalTeam = canonicalTeamName(team);
+  const exactSeason = seasons.find((season) => recordTeamRoster(canonicalTeam, season).length);
+  return exactSeason || seasons[Math.min(index, seasons.length - 1)] || "";
+}
+
 function awardMilestoneRows() {
   return lifetimePlayers()
     .flatMap((player) => playerMilestones(player).map((milestone) => ({
@@ -3347,12 +3569,13 @@ function renderAwardFilters() {
       <div class="awards-panel-head">
         <div>
           <h2>Archives</h2>
-          <p>Review awards and career milestones, then sort the active table by any column.</p>
+          <p>Review awards, milestones, records, and World Cup history, then sort the active table by any column.</p>
         </div>
       </div>
       <div class="archive-toggle" role="group" aria-label="Archive type">
         <button type="button" class="${state.archiveMode === "awards" ? "active" : ""}" data-archive-mode="awards">Awards</button>
         <button type="button" class="${state.archiveMode === "milestones" ? "active" : ""}" data-archive-mode="milestones">Milestones</button>
+        <button type="button" class="${state.archiveMode === "records" ? "active" : ""}" data-archive-mode="records">Records</button>
         <button type="button" class="${state.archiveMode === "worldCups" ? "active" : ""}" data-archive-mode="worldCups">World Cup(s)</button>
       </div>
       ${state.archiveMode === "awards" ? `
@@ -3385,6 +3608,44 @@ function renderAwardFilters() {
           </button>
         `).join("")}
       </div>
+      ` : state.archiveMode === "records" ? `
+      <h3>Era</h3>
+      <div class="award-filter-grid record-filter-grid">
+        ${[
+          ["3s", "3's Era", "Current 3v3 record book"],
+          ["2s", "2's Era", "Discontinued after Season I"],
+        ].map(([era, label, detail]) => `
+          <button type="button" class="award-filter${state.recordEra === era ? " active" : ""}" data-record-era="${era}">
+            <strong>${escapeHtml(label)}</strong>
+            <span>${escapeHtml(detail)}</span>
+          </button>
+        `).join("")}
+      </div>
+      <h3>Record Holder</h3>
+      <div class="award-filter-grid record-filter-grid">
+        ${[
+          ["players", "Players", "Individual records"],
+          ["teams", "Teams", "Team records"],
+        ].map(([entity, label, detail]) => `
+          <button type="button" class="award-filter${state.recordEntity === entity ? " active" : ""}" data-record-entity="${entity}">
+            <strong>${escapeHtml(label)}</strong>
+            <span>${escapeHtml(detail)}</span>
+          </button>
+        `).join("")}
+      </div>
+      <h3>Record Type</h3>
+      <div class="award-filter-grid record-filter-grid">
+        ${[
+          ["season", "Single Season", "Full-season record holders"],
+          ["game", "Single Game", "Best single-game marks"],
+        ].map(([scope, label, detail]) => `
+          <button type="button" class="award-filter${state.recordScope === scope ? " active" : ""}" data-record-scope="${scope}">
+            <strong>${escapeHtml(label)}</strong>
+            <span>${escapeHtml(detail)}</span>
+          </button>
+        `).join("")}
+      </div>
+      <p class="record-era-note">${state.recordEra === "2s" ? "*** 2's Era discontinued after Season I" : "3's Era records include seasons II and later."}</p>
       ` : `
       <h3>World Cup(s)</h3>
       <p>World Cup champions are tracked separately from season awards.</p>
@@ -3539,6 +3800,7 @@ function dashboardAction(row) {
   if (state.view === "awards") {
     if (state.archiveMode === "milestones") return row.player ? { type: "player", player: row.player } : null;
     if (state.archiveMode === "worldCups") return row.player ? { type: "player", player: row.player } : null;
+    if (state.archiveMode === "records") return null;
     return isNonRaceAwardName(row.awardKey || row.award) ? null : { type: "awardRace", award: row.awardKey || row.award, season: row.season };
   }
   if (isTeamView()) {
@@ -4592,6 +4854,7 @@ function renderTable(rows, columns, title, rowAction = null) {
   const table = els.head.closest("table");
   table.classList.remove("leader-card-table");
   table.classList.toggle("award-history-table", title === "Awards Archive" || title === "Milestones Archive");
+  table.classList.toggle("records-archive-table", title === "Records Archive");
   table.classList.toggle("world-cup-table", title === "World Cup Archive");
   table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
   table.classList.toggle("award-race-table", title === "Contenders");
@@ -4609,10 +4872,11 @@ function renderTable(rows, columns, title, rowAction = null) {
     return `<tr${attrs}>${visibleColumns.map(([key]) => {
     const percent = key === "winPct" || key === "matchWinPct" || key === "gameWinPct" || key === "shootingPct" || key === "missPct" || key === "teamSaveRate" || key === "opponentShootingPct";
     const isScheduleRow = state.view === "schedule";
+    const isRecordsArchive = state.view === "awards" && state.archiveMode === "records";
     const nameKeys = new Set(["name", "team", "opponent", "player", "teamA", "teamB", "captain", "pick1", "pick2"]);
     const isPlayoffTeam = (key === "teamA" || key === "teamB") && row.round && row.teamA && row.teamB;
     const isTeamNameCell = key === "teamA" || key === "teamB" || key === "team" || (key === "name" && (isTeamView() || state.view === "standings" || state.yourKitchenEntity === "teams")) || (isScheduleRow && key === "opponent");
-    const raw = nameKeys.has(key) ? displayName(row[key], isTeamNameCell ? "team" : "name") : row[key];
+    const raw = nameKeys.has(key) && !isRecordsArchive ? displayName(row[key], isTeamNameCell ? "team" : "name") : row[key];
     let value = isUnavailableValue(row, key) ? "n/a" : (key === "season" ? `<span class="pill">${escapeHtml(raw)}</span>` : escapeHtml(fmtStat(raw, key, percent ? "%" : "")));
     if (key === "name" && !isTeamNameCell) value += playerAwardFootnoteMarkup(row.name, row.season);
     if (key === "season" && state.page.type === "player" && !row.__isCareer) value += playerAwardFootnoteMarkup(state.page.player, row.season);
@@ -4706,19 +4970,25 @@ function render() {
     renderKpis([]);
     const archiveRows = state.archiveMode === "milestones"
       ? milestoneArchiveRows()
-      : state.archiveMode === "worldCups"
-        ? worldCupArchiveRows()
-        : awardHistoryRows();
+      : state.archiveMode === "records"
+        ? recordArchiveRows()
+        : state.archiveMode === "worldCups"
+          ? worldCupArchiveRows()
+          : awardHistoryRows();
     const archiveColumns = state.archiveMode === "milestones"
       ? milestoneArchiveColumns
-      : state.archiveMode === "worldCups"
-        ? worldCupArchiveColumns
-        : awardHistoryColumns;
+      : state.archiveMode === "records"
+        ? recordsArchiveColumns.map(([key, label]) => [key, key === "team" && state.recordEntity === "teams" ? "Players" : label])
+        : state.archiveMode === "worldCups"
+          ? worldCupArchiveColumns
+          : awardHistoryColumns;
     const archiveTitle = state.archiveMode === "milestones"
       ? "Milestones Archive"
-      : state.archiveMode === "worldCups"
-        ? "World Cup Archive"
-        : "Awards Archive";
+      : state.archiveMode === "records"
+        ? "Records Archive"
+        : state.archiveMode === "worldCups"
+          ? "World Cup Archive"
+          : "Awards Archive";
     renderTable(sortRows(archiveRows), archiveColumns, archiveTitle, dashboardAction);
     renderAwardFilters();
     renderPlayoffStats();
@@ -5258,8 +5528,8 @@ els.awardFilters.addEventListener("click", (event) => {
   const archiveMode = event.target.closest("[data-archive-mode]");
   if (archiveMode) {
     state.archiveMode = archiveMode.dataset.archiveMode;
-    state.sortKey = state.archiveMode === "milestones" ? "label" : "season";
-    state.sortDir = state.archiveMode === "milestones" ? "asc" : "desc";
+    state.sortKey = state.archiveMode === "milestones" ? "label" : (state.archiveMode === "records" ? "record" : "season");
+    state.sortDir = state.archiveMode === "milestones" || state.archiveMode === "records" ? "asc" : "desc";
     state.page = { type: "dashboard" };
     render();
     return;
@@ -5267,6 +5537,19 @@ els.awardFilters.addEventListener("click", (event) => {
   const milestoneFilter = event.target.closest("[data-milestone-filter]");
   if (milestoneFilter) {
     state.milestoneFilter = milestoneFilter.dataset.milestoneFilter;
+    state.page = { type: "dashboard" };
+    render();
+    return;
+  }
+  const recordEra = event.target.closest("[data-record-era]");
+  const recordScope = event.target.closest("[data-record-scope]");
+  const recordEntity = event.target.closest("[data-record-entity]");
+  if (recordEra || recordScope || recordEntity) {
+    if (recordEra) state.recordEra = recordEra.dataset.recordEra;
+    if (recordScope) state.recordScope = recordScope.dataset.recordScope;
+    if (recordEntity) state.recordEntity = recordEntity.dataset.recordEntity;
+    state.sortKey = "record";
+    state.sortDir = "asc";
     state.page = { type: "dashboard" };
     render();
     return;
