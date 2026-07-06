@@ -397,6 +397,7 @@ const scheduleColumns = [
   ["team", "Home"],
   ["result", "Result"],
   ["opponent", "Away"],
+  ["note", "Status"],
   ["vod", "VOD"],
 ];
 
@@ -449,6 +450,16 @@ const s6PoolRanks = {
   "Crossbar Cartel": 5,
   "Deceptitards": 6,
 };
+
+const s6PoolClinches = {
+  "Hook Line & Blinker": "X",
+};
+
+const poolTiebreakRules = [
+  "Match record",
+  "League Score",
+  "Head-to-head",
+];
 
 const s5SplitPools = {
   split1: {
@@ -646,6 +657,7 @@ const els = {
   leaderTwo: document.querySelector("#leaderTwo"),
   tableTitle: document.querySelector("#tableTitle"),
   tableLegend: document.querySelector("#tableLegend"),
+  standingsRules: document.querySelector("#standingsRules"),
   rowCount: document.querySelector("#rowCount"),
   head: document.querySelector("#statsHead"),
   body: document.querySelector("#statsBody"),
@@ -1334,6 +1346,15 @@ function scheduleVodMarkup(row) {
   `;
 }
 
+function scheduleNoteMarkup(row) {
+  const note = String(row.note || "").trim();
+  if (!note) return "";
+  const locked = /locked/i.test(note);
+  const pending = /pending/i.test(note);
+  const className = locked ? "schedule-status locked" : (pending ? "schedule-status pending" : "schedule-status");
+  return `<span class="${className}">${escapeHtml(note)}</span>`;
+}
+
 const draftVodLinks = new Map([
   ["S6", "https://www.youtube.com/watch?v=ju1CaalPFBc"],
 ]);
@@ -1447,6 +1468,7 @@ function makeS6TeamRow(raw) {
   const row = {
     season: "S6",
     name,
+    clinchMark: s6PoolClinches[name] || "",
     pool: s6Pools[name] || "",
     games,
     gameWins,
@@ -1810,7 +1832,10 @@ function scheduleSeriesRows(series) {
 
 function matchupTeamRows(series) {
   const season = baseSeasonName(series.season);
-  const rows = rowsForDataset("teams", season).filter((row) => row.season === season);
+  const stage = String(series.stage || "").toLowerCase();
+  const rows = season === "S6"
+    ? s6StageTeamRows(stage === "swiss" ? "group" : (stage || "group"), "overall")
+    : rowsForDataset("teams", season).filter((row) => row.season === season);
   const rowFor = (teamName) => rows.find((row) => row.name === teamName) || teamSeasonRow(teamName, season);
   return { rows, home: rowFor(series.team), away: rowFor(series.opponent) };
 }
@@ -2016,6 +2041,61 @@ function captainFeatureMarkup(series, home, away) {
   `;
 }
 
+function previousScheduleMatchups(series) {
+  const currentStage = String(series.stage || "").toLowerCase();
+  const currentRound = String(series.round || "");
+  const pair = [canonicalTeamName(series.team), canonicalTeamName(series.opponent)].sort().join("|");
+  return (data.manualHistory?.schedules || [])
+    .filter((row) => row.season === baseSeasonName(series.season))
+    .filter((row) => [canonicalTeamName(row.home), canonicalTeamName(row.away)].sort().join("|") === pair)
+    .filter((row) => row.winner && !/\b0\s*-\s*0\b/.test(String(row.result || "")))
+    .filter((row) => !(String(row.stage || "").toLowerCase() === currentStage
+      && String(row.round || "") === currentRound
+      && canonicalTeamName(row.home) === canonicalTeamName(series.team)
+      && canonicalTeamName(row.away) === canonicalTeamName(series.opponent)
+      && String(row.result || "") === String(series.result || "")))
+    .map((row) => scheduleManualRow(row));
+}
+
+function previousMatchupMarkup(series) {
+  const previous = previousScheduleMatchups(series);
+  if (!previous.length) {
+    return `
+      <section class="previous-matchups">
+        <h3>Previous Matchup</h3>
+        <p class="empty-note">This is their first tracked matchup this season.</p>
+      </section>
+    `;
+  }
+  return `
+    <section class="previous-matchups">
+      <h3>Previous Matchup${previous.length === 1 ? "" : "s"}</h3>
+      <div class="previous-matchup-list">
+        ${previous.map((row) => {
+          const action = {
+            type: "scheduleSeries",
+            season: row.season,
+            stage: row.stage,
+            pool: row.pool,
+            round: row.round,
+            team: row.team,
+            result: row.result,
+            opponent: row.opponent,
+            winner: row.winner,
+          };
+          return `
+            <button type="button" data-action="${encodeURIComponent(JSON.stringify(action))}">
+              <span>${escapeHtml(scheduleStageLabel(row.stage))}${row.round ? ` / ${escapeHtml(row.round)}` : ""}</span>
+              <strong>${escapeHtml(displayName(row.team, "team"))} ${scheduleResultMarkup(row)} ${escapeHtml(displayName(row.opponent, "team"))}</strong>
+              <small>Winner: ${escapeHtml(displayName(row.winner, "team"))}</small>
+            </button>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function matchupComparisonMarkup(series) {
   if (series.team === series.opponent || !series.team || !series.opponent) return "";
   const { rows, home, away } = matchupTeamRows(series);
@@ -2089,6 +2169,7 @@ function matchupComparisonMarkup(series) {
         `).join("")}
       </div>
       ${captainFeatureMarkup(series, home, away)}
+      ${previousMatchupMarkup(series)}
     </div>
   `;
 }
@@ -2565,10 +2646,10 @@ function standingsRows() {
     const isPoolView = state.s6Pool !== "overall";
     return s6FilterByPool(s6GroupStandingsRows.map(s6StandingRow))
       .sort((a, b) => {
-        if (isPoolView) return a.poolRank - b.poolRank;
+        if (isPoolView) return comparePoolStandings(a, b);
         return a.standingsRank - b.standingsRank;
       })
-      .map((row) => ({ ...row, standingsRank: isPoolView ? row.poolRank : row.standingsRank }));
+      .map((row, index) => ({ ...row, standingsRank: isPoolView ? index + 1 : row.standingsRank, poolRank: isPoolView ? index + 1 : row.poolRank }));
   }
   const seasons = state.season === "All"
     ? data.seasons.filter((season) => !isScrimSeason(season) && !isPlayoffSeason(season))
@@ -2589,6 +2670,20 @@ function standingsRows() {
       if (state.season !== "All" && a.standingsRank && b.standingsRank) return a.standingsRank - b.standingsRank;
       return b.standingsPoints - a.standingsPoints || b.goalDiff - a.goalDiff;
     });
+}
+
+function comparePoolStandings(a, b) {
+  return b.wins - a.wins
+    || a.losses - b.losses
+    || b.standingsPoints - a.standingsPoints
+    || compareHeadToHeadPlaceholder(a, b)
+    || b.gameWinPct - a.gameWinPct
+    || b.goalDiff - a.goalDiff
+    || a.name.localeCompare(b.name);
+}
+
+function compareHeadToHeadPlaceholder() {
+  return 0;
 }
 
 function playoffBracketRows(season) {
@@ -4836,7 +4931,9 @@ function columnHasPageData(rows, key) {
 }
 
 function pageColumns(rows, columns) {
-  if (state.view === "schedule" && state.page.type === "dashboard") return columns;
+  if (state.view === "schedule" && state.page.type === "dashboard") {
+    return columns.filter(([key]) => key !== "note" || columnHasPageData(rows, key));
+  }
   if (!rows.length) return columns;
   const impliedSeason = state.page.type === "dashboard"
     && !isLifetimeView()
@@ -4868,7 +4965,10 @@ function renderTable(rows, columns, title, rowAction = null) {
   `).join("")}</tr>`;
   els.body.innerHTML = rows.map((row) => {
     const action = rowAction ? rowAction(row) : null;
-    const attrs = action ? ` class="clickable" data-action="${encodeURIComponent(JSON.stringify(action))}"` : "";
+    const rowClasses = [];
+    if (action) rowClasses.push("clickable");
+    if (state.view === "schedule" && /locked/i.test(String(row.note || ""))) rowClasses.push("schedule-locked-row");
+    const attrs = `${rowClasses.length ? ` class="${rowClasses.join(" ")}"` : ""}${action ? ` data-action="${encodeURIComponent(JSON.stringify(action))}"` : ""}`;
     return `<tr${attrs}>${visibleColumns.map(([key]) => {
     const percent = key === "winPct" || key === "matchWinPct" || key === "gameWinPct" || key === "shootingPct" || key === "missPct" || key === "teamSaveRate" || key === "opponentShootingPct";
     const isScheduleRow = state.view === "schedule";
@@ -4879,6 +4979,9 @@ function renderTable(rows, columns, title, rowAction = null) {
     const raw = nameKeys.has(key) && !isRecordsArchive ? displayName(row[key], isTeamNameCell ? "team" : "name") : row[key];
     let value = isUnavailableValue(row, key) ? "n/a" : (key === "season" ? `<span class="pill">${escapeHtml(raw)}</span>` : escapeHtml(fmtStat(raw, key, percent ? "%" : "")));
     if (key === "name" && !isTeamNameCell) value += playerAwardFootnoteMarkup(row.name, row.season);
+    if (key === "name" && state.view === "standings" && row.clinchMark) {
+      value += ` <span class="clinch-suffix">- ${escapeHtml(row.clinchMark)}</span>`;
+    }
     if (key === "season" && state.page.type === "player" && !row.__isCareer) value += playerAwardFootnoteMarkup(state.page.player, row.season);
     if (key === "award") value = awardLabelMarkup(String(raw || ""), "award-table-icon");
     if (isPlayoffTeam) value = playoffTeamMarkup(row, key);
@@ -4886,6 +4989,7 @@ function renderTable(rows, columns, title, rowAction = null) {
     if (isScheduleRow && (key === "team" || key === "opponent")) value = scheduleTeamCell(row, key);
     if (isScheduleRow && key === "result") value = scheduleResultMarkup(row);
     if (isScheduleRow && key === "vod") value = scheduleVodMarkup(row);
+    if (isScheduleRow && key === "note") value = scheduleNoteMarkup(row);
     if (key === "teamsText") value = teamTextLinks(row);
     if (isScheduleRow && value === "") value = `<span class="schedule-empty">-</span>`;
     if (action?.type === "playoffSeries" && key === "round") {
@@ -4915,6 +5019,32 @@ function renderTableLegend(rows, columns = []) {
   els.tableLegend.classList.toggle("hidden", items.length === 0);
 }
 
+function renderStandingsRules() {
+  if (!els.standingsRules) return;
+  const showPoolRules = state.view === "standings"
+    && state.page.type === "dashboard"
+    && ((state.season === "S6" && state.s6Stage === "group")
+      || (state.season === "S5" && ["split1", "split2"].includes(state.s5Stage)));
+  if (!showPoolRules) {
+    els.standingsRules.classList.add("hidden");
+    els.standingsRules.innerHTML = "";
+    return;
+  }
+  const clinchedRows = standingsRows().filter((row) => row.clinchMark);
+  els.standingsRules.classList.remove("hidden");
+  els.standingsRules.innerHTML = `
+    <div class="standings-rule-card">
+      <strong>Pool Tiebreaks</strong>
+      <span>${poolTiebreakRules.map((rule, index) => `${index + 1}. ${escapeHtml(rule)}`).join(" | ")}</span>
+      ${clinchedRows.length ? `<small>${clinchRuleText(clinchedRows)}</small>` : ""}
+    </div>
+  `;
+}
+
+function clinchRuleText(rows) {
+  return rows.map((row) => `${escapeHtml(displayName(row.name, "team"))} <span class="clinch-suffix">- ${escapeHtml(row.clinchMark)}</span> won the ${escapeHtml(row.pool || "pool")} Pool for the split`).join(" | ");
+}
+
 function render() {
   const inDetail = state.page.type !== "dashboard";
   if (state.view === "kitchen") state.analyticsMode = "selena";
@@ -4924,6 +5054,7 @@ function render() {
   syncTabButtons();
   applyTeamPageTheme();
   els.detailBar.classList.toggle("hidden", !inDetail);
+  renderStandingsRules();
   els.excludeTwosControl.classList.toggle("hidden", !isLifetimeView());
   els.excludeThreesControl.classList.toggle("hidden", !isLifetimeView());
   document.querySelector(".kpis").classList.toggle("hidden", inDetail || isPlayoffSeason(state.season) || state.season === "World Cup" || !["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view));

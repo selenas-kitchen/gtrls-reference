@@ -786,6 +786,7 @@
       const homeName = team(parts[resultIndex - 1].replace(/\.$/, ""));
       const awayName = team(parts[resultIndex + 1].replace(/\.$/, ""));
       const result = cleanResult(parts[resultIndex]);
+      const note = parts.slice(resultIndex + 2).join(" ");
       rows.push({
         season,
         stage,
@@ -795,7 +796,7 @@
         result,
         away: awayName,
         winner: team(scheduleWinner(homeName, result, awayName)),
-        note: "",
+        note,
         pool: schedulePool(season, stage, homeName, awayName),
         source: "manual",
       });
@@ -1166,11 +1167,11 @@ Week 1
 Loss	Crossbar Cartel	(6) 0-3 (11)	The Cox	Win
 Loss	Deceptitards	(11) 2-3 (10)	Supernova Abyss	Win
 Win	Past Our Prime	(15) 3-2 (14)	Ball Chasin & Sauce Tastin	Loss
-ESC	(0) 0-0 (0)	Giga's In Paris
+Win	ESC	(11) 3-0 (4)	Giga's In Paris	Loss
 Win	Hook Line & Blinker	(12) 3-2 (8)	Quack Wok	Loss
 Byes: Spirit Airlines, Best Friends Club
 Week 2
-Hook Line & Blinker	(0) 0-0 (0)	Giga's In Paris
+Win	Hook Line & Blinker	(12) 3-1 (5)	Giga's In Paris	Loss
 Win	Best Friends Club	(12) 3-2 (13)	Spirit Airlines	Loss
 Win	Quack Wok	(6) 3-0 (3)	ESC	Loss
 Ball Chasin & Sauce Tastin	(0) 0-0 (0)	The Cox
@@ -1178,16 +1179,16 @@ Crossbar Cartel	(0) 0-0 (0)	Past Our Prime
 Byes: Supernova Abyss, Deceptitards
 Week 3
 Win	Ball Chasin & Sauce Tastin	(12) 3-2 (15)	Deceptitards	Loss
-Supernova Abyss	(0) 0-0 (0)	Crossbar Cartel
+Win	Supernova Abyss	(6) 3-0 (1)	Crossbar Cartel	Loss
 The Cox	(0) 0-0 (0)	Past Our Prime
-Spirit Airlines	(0) 0-0 (0)	ESC
+Win	Spirit Airlines	(10) 3-1 (12)	ESC	Loss
 Quack Wok	(0) 0-0 (0)	Best Friends Club
 Byes: Hook Line & Blinker, Giga's In Paris
 Week 4
 Win	ESC	(20) 3-2 (7)	Best Friends Club	Loss
 Loss	Spirit Airlines	(6) 0-3 (12)	Hook Line & Blinker	Win
 Win	Giga's In Paris	(15) 3-1 (5)	Quack Wok	Loss
-Supernova Abyss	(0) 0-0 (0)	Ball Chasin & Sauce Tastin
+Loss	Supernova Abyss	(5) 2-3 (10)	Ball Chasin & Sauce Tastin	Win
 Win	Past Our Prime	(9) 3-1 (8)	Deceptitards	Loss
 Byes: Crossbar Cartel, The Cox
 Week 5
@@ -1207,12 +1208,12 @@ Byes: Past Our Prime, Ball Chasin & Sauce Tastin
 `),
     ...parseScheduleBlock("S6", "swiss", `
 Round 1
-G1	(0) 0-0 (0)	T6
-G2	(0) 0-0 (0)	T5
-G3	(0) 0-0 (0)	T4
-T1	(0) 0-0 (0)	G6
-T2	(0) 0-0 (0)	G5
-T3	(0) 0-0 (0)	G4
+Hook Line & Blinker	(0) 0-0 (0)	Deceptitards	Locked: G1 vs T6
+Giga's In Paris	(0) 0-0 (0)	Crossbar Cartel	Pending: G2 vs T5
+ESC	(0) 0-0 (0)	The Cox	Pending: G3 vs T4
+Past Our Prime	(0) 0-0 (0)	Spirit Airlines	Pending: T1 vs G6
+Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Best Friends Club	Pending: T2 vs G5
+Supernova Abyss	(0) 0-0 (0)	Quack Wok	Pending: T3 vs G4
 Round 2
 (0) 0-0 (0)
 (0) 0-0 (0)
@@ -1357,6 +1358,10 @@ Demoted Team	(0) 0-0 (0)
     [schedulePairKey("Deceptitards", "The Cox"), "https://www.youtube.com/watch?v=76i3c9yqtcc"],
     [schedulePairKey("Hook Line & Blinker", "ESC"), "https://www.youtube.com/watch?v=6jQiKVr0SmE"],
     [schedulePairKey("Giga's In Paris", "Quack Wok"), "https://www.youtube.com/watch?v=snUl6xOLJ_0"],
+    [schedulePairKey("ESC", "Giga's In Paris"), "https://www.youtube.com/watch?v=Nj26x5-Fi98"],
+    [schedulePairKey("Supernova Abyss", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=jbEVmCKQbtg"],
+    [schedulePairKey("Spirit Airlines", "ESC"), "https://www.youtube.com/watch?v=_rKo_r6NTEw"],
+    [schedulePairKey("Supernova Abyss", "Crossbar Cartel"), "https://www.youtube.com/watch?v=4QaRS1eijFE"],
   ]);
   schedules.forEach((row) => {
     if (row.season !== "S6" || row.stage !== "group") return;
