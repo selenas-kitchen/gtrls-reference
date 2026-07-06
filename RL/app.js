@@ -1790,6 +1790,23 @@ function scheduleTeamOptions(rows) {
     .sort((a, b) => a === "All" ? -1 : (b === "All" ? 1 : displayName(a, "team").localeCompare(displayName(b, "team"))));
 }
 
+function resetCrossTabFilters() {
+  state.s5Stage = "overall";
+  state.s5Pool = "overall";
+  state.s6Stage = "group";
+  state.s6Pool = "overall";
+  state.scheduleTeamFilter = "All";
+  state.scheduleUnplayedOnly = false;
+}
+
+function resetAnalyticsFilters() {
+  state.kitchenSelectedPlayer = "";
+  state.kitchenTeamFilter = "All";
+  state.kitchenRoleFilter = "All";
+  state.yourKitchenTeam = "All";
+  state.yourKitchenMember = "All";
+}
+
 function renderScheduleFilters(rows) {
   const teams = scheduleTeamOptions(rows);
   if (!teams.includes(state.scheduleTeamFilter)) state.scheduleTeamFilter = "All";
@@ -2903,7 +2920,7 @@ function regularRowsSinceTwosEra(type) {
 
 function kitchenActivePlayers(season) {
   const sourceRows = season === "S6"
-    ? s6StagePlayerRows(state.s6Stage === "swiss" ? "overall" : state.s6Stage, "overall")
+    ? s6StagePlayerRows("overall", "overall")
     : rowsForDataset("players", season);
   const currentRows = sourceRows
     .filter((row) => row.season === season)
@@ -3120,7 +3137,7 @@ function teamConsensusLabel(team, avgPerPerGame) {
 }
 
 function kitchenTeams(season) {
-  const rows = rowsForDataset("teams", season)
+  const rows = (season === "S6" ? s6StageTeamRows("overall", "overall") : rowsForDataset("teams", season))
     .filter((row) => row.season === season);
   const avgPerPerGame = rows.reduce((total, row) => total + (row.perPerGame || 0), 0) / Math.max(1, rows.length);
   return rows
@@ -5327,6 +5344,8 @@ els.tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     state.page = { type: "dashboard" };
     const requestedView = button.dataset.view;
+    resetCrossTabFilters();
+    if (requestedView === "analytics") resetAnalyticsFilters();
     if (requestedView === "teams") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimeTeams" : "teams";
     else if (requestedView === "players") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimePlayers" : "players";
     else if (requestedView === "analytics") state.view = state.analyticsMode === "your" ? "yourKitchen" : "kitchen";
@@ -5353,6 +5372,8 @@ els.analyticsModeControl.addEventListener("click", (event) => {
   state.analyticsMode = button.dataset.analyticsMode;
   state.view = state.analyticsMode === "your" ? "yourKitchen" : "kitchen";
   state.page = { type: "dashboard" };
+  resetCrossTabFilters();
+  resetAnalyticsFilters();
   render();
 });
 

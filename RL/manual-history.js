@@ -786,7 +786,9 @@
       const homeName = team(parts[resultIndex - 1].replace(/\.$/, ""));
       const awayName = team(parts[resultIndex + 1].replace(/\.$/, ""));
       const result = cleanResult(parts[resultIndex]);
-      const note = parts.slice(resultIndex + 2).join(" ");
+      const note = parts.slice(resultIndex + 2)
+        .filter((part) => !/^(Win|Loss)$/i.test(part))
+        .join(" ");
       rows.push({
         season,
         stage,
