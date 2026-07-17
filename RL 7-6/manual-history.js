@@ -292,18 +292,18 @@
     teamRow("S5", "Wouldabeendope - X", 29, "11 - 18", 25499, 56, 74, 32, 95, 177, { overrideGenerated: true, standingsPoints: 7, wins: 2, losses: 6, matchRecord: "2 - 6", sweeps: 2, gameFiveLosses: 1, shotsConceded: 213, rating: 614.7, standingsRank: 8 }),
     teamRow("S5", "Weenie Hut Jrs - Y", 36, "22 - 14", 36380, 90, 64, 52, 126, 272, { overrideGenerated: true, standingsPoints: 15, wins: 7, losses: 1, matchRecord: "7 - 1", sweeps: 1, gameFiveLosses: 0, shotsConceded: 228, rating: 695.3, standingsRank: 1 }),
 
-    teamRow("S6", "Best Friends Club", 24, "11 - 13", 21960, 40, 65, 24, 108, 142, { overrideGenerated: true, standingsPoints: 7, wins: 2, losses: 3, matchRecord: "2 - 3", sweeps: 0, gameFiveLosses: 2, shotsConceded: 201, rating: 1037.6, standingsRank: 8, goalDiff: -25, per: 6.6, perPerGame: 0.28 }),
-    teamRow("S6", "Hook Line & Blinker", 20, "15 - 5", 22264, 63, 30, 43, 64, 161, { overrideGenerated: true, standingsPoints: 15, wins: 5, losses: 0, matchRecord: "5 - 0", sweeps: 2, gameFiveLosses: 0, shotsConceded: 110, rating: 1096.1, standingsRank: 1, goalDiff: 33, per: 8.3, perPerGame: 0.42 }),
-    teamRow("S6", "Crossbar Cartel", 20, "6 - 14", 17630, 32, 53, 18, 75, 112, { overrideGenerated: true, standingsPoints: 4, wins: 1, losses: 4, matchRecord: "1 - 4", sweeps: 0, gameFiveLosses: 1, shotsConceded: 164, rating: 1023.2, standingsRank: 11, goalDiff: -21, per: 4.2, perPerGame: 0.21 }),
-    teamRow("S6", "Ball Chasin & Sauce Tastin", 24, "13 - 11", 23949, 57, 52, 42, 78, 183, { overrideGenerated: true, standingsPoints: 9, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 0, gameFiveLosses: 2, shotsConceded: 156, rating: 1071.7, standingsRank: 6, goalDiff: 5, per: 7.6, perPerGame: 0.32 }),
-    teamRow("S6", "Spirit Airlines", 20, "7 - 13", 18150, 40, 61, 22, 69, 127, { overrideGenerated: true, standingsPoints: 4, wins: 1, losses: 4, matchRecord: "1 - 4", sweeps: 0, gameFiveLosses: 2, shotsConceded: 162, rating: 1037.5, standingsRank: 10, goalDiff: -21, per: 5.0, perPerGame: 0.25 }),
-    teamRow("S6", "The Cox", 20, "12 - 8", 22557, 62, 51, 36, 70, 165, { overrideGenerated: true, standingsPoints: 11, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 2, gameFiveLosses: 1, shotsConceded: 144, rating: 1068.3, standingsRank: 3, goalDiff: 11, per: 8.3, perPerGame: 0.42 }),
-    teamRow("S6", "Past Our Prime", 24, "15 - 9", 27277, 65, 53, 56, 90, 177, { overrideGenerated: true, standingsPoints: 13, wins: 5, losses: 0, matchRecord: "5 - 0", sweeps: 0, gameFiveLosses: 0, shotsConceded: 171, rating: 1084.6, standingsRank: 2, goalDiff: 12, per: 9.9, perPerGame: 0.41 }),
-    teamRow("S6", "Quack Wok", 22, "11 - 11", 20539, 44, 47, 31, 78, 140, { overrideGenerated: true, standingsPoints: 9, wins: 2, losses: 3, matchRecord: "2 - 3", sweeps: 1, gameFiveLosses: 2, shotsConceded: 155, rating: 1055.1, standingsRank: 7, goalDiff: -3, per: 6.0, perPerGame: 0.27 }),
-    teamRow("S6", "Giga's In Paris", 18, "10 - 8", 17453, 43, 35, 24, 52, 152, { overrideGenerated: true, standingsPoints: 9, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 1, gameFiveLosses: 0, shotsConceded: 106, rating: 1051.2, standingsRank: 5, goalDiff: 8, per: 5.1, perPerGame: 0.28 }),
-    teamRow("S6", "Deceptitards", 22, "7 - 15", 21753, 51, 58, 31, 77, 153, { overrideGenerated: true, standingsPoints: 3, wins: 0, losses: 5, matchRecord: "0 - 5", sweeps: 0, gameFiveLosses: 3, shotsConceded: 170, rating: 1027.7, standingsRank: 12, goalDiff: -7, per: 6.7, perPerGame: 0.31 }),
-    teamRow("S6", "Supernova Abyss", 22, "13 - 9", 21247, 46, 46, 32, 73, 162, { overrideGenerated: true, standingsPoints: 11, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 1, gameFiveLosses: 2, shotsConceded: 147, rating: 1075.0, standingsRank: 4, goalDiff: 0, per: 6.1, perPerGame: 0.28 }),
-    teamRow("S6", "ESC", 18, "7 - 11", 18372, 49, 39, 28, 59, 139, { overrideGenerated: true, standingsPoints: 6, wins: 2, losses: 3, matchRecord: "2 - 3", sweeps: 1, gameFiveLosses: 0, shotsConceded: 124, rating: 1046.6, standingsRank: 9, goalDiff: 10, per: 6.2, perPerGame: 0.35 }),
+    teamRow("S6", "Best Friends Club", 19, "8 - 11", 17723, 32, 57, 20, 87, 107, { overrideGenerated: true, standingsPoints: 4, wins: 1, losses: 3, matchRecord: "1 - 3", sweeps: 0, gameFiveLosses: 2, shotsConceded: 170, rating: 1022.3, standingsRank: 9, goalDiff: -25, per: 5.4, perPerGame: 0.28 }),
+    teamRow("S6", "Hook Line & Blinker", 20, "15 - 5", 22264, 63, 30, 43, 64, 161, { overrideGenerated: true, standingsPoints: 12, wins: 5, losses: 0, matchRecord: "5 - 0", sweeps: 2, gameFiveLosses: 0, shotsConceded: 110, rating: 1088.0, standingsRank: 1, goalDiff: 33, per: 8.3, perPerGame: 0.42 }),
+    teamRow("S6", "Crossbar Cartel", 15, "4 - 11", 13533, 26, 41, 15, 58, 84, { overrideGenerated: true, standingsPoints: 2, wins: 1, losses: 3, matchRecord: "1 - 3", sweeps: 0, gameFiveLosses: 0, shotsConceded: 122, rating: 1032.7, standingsRank: 12, goalDiff: -15, per: 3.6, perPerGame: 0.24 }),
+    teamRow("S6", "Ball Chasin & Sauce Tastin", 19, "11 - 8", 19283, 47, 40, 35, 60, 145, { overrideGenerated: true, standingsPoints: 7, wins: 3, losses: 1, matchRecord: "3 - 1", sweeps: 0, gameFiveLosses: 1, shotsConceded: 121, rating: 1068.5, standingsRank: 3, goalDiff: 7, per: 6.2, perPerGame: 0.33 }),
+    teamRow("S6", "Spirit Airlines", 15, "5 - 10", 13774, 31, 44, 14, 51, 94, { overrideGenerated: true, standingsPoints: 3, wins: 1, losses: 3, matchRecord: "1 - 3", sweeps: 0, gameFiveLosses: 1, shotsConceded: 122, rating: 1022.8, standingsRank: 10, goalDiff: -13, per: 3.6, perPerGame: 0.24 }),
+    teamRow("S6", "The Cox", 10, "7 - 3", 12243, 36, 24, 23, 27, 96, { overrideGenerated: true, standingsPoints: 6, wins: 2, losses: 1, matchRecord: "2 - 1", sweeps: 2, gameFiveLosses: 0, shotsConceded: 62, rating: 1063.4, standingsRank: 6, goalDiff: 12, per: 4.5, perPerGame: 0.45 }),
+    teamRow("S6", "Past Our Prime", 14, "9 - 5", 15959, 36, 33, 31, 56, 91, { overrideGenerated: true, standingsPoints: 6, wins: 3, losses: 0, matchRecord: "3 - 0", sweeps: 0, gameFiveLosses: 0, shotsConceded: 109, rating: 1074.0, standingsRank: 5, goalDiff: 3, per: 5.6, perPerGame: 0.40 }),
+    teamRow("S6", "Quack Wok", 12, "6 - 6", 10894, 19, 30, 16, 45, 69, { overrideGenerated: true, standingsPoints: 4, wins: 1, losses: 2, matchRecord: "1 - 2", sweeps: 1, gameFiveLosses: 1, shotsConceded: 87, rating: 1065.2, standingsRank: 8, goalDiff: -11, per: 2.8, perPerGame: 0.23 }),
+    teamRow("S6", "Giga's In Paris", 18, "10 - 8", 17453, 43, 35, 24, 52, 152, { overrideGenerated: true, standingsPoints: 7, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 1, gameFiveLosses: 0, shotsConceded: 106, rating: 1084.1, standingsRank: 4, goalDiff: 8, per: 5.1, perPerGame: 0.28 }),
+    teamRow("S6", "Deceptitards", 22, "7 - 15", 21753, 51, 58, 31, 77, 153, { overrideGenerated: true, standingsPoints: 3, wins: 0, losses: 5, matchRecord: "0 - 5", sweeps: 0, gameFiveLosses: 3, shotsConceded: 170, rating: 1027.7, standingsRank: 11, goalDiff: -7, per: 6.7, perPerGame: 0.31 }),
+    teamRow("S6", "Supernova Abyss", 22, "13 - 9", 21247, 46, 46, 32, 73, 162, { overrideGenerated: true, standingsPoints: 9, wins: 3, losses: 2, matchRecord: "3 - 2", sweeps: 1, gameFiveLosses: 2, shotsConceded: 147, rating: 1084.1, standingsRank: 2, goalDiff: 0, per: 6.1, perPerGame: 0.28 }),
+    teamRow("S6", "ESC", 18, "7 - 11", 18372, 49, 39, 28, 59, 139, { overrideGenerated: true, standingsPoints: 5, wins: 2, losses: 3, matchRecord: "2 - 3", sweeps: 1, gameFiveLosses: 0, shotsConceded: 124, rating: 1041.5, standingsRank: 7, goalDiff: 10, per: 6.2, perPerGame: 0.35 }),
 
     teamRow("World Cup", "Reef Donkeys", 9, "9 - 0", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 9, wins: 3, losses: 0, matchRecord: "3 - 0", sweeps: 3, gameFiveLosses: 0, remainingMatches: 0, maxScore: 9, standingsRank: 1, goalDiffUnavailable: true, excludeFromLifetime: true }),
     teamRow("World Cup", "Bigger Nehavior", 12, "6 - 6", 0, 0, 0, 0, 0, 0, { overrideGenerated: true, standingsPoints: 4, wins: 2, losses: 1, matchRecord: "2 - 1", sweeps: 0, gameFiveLosses: 0, remainingMatches: 0, maxScore: 4, standingsRank: 2, goalDiffUnavailable: true, excludeFromLifetime: true }),
@@ -470,30 +470,30 @@
     ].map((row) => playerRow("S5", ...row)),
 
     ...[
-      ["Best Friends Club", "I_have_a_bag", 24, "0-0", 8656, 15, 7, 43, 60, { per: 2.9, perPerGame: 0.12, mvps: 6, rating: 1143, overrideGenerated: true }],
-      ["Best Friends Club", "greenarrowspark2", 24, "0-0", 7171, 13, 10, 32, 42, { per: 2.0, perPerGame: 0.08, mvps: 2, rating: 968, overrideGenerated: true }],
-      ["Best Friends Club", "thelakeeffekt", 24, "0-0", 6133, 12, 7, 33, 40, { per: 1.8, perPerGame: 0.07, mvps: 3, rating: 959, overrideGenerated: true }],
+      ["Best Friends Club", "I_have_a_bag", 19, "0-0", 6776, 13, 4, 33, 43, { per: 2.2, perPerGame: 0.12, mvps: 4, rating: 1143, overrideGenerated: true }],
+      ["Best Friends Club", "greenarrowspark2", 19, "0-0", 5761, 8, 9, 27, 32, { per: 1.5, perPerGame: 0.08, mvps: 1, rating: 968, overrideGenerated: true }],
+      ["Best Friends Club", "thelakeeffekt", 19, "0-0", 5186, 11, 7, 27, 32, { per: 1.7, perPerGame: 0.09, mvps: 3, rating: 959, overrideGenerated: true }],
       ["Hook Line & Blinker", "Ramen", 20, "0-0", 8893, 26, 15, 23, 55, { per: 3.4, perPerGame: 0.17, mvps: 9, rating: 1200, overrideGenerated: true }],
       ["Hook Line & Blinker", "Bubbles3913", 20, "0-0", 8655, 27, 16, 27, 65, { per: 4.0, perPerGame: 0.20, mvps: 6, rating: 1120, overrideGenerated: true }],
       ["Hook Line & Blinker", "NeonLightning20", 20, "0-0", 4716, 10, 12, 14, 41, { per: 0.9, perPerGame: 0.05, mvps: 0, rating: 857, overrideGenerated: true }],
-      ["Crossbar Cartel", "Vizpick", 20, "0-0", 7314, 12, 9, 29, 43, { per: 2.0, perPerGame: 0.10, mvps: 4, rating: 1202, overrideGenerated: true }],
-      ["Crossbar Cartel", "MJD22-_-", 20, "0-0", 6110, 13, 4, 28, 45, { per: 1.8, perPerGame: 0.09, mvps: 2, rating: 1075, overrideGenerated: true }],
-      ["Crossbar Cartel", "sir_vantzzz", 20, "0-0", 4206, 7, 5, 18, 24, { per: 0.4, perPerGame: 0.02, mvps: 0, rating: 820, overrideGenerated: true }],
-      ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 24, "0-0", 9457, 15, 21, 31, 75, { per: 3.0, perPerGame: 0.12, mvps: 8, rating: 1213, overrideGenerated: true }],
-      ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 24, "0-0", 7337, 23, 7, 20, 64, { per: 2.2, perPerGame: 0.09, mvps: 4, rating: 1011, overrideGenerated: true }],
-      ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 24, "0-0", 7155, 19, 14, 27, 44, { per: 2.4, perPerGame: 0.10, mvps: 1, rating: 965, overrideGenerated: true }],
-      ["Spirit Airlines", "JAR", 20, "0-0", 8456, 19, 10, 33, 61, { per: 3.2, perPerGame: 0.16, mvps: 6, rating: 1232, overrideGenerated: true }],
-      ["Spirit Airlines", "dailcowgs94", 20, "0-0", 6765, 16, 9, 29, 42, { per: 2.4, perPerGame: 0.12, mvps: 1, rating: 1078, overrideGenerated: true }],
-      ["Spirit Airlines", "MadJanitor88", 20, "0-0", 2929, 5, 3, 7, 24, { per: -0.6, perPerGame: -0.03, mvps: 0, rating: 855, overrideGenerated: true }],
-      ["The Cox", "roo", 20, "0-0", 11306, 33, 14, 37, 91, { per: 5.4, perPerGame: 0.27, mvps: 9, rating: 1248, overrideGenerated: true }],
-      ["The Cox", "CoalTrainLLC", 20, "0-0", 7781, 26, 10, 20, 59, { per: 3.0, perPerGame: 0.15, mvps: 3, rating: 1111, overrideGenerated: true }],
-      ["The Cox", "Hyroshi", 20, "0-0", 3470, 3, 12, 13, 15, { per: -0.1, perPerGame: 0.00, mvps: 0, rating: 819, overrideGenerated: true }],
-      ["Past Our Prime", "RoyalxRenegade", 24, "0-0", 12270, 34, 16, 35, 86, { per: 5.0, perPerGame: 0.21, mvps: 12, rating: 1262, overrideGenerated: true }],
-      ["Past Our Prime", "AtownSteelers", 24, "0-0", 8396, 18, 22, 32, 53, { per: 3.2, perPerGame: 0.13, mvps: 1, rating: 1009, overrideGenerated: true }],
-      ["Past Our Prime", "MerkWTM", 24, "0-0", 6611, 13, 18, 23, 38, { per: 1.7, perPerGame: 0.07, mvps: 2, rating: 872, overrideGenerated: true }],
-      ["Quack Wok", "Original_6_Hawks", 22, "0-0", 9617, 32, 6, 29, 62, { per: 3.9, perPerGame: 0.18, mvps: 8, rating: 1301, overrideGenerated: true }],
-      ["Quack Wok", "godfatherjones", 22, "0-0", 6717, 6, 12, 33, 50, { per: 1.7, perPerGame: 0.08, mvps: 3, rating: 1125, overrideGenerated: true }],
-      ["Quack Wok", "LIL HATED ONE", 22, "0-0", 4205, 6, 13, 16, 28, { per: 0.4, perPerGame: 0.02, mvps: 0, rating: 782, overrideGenerated: true }],
+      ["Crossbar Cartel", "Vizpick", 15, "0-0", 5408, 9, 7, 22, 30, { per: 1.5, perPerGame: 0.10, mvps: 2, rating: 1202, overrideGenerated: true }],
+      ["Crossbar Cartel", "MJD22-_-", 15, "0-0", 4911, 11, 3, 24, 36, { per: 1.7, perPerGame: 0.11, mvps: 2, rating: 1075, overrideGenerated: true }],
+      ["Crossbar Cartel", "sir_vantzzz", 15, "0-0", 3214, 6, 5, 12, 18, { per: 0.3, perPerGame: 0.02, mvps: 0, rating: 820, overrideGenerated: true }],
+      ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 19, "0-0", 7752, 13, 18, 25, 59, { per: 2.6, perPerGame: 0.13, mvps: 6, rating: 1213, overrideGenerated: true }],
+      ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 19, "0-0", 5865, 19, 7, 14, 50, { per: 1.8, perPerGame: 0.09, mvps: 4, rating: 1011, overrideGenerated: true }],
+      ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 19, "0-0", 5666, 15, 10, 21, 36, { per: 1.9, perPerGame: 0.10, mvps: 1, rating: 965, overrideGenerated: true }],
+      ["Spirit Airlines", "JAR", 15, "0-0", 6325, 14, 8, 25, 41, { per: 2.4, perPerGame: 0.16, mvps: 4, rating: 1232, overrideGenerated: true }],
+      ["Spirit Airlines", "dailcowgs94", 15, "0-0", 5246, 13, 5, 21, 35, { per: 1.8, perPerGame: 0.12, mvps: 1, rating: 1078, overrideGenerated: true }],
+      ["Spirit Airlines", "MadJanitor88", 15, "0-0", 2203, 4, 1, 5, 18, { per: -0.5, perPerGame: -0.04, mvps: 0, rating: 855, overrideGenerated: true }],
+      ["The Cox", "roo", 10, "0-0", 6020, 18, 9, 16, 51, { per: 2.8, perPerGame: 0.28, mvps: 5, rating: 1248, overrideGenerated: true }],
+      ["The Cox", "CoalTrainLLC", 10, "0-0", 4459, 17, 7, 7, 35, { per: 1.9, perPerGame: 0.19, mvps: 2, rating: 1111, overrideGenerated: true }],
+      ["The Cox", "Hyroshi", 10, "0-0", 1764, 1, 7, 4, 10, { per: -0.2, perPerGame: -0.02, mvps: 0, rating: 819, overrideGenerated: true }],
+      ["Past Our Prime", "RoyalxRenegade", 14, "0-0", 6891, 17, 10, 21, 38, { per: 2.6, perPerGame: 0.18, mvps: 8, rating: 1262, overrideGenerated: true }],
+      ["Past Our Prime", "AtownSteelers", 14, "0-0", 4919, 11, 11, 19, 29, { per: 1.8, perPerGame: 0.13, mvps: 1, rating: 1009, overrideGenerated: true }],
+      ["Past Our Prime", "MerkWTM", 14, "0-0", 4149, 8, 10, 16, 24, { per: 1.2, perPerGame: 0.09, mvps: 0, rating: 872, overrideGenerated: true }],
+      ["Quack Wok", "Original_6_Hawks", 12, "0-0", 5085, 15, 2, 18, 29, { per: 1.9, perPerGame: 0.16, mvps: 4, rating: 1301, overrideGenerated: true }],
+      ["Quack Wok", "godfatherjones", 12, "0-0", 3451, 0, 7, 18, 25, { per: 0.6, perPerGame: 0.05, mvps: 2, rating: 1125, overrideGenerated: true }],
+      ["Quack Wok", "LIL HATED ONE", 12, "0-0", 2358, 4, 7, 9, 15, { per: 0.3, perPerGame: 0.03, mvps: 0, rating: 782, overrideGenerated: true }],
       ["Giga's In Paris", "Aximov", 18, "0-0", 7877, 23, 7, 21, 76, { per: 3.0, perPerGame: 0.17, mvps: 5, rating: 1315, overrideGenerated: true }],
       ["Giga's In Paris", "Selenagomez415", 18, "0-0", 5977, 12, 8, 19, 59, { per: 1.7, perPerGame: 0.09, mvps: 5, rating: 1125, overrideGenerated: true }],
       ["Giga's In Paris", "Mastergiga9", 18, "0-0", 3599, 8, 9, 12, 17, { per: 0.4, perPerGame: 0.02, mvps: 0, rating: 728, overrideGenerated: true }],
@@ -762,22 +762,6 @@
     return "";
   }
 
-  function scheduleTeamWithPoints(value) {
-    let label = String(value || "").replace(/\.$/, "").trim();
-    let points = "";
-    const leading = label.match(/^\((\d+)\)\s*(.+)$/);
-    if (leading) {
-      points = leading[1];
-      label = leading[2].trim();
-    }
-    const trailing = label.match(/^(.+?)\s*\((\d+)\)$/);
-    if (trailing) {
-      label = trailing[1].trim();
-      points = trailing[2];
-    }
-    return { name: team(label), points };
-  }
-
   function parseScheduleBlock(season, stage, raw) {
     const rows = [];
     let round = "";
@@ -799,10 +783,8 @@
       }
       const resultIndex = parts.findIndex((part) => /(?:\(\d+\)\s*)?\d+\s*-\s*\d+(?:\s*\(\d+\))?/.test(part));
       if (resultIndex < 1 || resultIndex >= parts.length - 1) return;
-      const homeParsed = scheduleTeamWithPoints(parts[resultIndex - 1]);
-      const awayParsed = scheduleTeamWithPoints(parts[resultIndex + 1]);
-      const homeName = homeParsed.name;
-      const awayName = awayParsed.name;
+      const homeName = team(parts[resultIndex - 1].replace(/\.$/, ""));
+      const awayName = team(parts[resultIndex + 1].replace(/\.$/, ""));
       const result = cleanResult(parts[resultIndex]);
       const note = parts.slice(resultIndex + 2)
         .filter((part) => !/^(Win|Loss)$/i.test(part))
@@ -813,10 +795,8 @@
         round,
         dateRange,
         home: homeName,
-        homePoints: homeParsed.points,
         result,
         away: awayName,
-        awayPoints: awayParsed.points,
         winner: team(scheduleWinner(homeName, result, awayName)),
         note,
         pool: schedulePool(season, stage, homeName, awayName),
@@ -1196,15 +1176,15 @@ Week 2
 Win	Hook Line & Blinker	(12) 3-1 (5)	Giga's In Paris	Loss
 Win	Best Friends Club	(12) 3-2 (13)	Spirit Airlines	Loss
 Win	Quack Wok	(6) 3-0 (3)	ESC	Loss
-Loss	Ball Chasin & Sauce Tastin	(10) 2-3 (12)	The Cox	Win
-Loss	Crossbar Cartel	(6) 2-3 (12)	Past Our Prime	Win
+Ball Chasin & Sauce Tastin	(0) 0-0 (0)	The Cox
+Crossbar Cartel	(0) 0-0 (0)	Past Our Prime
 Byes: Supernova Abyss, Deceptitards
 Week 3
 Win	Ball Chasin & Sauce Tastin	(12) 3-2 (15)	Deceptitards	Loss
 Win	Supernova Abyss	(6) 3-0 (1)	Crossbar Cartel	Loss
-Loss	The Cox	(14) 2-3 (17)	Past Our Prime	Win
+The Cox	(0) 0-0 (0)	Past Our Prime
 Win	Spirit Airlines	(10) 3-1 (12)	ESC	Loss
-Loss	Quack Wok	(8) 2-3 (8)	Best Friends Club	Win
+Quack Wok	(0) 0-0 (0)	Best Friends Club
 Byes: Hook Line & Blinker, Giga's In Paris
 Week 4
 Win	ESC	(20) 3-2 (7)	Best Friends Club	Loss
@@ -1223,19 +1203,19 @@ Byes: Quack Wok, ESC
 Week 6
 Win	Hook Line & Blinker	(12) 3-0 (3)	ESC	Loss
 Loss	Best Friends Club	(5) 1-3 (11)	Giga's In Paris	Win
-Win	Quack Wok	(17) 3-2 (9)	Spirit Airlines	Loss
+Quack Wok	(0) 0-0 (0)	Spirit Airlines
 Loss	The Cox	(12) 1-3 (14)	Supernova Abyss	Win
 Loss	Deceptitards	(13) 2-3 (14)	Crossbar Cartel	Win
 Byes: Past Our Prime, Ball Chasin & Sauce Tastin
 `),
     ...parseScheduleBlock("S6", "swiss", `
 Round 1
-(15) Hook Line & Blinker	(0) 0-0 (0)	Deceptitards (3)	Locked: G1 vs T6
-(9) Giga's In Paris	(0) 0-0 (0)	Crossbar Cartel (4)	Locked: G2 vs T5
-(9) Quack Wok	(0) 0-0 (0)	Ball Chasin & Sauce Tastin (9)	Locked: G3 vs T4
-(13) Past Our Prime	(0) 0-0 (0)	Spirit Airlines (4)	Locked: T1 vs G6
-(11) Supernova Abyss	(0) 0-0 (0)	ESC (6)	Locked: T2 vs G5
-(11) The Cox	(0) 0-0 (0)	Best Friends Club (7)	Locked: T3 vs G4
+Hook Line & Blinker	(0) 0-0 (0)	Deceptitards	Locked: G1 vs T6
+Giga's In Paris	(0) 0-0 (0)	Crossbar Cartel	Pending: G2 vs T5
+ESC	(0) 0-0 (0)	The Cox	Pending: G3 vs T4
+Past Our Prime	(0) 0-0 (0)	Spirit Airlines	Pending: T1 vs G6
+Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Best Friends Club	Pending: T2 vs G5
+Supernova Abyss	(0) 0-0 (0)	Quack Wok	Pending: T3 vs G4
 Round 2
 (0) 0-0 (0)
 (0) 0-0 (0)
@@ -1384,11 +1364,6 @@ Demoted Team	(0) 0-0 (0)
     [schedulePairKey("Supernova Abyss", "Ball Chasin & Sauce Tastin"), "https://www.youtube.com/watch?v=jbEVmCKQbtg"],
     [schedulePairKey("Spirit Airlines", "ESC"), "https://www.youtube.com/watch?v=_rKo_r6NTEw"],
     [schedulePairKey("Supernova Abyss", "Crossbar Cartel"), "https://www.youtube.com/watch?v=4QaRS1eijFE"],
-    [schedulePairKey("The Cox", "Past Our Prime"), "https://www.youtube.com/watch?v=RPBjL9DPtaM"],
-    [schedulePairKey("Ball Chasin & Sauce Tastin", "The Cox"), "https://www.youtube.com/watch?v=y7uiBbkbaOU"],
-    [schedulePairKey("Quack Wok", "Best Friends Club"), "https://www.youtube.com/watch?v=-9YJzV_gsvE"],
-    [schedulePairKey("Quack Wok", "Spirit Airlines"), "https://www.youtube.com/watch?v=oJDGcw4DTfw"],
-    [schedulePairKey("Crossbar Cartel", "Past Our Prime"), "https://www.youtube.com/watch?v=F-JKkA5P2cE"],
   ]);
   schedules.forEach((row) => {
     if (row.season !== "S6" || row.stage !== "group") return;

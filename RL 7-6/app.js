@@ -439,14 +439,14 @@ const s6Pools = {
 const s6PoolRanks = {
   "Hook Line & Blinker": 1,
   "Giga's In Paris": 2,
-  "Quack Wok": 3,
-  "Best Friends Club": 4,
-  "ESC": 5,
+  "ESC": 3,
+  "Quack Wok": 4,
+  "Best Friends Club": 5,
   "Spirit Airlines": 6,
   "Past Our Prime": 1,
-  "Supernova Abyss": 2,
-  "The Cox": 3,
-  "Ball Chasin & Sauce Tastin": 4,
+  "Ball Chasin & Sauce Tastin": 2,
+  "Supernova Abyss": 3,
+  "The Cox": 4,
   "Crossbar Cartel": 5,
   "Deceptitards": 6,
 };
@@ -489,45 +489,45 @@ const s5SplitPools = {
 };
 
 const s6OverallTeamRows = [
-  ["Best Friends Club", 1037.6, -25, 24, 21960, 40, 65, 24, 108, 142, 201, 6.6, 0.28, 7, 2, 3, 11, 13, 0, 2],
-  ["Hook Line & Blinker", 1096.1, 33, 20, 22264, 63, 30, 43, 64, 161, 110, 8.3, 0.42, 15, 5, 0, 15, 5, 2, 0],
-  ["Crossbar Cartel", 1023.2, -21, 20, 17630, 32, 53, 18, 75, 112, 164, 4.2, 0.21, 4, 1, 4, 6, 14, 0, 1],
-  ["Ball Chasin & Sauce Tastin", 1071.7, 5, 24, 23949, 57, 52, 42, 78, 183, 156, 7.6, 0.32, 9, 3, 2, 13, 11, 0, 2],
-  ["Spirit Airlines", 1037.5, -21, 20, 18150, 40, 61, 22, 69, 127, 162, 5.0, 0.25, 4, 1, 4, 7, 13, 0, 2],
-  ["The Cox", 1068.3, 11, 20, 22557, 62, 51, 36, 70, 165, 144, 8.3, 0.42, 11, 3, 2, 12, 8, 2, 1],
-  ["Past Our Prime", 1084.6, 12, 24, 27277, 65, 53, 56, 90, 177, 171, 9.9, 0.41, 13, 5, 0, 15, 9, 0, 0],
-  ["Quack Wok", 1055.1, -3, 22, 20539, 44, 47, 31, 78, 140, 155, 6.0, 0.27, 9, 2, 3, 11, 11, 1, 2],
-  ["Giga's In Paris", 1051.2, 8, 18, 17453, 43, 35, 24, 52, 152, 106, 5.1, 0.28, 9, 3, 2, 10, 8, 1, 0],
+  ["Best Friends Club", 1022.3, -25, 19, 17723, 32, 57, 20, 87, 107, 170, 5.4, 0.28, 4, 1, 3, 8, 11, 0, 2],
+  ["Hook Line & Blinker", 1088.0, 33, 20, 22264, 63, 30, 43, 64, 161, 110, 8.3, 0.42, 12, 5, 0, 15, 5, 2, 0],
+  ["Crossbar Cartel", 1032.7, -15, 15, 13533, 26, 41, 15, 58, 84, 122, 3.6, 0.24, 2, 1, 3, 4, 11, 0, 0],
+  ["Ball Chasin & Sauce Tastin", 1068.5, 7, 19, 19283, 47, 40, 35, 60, 145, 121, 6.2, 0.33, 7, 3, 1, 11, 8, 0, 1],
+  ["Spirit Airlines", 1022.8, -13, 15, 13774, 31, 44, 14, 51, 94, 122, 3.6, 0.24, 3, 1, 3, 5, 10, 0, 1],
+  ["The Cox", 1063.4, 12, 10, 12243, 36, 24, 23, 27, 96, 62, 4.5, 0.45, 6, 2, 1, 7, 3, 2, 0],
+  ["Past Our Prime", 1074.0, 3, 14, 15959, 36, 33, 31, 56, 91, 109, 5.6, 0.40, 6, 3, 0, 9, 5, 0, 0],
+  ["Quack Wok", 1065.2, -11, 12, 10894, 19, 30, 16, 45, 69, 87, 2.8, 0.23, 4, 1, 2, 6, 6, 1, 1],
+  ["Giga's In Paris", 1084.1, 8, 18, 17453, 43, 35, 24, 52, 152, 106, 5.1, 0.28, 7, 3, 2, 10, 8, 1, 0],
   ["Deceptitards", 1027.7, -7, 22, 21753, 51, 58, 31, 77, 153, 170, 6.7, 0.31, 3, 0, 5, 7, 15, 0, 3],
-  ["Supernova Abyss", 1075.0, 0, 22, 21247, 46, 46, 32, 73, 162, 147, 6.1, 0.28, 11, 3, 2, 13, 9, 1, 2],
-  ["ESC", 1046.6, 10, 18, 18372, 49, 39, 28, 59, 139, 124, 6.2, 0.35, 6, 2, 3, 7, 11, 1, 0],
+  ["Supernova Abyss", 1084.1, 0, 22, 21247, 46, 46, 32, 73, 162, 147, 6.1, 0.28, 9, 3, 2, 13, 9, 1, 2],
+  ["ESC", 1041.5, 10, 18, 18372, 49, 39, 28, 59, 139, 124, 6.2, 0.35, 5, 2, 3, 7, 11, 1, 0],
 ];
 
 const s6OverallPlayerRows = [
-  ["Best Friends Club", "I_have_a_bag", 24, 8656, 15, 7, 43, 60, 2.9, 0.12, 6, 1143],
-  ["Best Friends Club", "greenarrowspark2", 24, 7171, 13, 10, 32, 42, 2.0, 0.08, 2, 968],
-  ["Best Friends Club", "thelakeeffekt", 24, 6133, 12, 7, 33, 40, 1.8, 0.07, 3, 959],
+  ["Best Friends Club", "I_have_a_bag", 19, 6776, 13, 4, 33, 43, 2.2, 0.12, 4, 1143],
+  ["Best Friends Club", "greenarrowspark2", 19, 5761, 8, 9, 27, 32, 1.5, 0.08, 1, 968],
+  ["Best Friends Club", "thelakeeffekt", 19, 5186, 11, 7, 27, 32, 1.7, 0.09, 3, 959],
   ["Hook Line & Blinker", "Ramen", 20, 8893, 26, 15, 23, 55, 3.4, 0.17, 9, 1200],
   ["Hook Line & Blinker", "Bubbles3913", 20, 8655, 27, 16, 27, 65, 4.0, 0.20, 6, 1120],
   ["Hook Line & Blinker", "NeonLightning20", 20, 4716, 10, 12, 14, 41, 0.9, 0.05, 0, 857],
-  ["Crossbar Cartel", "Vizpick", 20, 7314, 12, 9, 29, 43, 2.0, 0.10, 4, 1202],
-  ["Crossbar Cartel", "MJD22-_-", 20, 6110, 13, 4, 28, 45, 1.8, 0.09, 2, 1075],
-  ["Crossbar Cartel", "sir_vantzzz", 20, 4206, 7, 5, 18, 24, 0.4, 0.02, 0, 820],
-  ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 24, 9457, 15, 21, 31, 75, 3.0, 0.12, 8, 1213],
-  ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 24, 7337, 23, 7, 20, 64, 2.2, 0.09, 4, 1011],
-  ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 24, 7155, 19, 14, 27, 44, 2.4, 0.10, 1, 965],
-  ["Spirit Airlines", "JAR", 20, 8456, 19, 10, 33, 61, 3.2, 0.16, 6, 1232],
-  ["Spirit Airlines", "dailcowgs94", 20, 6765, 16, 9, 29, 42, 2.4, 0.12, 1, 1078],
-  ["Spirit Airlines", "MadJanitor88", 20, 2929, 5, 3, 7, 24, -0.6, -0.03, 0, 855],
-  ["The Cox", "roo", 20, 11306, 33, 14, 37, 91, 5.4, 0.27, 9, 1248],
-  ["The Cox", "CoalTrainLLC", 20, 7781, 26, 10, 20, 59, 3.0, 0.15, 3, 1111],
-  ["The Cox", "Hyroshi", 20, 3470, 3, 12, 13, 15, -0.1, 0.00, 0, 819],
-  ["Past Our Prime", "RoyalxRenegade", 24, 12270, 34, 16, 35, 86, 5.0, 0.21, 12, 1262],
-  ["Past Our Prime", "AtownSteelers", 24, 8396, 18, 22, 32, 53, 3.2, 0.13, 1, 1009],
-  ["Past Our Prime", "MerkWTM", 24, 6611, 13, 18, 23, 38, 1.7, 0.07, 2, 872],
-  ["Quack Wok", "Original_6_Hawks", 22, 9617, 32, 6, 29, 62, 3.9, 0.18, 8, 1301],
-  ["Quack Wok", "godfatherjones", 22, 6717, 6, 12, 33, 50, 1.7, 0.08, 3, 1125],
-  ["Quack Wok", "LIL HATED ONE", 22, 4205, 6, 13, 16, 28, 0.4, 0.02, 0, 782],
+  ["Crossbar Cartel", "Vizpick", 15, 5408, 9, 7, 22, 30, 1.5, 0.10, 2, 1202],
+  ["Crossbar Cartel", "MJD22-_-", 15, 4911, 11, 3, 24, 36, 1.7, 0.11, 2, 1075],
+  ["Crossbar Cartel", "sir_vantzzz", 15, 3214, 6, 5, 12, 18, 0.3, 0.02, 0, 820],
+  ["Ball Chasin & Sauce Tastin", "CROCOKYLE", 19, 7752, 13, 18, 25, 59, 2.6, 0.13, 6, 1213],
+  ["Ball Chasin & Sauce Tastin", "Pilot_SG1", 19, 5865, 19, 7, 14, 50, 1.8, 0.09, 4, 1011],
+  ["Ball Chasin & Sauce Tastin", "TGS_Lostmoss", 19, 5666, 15, 10, 21, 36, 1.9, 0.10, 1, 965],
+  ["Spirit Airlines", "JAR", 15, 6325, 14, 8, 25, 41, 2.4, 0.16, 4, 1232],
+  ["Spirit Airlines", "dailcowgs94", 15, 5246, 13, 5, 21, 35, 1.8, 0.12, 1, 1078],
+  ["Spirit Airlines", "MadJanitor88", 15, 2203, 4, 1, 5, 18, -0.5, -0.04, 0, 855],
+  ["The Cox", "roo", 10, 6020, 18, 9, 16, 51, 2.8, 0.28, 5, 1248],
+  ["The Cox", "CoalTrainLLC", 10, 4459, 17, 7, 7, 35, 1.9, 0.19, 2, 1111],
+  ["The Cox", "Hyroshi", 10, 1764, 1, 7, 4, 10, -0.2, -0.02, 0, 819],
+  ["Past Our Prime", "RoyalxRenegade", 14, 6891, 17, 10, 21, 38, 2.6, 0.18, 8, 1262],
+  ["Past Our Prime", "AtownSteelers", 14, 4919, 11, 11, 19, 29, 1.8, 0.13, 1, 1009],
+  ["Past Our Prime", "MerkWTM", 14, 4149, 8, 10, 16, 24, 1.2, 0.09, 0, 872],
+  ["Quack Wok", "Original_6_Hawks", 12, 5085, 15, 2, 18, 29, 1.9, 0.16, 4, 1301],
+  ["Quack Wok", "godfatherjones", 12, 3451, 0, 7, 18, 25, 0.6, 0.05, 2, 1125],
+  ["Quack Wok", "LIL HATED ONE", 12, 2358, 4, 7, 9, 15, 0.3, 0.03, 0, 782],
   ["Giga's In Paris", "Aximov", 18, 7877, 23, 7, 21, 76, 3.0, 0.17, 5, 1315],
   ["Giga's In Paris", "Selenagomez415", 18, 5977, 12, 8, 19, 59, 1.7, 0.09, 5, 1125],
   ["Giga's In Paris", "Mastergiga9", 18, 3599, 8, 9, 12, 17, 0.4, 0.02, 0, 728],
@@ -543,18 +543,18 @@ const s6OverallPlayerRows = [
 ];
 
 const s6GroupStandingsRows = [
-  ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
-  ["Past Our Prime", 2, 13, "5 - 0", 12, "15 - 9", 0, 0, "0 - 0"],
-  ["The Cox", 3, 11, "3 - 2", 11, "12 - 8", 2, 1, "2 - 1"],
-  ["Supernova Abyss", 4, 11, "3 - 2", 0, "13 - 9", 1, 2, "1 - 2"],
-  ["Giga's In Paris", 5, 9, "3 - 2", 8, "10 - 8", 1, 0, "1 - 0"],
-  ["Ball Chasin & Sauce Tastin", 6, 9, "3 - 2", 5, "13 - 11", 0, 2, "0 - 2"],
-  ["Quack Wok", 7, 9, "2 - 3", -3, "11 - 11", 1, 2, "1 - 2"],
-  ["Best Friends Club", 8, 7, "2 - 3", -25, "11 - 13", 0, 2, "0 - 2"],
-  ["ESC", 9, 6, "2 - 3", 10, "7 - 11", 1, 0, "1 - 0"],
-  ["Spirit Airlines", 10, 4, "1 - 4", -21, "7 - 13", 0, 2, "0 - 2"],
-  ["Crossbar Cartel", 11, 4, "1 - 4", -21, "6 - 14", 0, 1, "0 - 1"],
-  ["Deceptitards", 12, 3, "0 - 5", -7, "7 - 15", 0, 3, "0 - 3"],
+  ["Hook Line & Blinker", 1, 12, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
+  ["Supernova Abyss", 2, 9, "3 - 2", 0, "13 - 9", 1, 2, "1 - 2"],
+  ["Ball Chasin & Sauce Tastin", 3, 7, "3 - 1", 7, "11 - 8", 0, 1, "0 - 1"],
+  ["Giga's In Paris", 4, 7, "3 - 2", 8, "10 - 8", 1, 0, "1 - 0"],
+  ["Past Our Prime", 5, 6, "3 - 0", 3, "9 - 5", 0, 0, "0 - 0"],
+  ["The Cox", 6, 6, "2 - 1", 12, "7 - 3", 2, 0, "2 - 0"],
+  ["ESC", 7, 5, "2 - 3", 10, "7 - 11", 1, 0, "1 - 0"],
+  ["Quack Wok", 8, 4, "1 - 2", -11, "6 - 6", 1, 1, "1 - 1"],
+  ["Best Friends Club", 9, 4, "1 - 3", -25, "8 - 11", 0, 2, "0 - 2"],
+  ["Spirit Airlines", 10, 3, "1 - 3", -13, "5 - 10", 0, 1, "0 - 1"],
+  ["Deceptitards", 11, 3, "0 - 5", -7, "7 - 15", 0, 3, "0 - 3"],
+  ["Crossbar Cartel", 12, 2, "1 - 3", -15, "4 - 11", 0, 0, "0 - 0"],
 ];
 
 const s5SplitStandingsRows = {
@@ -1321,12 +1321,7 @@ function scheduleTeamCell(row, key) {
   if (!value) return "";
   const isWinner = row.winner && row.winner === value;
   const style = isWinner ? ` style="--team-color:${escapeHtml(teamColor(value, row.season || state.season))}"` : "";
-  const points = key === "team" ? row.homePoints : row.awayPoints;
-  const label = displayName(value, "team");
-  const seededLabel = points
-    ? (key === "team" ? `(${points}) ${label}` : `${label} (${points})`)
-    : label;
-  return `<span class="${isWinner ? "schedule-winner-team" : ""}"${style}>${escapeHtml(seededLabel)}</span>`;
+  return `<span class="${isWinner ? "schedule-winner-team" : ""}"${style}>${escapeHtml(displayName(value, "team"))}</span>`;
 }
 
 function scheduleResultMarkup(row) {
@@ -1717,7 +1712,7 @@ function s5SplitStandingRow(raw, index) {
     sweeps: "N/A",
     gameFiveLosses: "N/A",
     sweepsText: "N/A",
-    remainingMatches: Math.max(0, 5 - (wins + losses)),
+    remainingMatches: 0,
     maxScore: standingsPoints,
   };
 }
@@ -2205,9 +2200,7 @@ function scheduleManualRow(row) {
     round: row.round || "",
     dateRange: row.dateRange || "",
     team: row.home || "",
-    homePoints: row.homePoints || "",
     opponent: row.away || "",
-    awayPoints: row.awayPoints || "",
     result: row.result || "",
     vod: row.vod || "",
     winner: row.winner || "",
@@ -2706,8 +2699,8 @@ function comparePoolStandings(a, b) {
     || a.name.localeCompare(b.name);
 }
 
-function compareHeadToHeadPlaceholder(a, b) {
-  return (Number(a.poolRank) || 999) - (Number(b.poolRank) || 999);
+function compareHeadToHeadPlaceholder() {
+  return 0;
 }
 
 function playoffBracketRows(season) {
