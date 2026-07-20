@@ -42,11 +42,6 @@ const playerAliasMap = new Map([
   ["MERKWRM", "MerkWTM"],
   ["MERKWTM", "MerkWTM"],
   ["RAVENGLITCH", "Ravenglitch"],
-  ["EPO", "EPo -_-"],
-  ["SQUID", "KWNSquid"],
-  ["STARZYRL", "ttv_starzyrl"],
-  ["VANTTZZ", "Sir_vantzzz"],
-  ["VIZPICK", "Vizpick"],
 ]);
 
 const teamAliasMap = new Map([
@@ -408,26 +403,10 @@ const scheduleColumns = [
 
 const scheduleSeriesColumns = [
   ["game", "Game"],
-  ["date", "Date"],
   ["team", "Home"],
   ["result", "Result"],
   ["opponent", "Away"],
-  ["winner", "Winner"],
   ["note", "Status"],
-];
-
-const scheduleGamePlayerColumns = [
-  ["team", "Team"],
-  ["name", "Player"],
-  ["result", "Result"],
-  ["score", "Score"],
-  ["goals", "G"],
-  ["assists", "A"],
-  ["saves", "Sv"],
-  ["shots", "Sh"],
-  ["shootingPct", "Shot %"],
-  ["amountStolen", "Stolen"],
-  ["demosInflicted", "Demo"],
 ];
 
 const matchupComparisonStats = [
@@ -561,177 +540,6 @@ const s6OverallPlayerRows = [
   ["ESC", "Epontious", 18, 9027, 29, 9, 26, 73, 4.0, 0.22, 7, 1452],
   ["ESC", "SkittleZ", 18, 4061, 9, 4, 15, 27, 0.6, 0.03, 0, 962],
   ["ESC", "Clamp2much", 18, 5284, 11, 15, 18, 39, 1.6, 0.09, 0, 770],
-];
-
-const s6SwissTeamRows = [
-  {
-    name: "Giga's In Paris", rating: 1051.2, games: 3, score: 3792, goals: 10, goalsConceded: 4,
-    assists: 5, saves: 16, shots: 28, shotsConceded: 21, wins: 1, losses: 0, gameWins: 3, gameLosses: 0,
-    standingsPoints: 2, sweeps: 1, gameFiveLosses: 0, amountStolen: 4047, demosInflicted: 5, demosTaken: 7,
-    opponentSavesForced: 15, per: 1.7, perPerGame: 0.57,
-  },
-  {
-    name: "Crossbar Cartel", rating: 1023.2, games: 3, score: 2798, goals: 4, goalsConceded: 10,
-    assists: 2, saves: 15, shots: 21, shotsConceded: 28, wins: 0, losses: 1, gameWins: 0, gameLosses: 3,
-    standingsPoints: 0, sweeps: 0, gameFiveLosses: 0, amountStolen: 3665, demosInflicted: 7, demosTaken: 5,
-    opponentSavesForced: 16, per: 0.81, perPerGame: 0.27,
-  },
-  {
-    name: "ESC", rating: 1046.6, games: 3, score: 2891, goals: 7, goalsConceded: 3,
-    assists: 4, saves: 9, shots: 21, shotsConceded: 14, wins: 1, losses: 0, gameWins: 3, gameLosses: 0,
-    standingsPoints: 2, sweeps: 1, gameFiveLosses: 0, amountStolen: 3377, demosInflicted: 10, demosTaken: 8,
-    opponentSavesForced: 11, per: 1.75, perPerGame: 0.58,
-  },
-  {
-    name: "Supernova Abyss", rating: 1075.0, games: 3, score: 2409, goals: 3, goalsConceded: 7,
-    assists: 2, saves: 12, shots: 14, shotsConceded: 21, wins: 0, losses: 1, gameWins: 0, gameLosses: 3,
-    standingsPoints: 0, sweeps: 0, gameFiveLosses: 0, amountStolen: 4299, demosInflicted: 8, demosTaken: 10,
-    opponentSavesForced: 9, per: 0.79, perPerGame: 0.26,
-  },
-];
-
-const s6SwissPlayerRows = [
-  ["Giga's In Paris", "Ax1mov", 3, 1764, 7, 1, 6, 12, 3, 2, 3, 1589, 1315],
-  ["Giga's In Paris", "selena.", 3, 1301, 3, 2, 5, 9, 2, 3, 2, 1483, 1125],
-  ["Giga's In Paris", "Mastergiga9", 3, 727, 0, 2, 5, 7, 0, 2, 0, 975, 728],
-  ["Crossbar Cartel", "VizPick", 3, 1053, 1, 1, 5, 8, 1, 4, 1, 1706, 1202],
-  ["Crossbar Cartel", "MJD22-_-", 3, 1126, 3, 1, 4, 11, 1, 0, 1, 1079, 1075],
-  ["Crossbar Cartel", "Vanttzz", 3, 619, 0, 0, 6, 2, 5, 1, 0, 880, 820],
-  ["ESC", "EPo -_-", 3, 1673, 7, 0, 3, 14, 2, 3, 0, 1380, 1452],
-  ["ESC", "Clamp2much", 3, 546, 0, 2, 2, 4, 3, 3, 0, 746, 770],
-  ["ESC", "SirSkittleZ", 3, 672, 0, 2, 4, 3, 5, 2, 0, 1251, 962],
-  ["Supernova Abyss", "STARZY_RL", 3, 577, 0, 1, 4, 1, 4, 6, 0, 1254, 952],
-  ["Supernova Abyss", "S-qui-d", 3, 1347, 2, 0, 7, 8, 2, 2, 0, 1829, 1451],
-  ["Supernova Abyss", "MrStratty", 3, 485, 1, 1, 1, 5, 2, 2, 0, 1216, 793],
-];
-
-const s6SwissSeriesGameStats = [
-  {
-    season: "S6",
-    stage: "Swiss",
-    round: "Round 1",
-    home: "Giga's In Paris",
-    away: "Crossbar Cartel",
-    games: [
-      {
-        id: "55877a95-7064-4c41-8749-c82ce55ae7e5",
-        game: "Game 1",
-        date: "2026-07-20",
-        winner: "Giga's In Paris",
-        teams: [
-          { team: "Giga's In Paris", opponent: "Crossbar Cartel", result: "win", score: 1294, goals: 3, assists: 0, saves: 6, shots: 9, shotsConceded: 9, goalsConceded: 2, amountStolen: 1157, demosInflicted: 3, demosTaken: 3 },
-          { team: "Crossbar Cartel", opponent: "Giga's In Paris", result: "loss", score: 1197, goals: 2, assists: 1, saves: 7, shots: 9, shotsConceded: 9, goalsConceded: 3, amountStolen: 1377, demosInflicted: 3, demosTaken: 3 },
-        ],
-        players: [
-          { team: "Giga's In Paris", name: "Ax1mov", score: 581, goals: 1, assists: 0, saves: 3, shots: 4, amountStolen: 634, demosInflicted: 3, demosTaken: 1 },
-          { team: "Giga's In Paris", name: "selena.", score: 543, goals: 2, assists: 0, saves: 2, shots: 4, amountStolen: 343, demosInflicted: 0, demosTaken: 1 },
-          { team: "Giga's In Paris", name: "Mastergiga9", score: 170, goals: 0, assists: 0, saves: 1, shots: 1, amountStolen: 180, demosInflicted: 0, demosTaken: 1 },
-          { team: "Crossbar Cartel", name: "MJD22-_-", score: 552, goals: 1, assists: 1, saves: 3, shots: 5, amountStolen: 356, demosInflicted: 0, demosTaken: 0 },
-          { team: "Crossbar Cartel", name: "Vizpick", score: 481, goals: 1, assists: 0, saves: 3, shots: 3, amountStolen: 649, demosInflicted: 0, demosTaken: 2 },
-          { team: "Crossbar Cartel", name: "Sir_vantzzz", score: 164, goals: 0, assists: 0, saves: 1, shots: 1, amountStolen: 372, demosInflicted: 3, demosTaken: 1 },
-        ],
-      },
-      {
-        id: "03193eed-2409-40c1-9c18-72a513002ddb",
-        game: "Game 2",
-        date: "2026-07-20",
-        winner: "Giga's In Paris",
-        teams: [
-          { team: "Giga's In Paris", opponent: "Crossbar Cartel", result: "win", score: 1362, goals: 4, assists: 3, saves: 4, shots: 13, shotsConceded: 6, goalsConceded: 2, amountStolen: 1606, demosInflicted: 1, demosTaken: 4 },
-          { team: "Crossbar Cartel", opponent: "Giga's In Paris", result: "loss", score: 1083, goals: 2, assists: 1, saves: 6, shots: 6, shotsConceded: 13, goalsConceded: 4, amountStolen: 985, demosInflicted: 4, demosTaken: 1 },
-        ],
-        players: [
-          { team: "Giga's In Paris", name: "Ax1mov", score: 709, goals: 4, assists: 0, saves: 1, shots: 7, amountStolen: 468, demosInflicted: 0, demosTaken: 1 },
-          { team: "Giga's In Paris", name: "selena.", score: 377, goals: 0, assists: 1, saves: 2, shots: 2, amountStolen: 715, demosInflicted: 1, demosTaken: 2 },
-          { team: "Giga's In Paris", name: "Mastergiga9", score: 276, goals: 0, assists: 2, saves: 1, shots: 4, amountStolen: 423, demosInflicted: 0, demosTaken: 1 },
-          { team: "Crossbar Cartel", name: "MJD22-_-", score: 444, goals: 2, assists: 0, saves: 1, shots: 4, amountStolen: 209, demosInflicted: 1, demosTaken: 0 },
-          { team: "Crossbar Cartel", name: "Sir_vantzzz", score: 397, goals: 0, assists: 0, saves: 5, shots: 0, amountStolen: 181, demosInflicted: 2, demosTaken: 0 },
-          { team: "Crossbar Cartel", name: "Vizpick", score: 242, goals: 0, assists: 1, saves: 0, shots: 2, amountStolen: 595, demosInflicted: 1, demosTaken: 1 },
-        ],
-      },
-      {
-        id: "d4791dcc-0875-4cb2-915c-92742819f90e",
-        game: "Game 3",
-        date: "2026-07-20",
-        winner: "Giga's In Paris",
-        teams: [
-          { team: "Giga's In Paris", opponent: "Crossbar Cartel", result: "win", score: 1136, goals: 3, assists: 2, saves: 6, shots: 6, shotsConceded: 6, goalsConceded: 0, amountStolen: 1284, demosInflicted: 1, demosTaken: 0 },
-          { team: "Crossbar Cartel", opponent: "Giga's In Paris", result: "loss", score: 518, goals: 0, assists: 0, saves: 2, shots: 6, shotsConceded: 6, goalsConceded: 3, amountStolen: 1303, demosInflicted: 0, demosTaken: 1 },
-        ],
-        players: [
-          { team: "Giga's In Paris", name: "Ax1mov", score: 474, goals: 2, assists: 1, saves: 2, shots: 1, amountStolen: 487, demosInflicted: 0, demosTaken: 0 },
-          { team: "Giga's In Paris", name: "selena.", score: 381, goals: 1, assists: 1, saves: 1, shots: 3, amountStolen: 425, demosInflicted: 1, demosTaken: 0 },
-          { team: "Giga's In Paris", name: "Mastergiga9", score: 281, goals: 0, assists: 0, saves: 3, shots: 2, amountStolen: 372, demosInflicted: 0, demosTaken: 0 },
-          { team: "Crossbar Cartel", name: "Vizpick", score: 330, goals: 0, assists: 0, saves: 2, shots: 3, amountStolen: 462, demosInflicted: 0, demosTaken: 1 },
-          { team: "Crossbar Cartel", name: "MJD22-_-", score: 130, goals: 0, assists: 0, saves: 0, shots: 2, amountStolen: 514, demosInflicted: 0, demosTaken: 0 },
-          { team: "Crossbar Cartel", name: "Sir_vantzzz", score: 58, goals: 0, assists: 0, saves: 0, shots: 1, amountStolen: 327, demosInflicted: 0, demosTaken: 0 },
-        ],
-      },
-    ],
-  },
-  {
-    season: "S6",
-    stage: "Swiss",
-    round: "Round 1",
-    home: "Supernova Abyss",
-    away: "ESC",
-    games: [
-      {
-        id: "918903f8-b6a9-4388-a1c0-8b88b2299ebb",
-        game: "Game 1",
-        date: "2026-07-19",
-        winner: "ESC",
-        teams: [
-          { team: "Supernova Abyss", opponent: "ESC", result: "loss", score: 646, goals: 0, assists: 0, saves: 4, shots: 3, shotsConceded: 6, goalsConceded: 2, amountStolen: 1567, demosInflicted: 4, demosTaken: 6 },
-          { team: "ESC", opponent: "Supernova Abyss", result: "win", score: 878, goals: 2, assists: 1, saves: 2, shots: 6, shotsConceded: 3, goalsConceded: 0, amountStolen: 1238, demosInflicted: 6, demosTaken: 4 },
-        ],
-        players: [
-          { team: "Supernova Abyss", name: "KWNSquid", score: 508, goals: 0, assists: 0, saves: 4, shots: 3, amountStolen: 829, demosInflicted: 2, demosTaken: 1 },
-          { team: "Supernova Abyss", name: "MrStratty", score: 76, goals: 0, assists: 0, saves: 0, shots: 0, amountStolen: 430, demosInflicted: 1, demosTaken: 1 },
-          { team: "Supernova Abyss", name: "ttv_starzyrl", score: 62, goals: 0, assists: 0, saves: 0, shots: 0, amountStolen: 308, demosInflicted: 1, demosTaken: 4 },
-          { team: "ESC", name: "EPo -_-", score: 536, goals: 2, assists: 0, saves: 1, shots: 4, amountStolen: 547, demosInflicted: 1, demosTaken: 2 },
-          { team: "ESC", name: "SirSkittleZ", score: 190, goals: 0, assists: 1, saves: 0, shots: 0, amountStolen: 453, demosInflicted: 3, demosTaken: 0 },
-          { team: "ESC", name: "Clamp2much", score: 152, goals: 0, assists: 0, saves: 1, shots: 2, amountStolen: 238, demosInflicted: 2, demosTaken: 2 },
-        ],
-      },
-      {
-        id: "4a7cb50e-96cc-4c76-99c0-801812291027",
-        game: "Game 2",
-        date: "2026-07-19",
-        winner: "ESC",
-        teams: [
-          { team: "Supernova Abyss", opponent: "ESC", result: "loss", score: 805, goals: 1, assists: 0, saves: 4, shots: 5, shotsConceded: 5, goalsConceded: 2, amountStolen: 1429, demosInflicted: 2, demosTaken: 4 },
-          { team: "ESC", opponent: "Supernova Abyss", result: "win", score: 932, goals: 2, assists: 1, saves: 4, shots: 5, shotsConceded: 5, goalsConceded: 1, amountStolen: 1143, demosInflicted: 4, demosTaken: 2 },
-        ],
-        players: [
-          { team: "Supernova Abyss", name: "KWNSquid", score: 392, goals: 1, assists: 0, saves: 1, shots: 3, amountStolen: 502, demosInflicted: 0, demosTaken: 1 },
-          { team: "Supernova Abyss", name: "ttv_starzyrl", score: 363, goals: 0, assists: 0, saves: 3, shots: 1, amountStolen: 300, demosInflicted: 1, demosTaken: 2 },
-          { team: "Supernova Abyss", name: "MrStratty", score: 50, goals: 0, assists: 0, saves: 0, shots: 1, amountStolen: 627, demosInflicted: 1, demosTaken: 1 },
-          { team: "ESC", name: "EPo -_-", score: 416, goals: 2, assists: 0, saves: 0, shots: 4, amountStolen: 445, demosInflicted: 1, demosTaken: 1 },
-          { team: "ESC", name: "SirSkittleZ", score: 338, goals: 0, assists: 0, saves: 3, shots: 1, amountStolen: 440, demosInflicted: 2, demosTaken: 0 },
-          { team: "ESC", name: "Clamp2much", score: 178, goals: 0, assists: 1, saves: 1, shots: 0, amountStolen: 258, demosInflicted: 1, demosTaken: 1 },
-        ],
-      },
-      {
-        id: "3da8647a-289e-4eef-a536-f81ad0fd7242",
-        game: "Game 3",
-        date: "2026-07-19",
-        winner: "ESC",
-        teams: [
-          { team: "Supernova Abyss", opponent: "ESC", result: "loss", score: 958, goals: 2, assists: 2, saves: 4, shots: 6, shotsConceded: 10, goalsConceded: 3, amountStolen: 1303, demosInflicted: 2, demosTaken: 0 },
-          { team: "ESC", opponent: "Supernova Abyss", result: "win", score: 1081, goals: 3, assists: 2, saves: 3, shots: 10, shotsConceded: 6, goalsConceded: 2, amountStolen: 996, demosInflicted: 0, demosTaken: 2 },
-        ],
-        players: [
-          { team: "Supernova Abyss", name: "KWNSquid", score: 447, goals: 1, assists: 0, saves: 2, shots: 2, amountStolen: 498, demosInflicted: 0, demosTaken: 0 },
-          { team: "Supernova Abyss", name: "MrStratty", score: 359, goals: 1, assists: 1, saves: 1, shots: 4, amountStolen: 159, demosInflicted: 0, demosTaken: 0 },
-          { team: "Supernova Abyss", name: "ttv_starzyrl", score: 152, goals: 0, assists: 1, saves: 1, shots: 0, amountStolen: 646, demosInflicted: 2, demosTaken: 0 },
-          { team: "ESC", name: "EPo -_-", score: 721, goals: 3, assists: 0, saves: 2, shots: 6, amountStolen: 388, demosInflicted: 0, demosTaken: 0 },
-          { team: "ESC", name: "Clamp2much", score: 216, goals: 0, assists: 1, saves: 0, shots: 2, amountStolen: 250, demosInflicted: 0, demosTaken: 0 },
-          { team: "ESC", name: "SirSkittleZ", score: 144, goals: 0, assists: 1, saves: 1, shots: 2, amountStolen: 358, demosInflicted: 0, demosTaken: 2 },
-        ],
-      },
-    ],
-  },
 ];
 
 const s6GroupStandingsRows = [
@@ -1730,112 +1538,6 @@ function makeS6PlayerRow(raw, teamRows = s6StageTeamRows("overall")) {
   return finalized;
 }
 
-function makeS6SwissTeamRow(raw) {
-  const row = {
-    season: "S6",
-    name: canonicalTeamName(raw.name),
-    clinchMark: s6PoolClinches[raw.name] || "",
-    pool: s6Pools[raw.name] || "",
-    games: raw.games,
-    gameWins: raw.gameWins,
-    gameLosses: raw.gameLosses,
-    wins: raw.wins,
-    losses: raw.losses,
-    matchRecord: `${raw.wins} - ${raw.losses}`,
-    standingsPoints: raw.standingsPoints,
-    score: raw.score,
-    goals: raw.goals,
-    goalsConceded: raw.goalsConceded,
-    assists: raw.assists,
-    saves: raw.saves,
-    shots: raw.shots,
-    shotsConceded: raw.shotsConceded,
-    sweeps: raw.sweeps,
-    gameFiveLosses: raw.gameFiveLosses,
-    rating: raw.rating,
-    amountStolen: raw.amountStolen,
-    demosInflicted: raw.demosInflicted,
-    demosTaken: raw.demosTaken,
-    opponentSavesForced: raw.opponentSavesForced,
-    per: raw.per,
-    perPerGame: raw.perPerGame,
-    source: "manual",
-    overrideGenerated: true,
-    stage: "swiss",
-  };
-  const finalized = finalizeCommon(row);
-  finalized.per = raw.per;
-  finalized.perPerGame = raw.perPerGame;
-  return finalized;
-}
-
-function makeS6SwissPlayerRow(raw, teamRows = s6StageTeamRows("swiss", "overall")) {
-  const [team, name, games, score, goals, assists, saves, shots, demosInflicted, demosTaken, mvps, amountStolen, rating] = raw;
-  const canonicalTeam = canonicalTeamName(team);
-  const teamRow = teamRows.find((row) => row.name === canonicalTeam) || {};
-  const row = {
-    season: "S6",
-    name: canonicalPlayerName(name),
-    teams: [canonicalTeam],
-    teamsText: canonicalTeam,
-    pool: s6Pools[canonicalTeam] || "",
-    games,
-    wins: Number(teamRow.wins || 0),
-    losses: Number(teamRow.losses || 0),
-    gameWins: Number(teamRow.gameWins || 0),
-    gameLosses: Number(teamRow.gameLosses || 0),
-    standingsPoints: 0,
-    score,
-    goals,
-    assists,
-    saves,
-    shots,
-    mvps,
-    rating,
-    amountStolen,
-    demosInflicted,
-    demosTaken,
-    source: "manual",
-    overrideGenerated: true,
-    stage: "swiss",
-  };
-  return finalizeCommon(row);
-}
-
-function combineS6Rows(rows, type) {
-  const byKey = new Map();
-  rows.forEach((row) => {
-    const key = type === "player" ? `${row.teams?.[0] || ""}|${row.name}` : row.name;
-    if (!byKey.has(key)) {
-      byKey.set(key, {
-        ...row,
-        teams: row.teams ? [...row.teams] : row.teams,
-        source: "manual",
-        overrideGenerated: true,
-      });
-      return;
-    }
-    const item = byKey.get(key);
-    [
-      "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "score", "goals",
-      "goalsConceded", "assists", "saves", "shots", "shotsConceded", "sweeps", "gameFiveLosses",
-      "amountStolen", "demosInflicted", "demosTaken", "opponentSavesForced", "mvps", "per",
-    ].forEach((field) => {
-      item[field] = (Number(item[field]) || 0) + (Number(row[field]) || 0);
-    });
-    item.rating = row.rating || item.rating;
-  });
-  return [...byKey.values()].map((row) => {
-    row.matchRecord = `${row.wins || 0} - ${row.losses || 0}`;
-    const carriedPer = Number(row.per) || 0;
-    const finalized = finalizeCommon(row);
-    finalized.per = Math.round(carriedPer * 100) / 100;
-    finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 100) / 100;
-    finalized.stage = "overall";
-    return finalized;
-  });
-}
-
 function numericDiff(overall, group, key) {
   return Math.round(((Number(overall[key]) || 0) - (Number(group?.[key]) || 0)) * 100) / 100;
 }
@@ -1905,23 +1607,17 @@ function s6DiffPlayerRows() {
 }
 
 function s6StageTeamRows(stage = state.s6Stage, pool = state.s6Pool) {
-  const groupRows = s6OverallTeamRows.map(makeS6TeamRow);
-  const swissRows = s6SwissTeamRows.map(makeS6SwissTeamRow);
-  const rows = stage === "swiss"
-    ? swissRows
-    : (stage === "overall" ? combineS6Rows([...groupRows, ...swissRows], "team") : groupRows);
-  return s6FilterByPool(rows, pool);
+  if (stage === "swiss") return [];
+  return s6FilterByPool(s6OverallTeamRows.map(makeS6TeamRow), pool);
 }
 
 function s6StagePlayerRows(stage = state.s6Stage, pool = state.s6Pool) {
-  const groupTeams = s6StageTeamRows("group", "overall");
-  const groupRows = s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, groupTeams));
-  const swissTeams = s6StageTeamRows("swiss", "overall");
-  const swissRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissTeams));
-  const rows = stage === "swiss"
-    ? swissRows
-    : (stage === "overall" ? combineS6Rows([...groupRows, ...swissRows], "player") : groupRows);
-  return s6FilterByPool(rows, pool);
+  if (stage === "swiss") return [];
+  if (stage === "overall" || stage === "group") {
+    const teamRows = s6StageTeamRows("overall", "overall");
+    return s6FilterByPool(s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, teamRows)), pool);
+  }
+  return [];
 }
 
 function s6StageLabel() {
@@ -2144,161 +1840,16 @@ function renderScheduleFilters(rows) {
   els.scheduleFilters.classList.remove("hidden");
 }
 
-function scheduleSeriesKey(season, stage, home, away) {
-  const teams = [canonicalTeamName(home), canonicalTeamName(away)].sort().join("|");
-  return [baseSeasonName(season), scheduleStageLabel(stage).toLowerCase(), teams].join("::");
-}
-
-function scheduleSeriesData(series) {
-  const key = scheduleSeriesKey(series.season, series.stage, series.team, series.opponent);
-  return s6SwissSeriesGameStats.find((item) => scheduleSeriesKey(item.season, item.stage, item.home, item.away) === key) || null;
-}
-
-function scheduleGameData(page) {
-  const series = scheduleSeriesData(page);
-  if (!series) return null;
-  return series.games.find((game) => game.id === page.gameId || game.game === page.game) || null;
-}
-
-function gameTeamRow(game, teamName) {
-  return game?.teams?.find((row) => canonicalTeamName(row.team) === canonicalTeamName(teamName)) || null;
-}
-
-function gameScoreText(game, home, away) {
-  const homeRow = gameTeamRow(game, home);
-  const awayRow = gameTeamRow(game, away);
-  if (!homeRow || !awayRow) return "";
-  return `${fmt(homeRow.goals)} - ${fmt(awayRow.goals)}`;
-}
-
-function aggregateSeriesPlayers(seriesData) {
-  const map = new Map();
-  (seriesData?.games || []).forEach((game) => {
-    (game.players || []).forEach((row) => {
-      const key = `${canonicalTeamName(row.team)}|${canonicalPlayerName(row.name)}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          team: canonicalTeamName(row.team),
-          name: canonicalPlayerName(row.name),
-          games: 0,
-          score: 0,
-          goals: 0,
-          assists: 0,
-          saves: 0,
-          shots: 0,
-          amountStolen: 0,
-          demosInflicted: 0,
-        });
-      }
-      const item = map.get(key);
-      item.games += 1;
-      ["score", "goals", "assists", "saves", "shots", "amountStolen", "demosInflicted"].forEach((field) => {
-        item[field] += Number(row[field]) || 0;
-      });
-    });
-  });
-  return [...map.values()].map((row) => {
-    row.shootingPct = row.shots ? Math.round((row.goals / row.shots) * 10000) / 100 : 0;
-    row.avgScore = Math.round((row.score / Math.max(1, row.games)) * 10) / 10;
-    return row;
-  });
-}
-
-function seriesMvp(seriesData) {
-  return aggregateSeriesPlayers(seriesData)
-    .sort((a, b) => b.score - a.score || b.goals - a.goals || b.saves - a.saves || b.assists - a.assists || b.shots - a.shots)[0] || null;
-}
-
-function seriesMvpMarkup(seriesData) {
-  const mvp = seriesMvp(seriesData);
-  if (!mvp) return "";
-  return `
-    <section class="series-mvp-card" style="--team-color:${escapeHtml(teamColor(mvp.team, seriesData.season))}">
-      <div>
-        <span>Series MVP</span>
-        <h3>${escapeHtml(displayName(mvp.name, "name"))}</h3>
-        <p>${escapeHtml(displayName(mvp.team, "team"))}</p>
-      </div>
-      <div class="series-mvp-stats">
-        <b>${escapeHtml(fmt(mvp.score))}<small>Score</small></b>
-        <b>${escapeHtml(fmt(mvp.goals))}<small>Goals</small></b>
-        <b>${escapeHtml(fmt(mvp.saves))}<small>Saves</small></b>
-        <b>${escapeHtml(fmt(mvp.shots))}<small>Shots</small></b>
-      </div>
-    </section>
-  `;
-}
-
 function scheduleSeriesRows(series) {
-  const uploaded = scheduleSeriesData(series);
-  if (!uploaded) {
-    return [{
-      game: "Series",
-      date: "",
-      team: series.team,
-      result: series.result,
-      opponent: series.opponent,
-      winner: series.winner,
-      season: series.season,
-      note: "Game stats have not been uploaded yet.",
-    }];
-  }
-  return uploaded.games.map((game) => ({
-    game: game.game,
-    gameId: game.id,
-    date: game.date,
-    team: uploaded.home,
-    result: gameScoreText(game, uploaded.home, uploaded.away),
-    opponent: uploaded.away,
-    winner: game.winner,
-    season: uploaded.season,
-    stage: uploaded.stage,
-    round: uploaded.round,
-    note: "View player stats",
-  }));
-}
-
-function scheduleGamePlayerRows(page) {
-  const game = scheduleGameData(page);
-  if (!game) return [];
-  return (game.players || []).map((row) => {
-    const item = {
-      ...row,
-      name: canonicalPlayerName(row.name),
-      team: canonicalTeamName(row.team),
-      result: canonicalTeamName(row.team) === canonicalTeamName(game.winner) ? "Win" : "Loss",
-      shootingPct: row.shots ? Math.round((row.goals / row.shots) * 10000) / 100 : 0,
-    };
-    item.per = Math.round(((0.1 * item.goals) + (0.05 * item.assists) + ((2 / 30) * item.saves) + (0.01 * item.shots) - 0.1) * 100) / 100;
-    return item;
-  });
-}
-
-function gameTeamSummaryMarkup(page) {
-  const game = scheduleGameData(page);
-  if (!game) return "";
-  return `
-    <section class="game-summary-panel">
-      <div class="game-summary-head">
-        <span>${escapeHtml(game.date || "")}</span>
-        <h3>${escapeHtml(game.game)} Team Summary</h3>
-      </div>
-      <div class="game-team-summary-grid">
-        ${(game.teams || []).map((row) => `
-          <article class="${canonicalTeamName(row.team) === canonicalTeamName(game.winner) ? "game-winner" : ""}" style="--team-color:${escapeHtml(teamColor(row.team, page.season))}">
-            <span>${escapeHtml(displayName(row.team, "team"))}</span>
-            <strong>${escapeHtml(fmt(row.goals))} goals</strong>
-            <div>
-              <b>${escapeHtml(fmt(row.score))}<small>Score</small></b>
-              <b>${escapeHtml(fmt(row.shots))}<small>Shots</small></b>
-              <b>${escapeHtml(fmt(row.saves))}<small>Saves</small></b>
-              <b>${escapeHtml(fmt(row.amountStolen))}<small>Stolen</small></b>
-            </div>
-          </article>
-        `).join("")}
-      </div>
-    </section>
-  `;
+  return [{
+    game: "Series",
+    team: series.team,
+    result: series.result,
+    opponent: series.opponent,
+    winner: series.winner,
+    season: series.season,
+    note: "Game stats have not been uploaded yet.",
+  }];
 }
 
 function matchupTeamRows(series) {
@@ -3115,19 +2666,7 @@ function standingsRows() {
     }
   }
   if (state.season === "S6") {
-    if (state.s6Stage === "swiss") {
-      return s6StageTeamRows("swiss", "overall")
-        .sort((a, b) => b.wins - a.wins || a.losses - b.losses || b.gameWinPct - a.gameWinPct || b.goalDiff - a.goalDiff || a.name.localeCompare(b.name))
-        .map((row, index) => ({
-          ...row,
-          standingsRank: index + 1,
-          matchRecord: `${row.wins || 0} - ${row.losses || 0}`,
-          gameRecord: `${row.gameWins || 0} - ${row.gameLosses || 0}`,
-          sweepsText: `${row.sweeps || 0} - ${row.gameFiveLosses || 0}`,
-          remainingMatches: "",
-          maxScore: row.standingsPoints || 0,
-        }));
-    }
+    if (state.s6Stage === "swiss") return [];
     const isPoolView = state.s6Pool !== "overall";
     return s6FilterByPool(s6GroupStandingsRows.map(s6StandingRow))
       .sort((a, b) => {
@@ -4356,32 +3895,7 @@ function detailContext() {
       columns: scheduleSeriesColumns,
       rows: scheduleSeriesRows(state.page),
       tableTitle: "Series Games",
-      action: (row) => row.gameId ? ({
-        type: "scheduleGame",
-        season: state.page.season,
-        stage: state.page.stage,
-        pool: state.page.pool,
-        round: state.page.round,
-        team: state.page.team,
-        result: state.page.result,
-        opponent: state.page.opponent,
-        winner: state.page.winner,
-        game: row.game,
-        gameId: row.gameId,
-      }) : null,
-    };
-  }
-
-  if (state.page.type === "scheduleGame") {
-    const game = scheduleGameData(state.page);
-    const score = game ? gameScoreText(game, state.page.team, state.page.opponent) : state.page.result;
-    return {
-      eyebrow: [state.page.season, scheduleStageLabel(state.page.stage), state.page.round].filter(Boolean).join(" / ") || "Game detail",
-      title: game ? `${game.game}: ${state.page.team} ${score} ${state.page.opponent}` : "Game detail",
-      columns: scheduleGamePlayerColumns,
-      rows: scheduleGamePlayerRows(state.page),
-      tableTitle: "Player Game Stats",
-      action: (row) => row.name ? ({ type: "player", player: row.name }) : null,
+      action: null,
     };
   }
 
@@ -5145,14 +4659,7 @@ function draftRole(row, player) {
 
 function renderDetailExtras() {
   if (state.page.type === "scheduleSeries") {
-    const uploaded = scheduleSeriesData(state.page);
-    els.detailExtras.innerHTML = `${matchupComparisonMarkup(state.page)}${seriesMvpMarkup(uploaded)}`;
-    els.detailExtras.classList.toggle("hidden", !els.detailExtras.innerHTML.trim());
-    return;
-  }
-
-  if (state.page.type === "scheduleGame") {
-    els.detailExtras.innerHTML = gameTeamSummaryMarkup(state.page);
+    els.detailExtras.innerHTML = matchupComparisonMarkup(state.page);
     els.detailExtras.classList.toggle("hidden", !els.detailExtras.innerHTML.trim());
     return;
   }
@@ -5473,8 +4980,6 @@ function renderTable(rows, columns, title, rowAction = null) {
   table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
   table.classList.toggle("award-race-table", title === "Contenders");
   table.classList.toggle("schedule-table", state.view === "schedule" && state.page.type === "dashboard");
-  table.classList.toggle("series-games-table", state.view === "schedule" && state.page.type === "scheduleSeries");
-  table.classList.toggle("game-player-table", state.view === "schedule" && state.page.type === "scheduleGame");
   els.head.closest(".table-wrap").classList.remove("leader-card-wrap");
   els.tableTitle.textContent = title;
   els.rowCount.textContent = `${rows.length} ${rows.length === 1 ? "row" : "rows"}`;
@@ -5911,21 +5416,6 @@ els.backButton.addEventListener("click", () => {
     state.view = "schedule";
     state.sortKey = "season";
     state.sortDir = "asc";
-  } else if (state.page.type === "scheduleGame") {
-    state.page = {
-      type: "scheduleSeries",
-      season: state.page.season,
-      stage: state.page.stage,
-      pool: state.page.pool,
-      round: state.page.round,
-      team: state.page.team,
-      result: state.page.result,
-      opponent: state.page.opponent,
-      winner: state.page.winner,
-    };
-    state.view = "schedule";
-    state.sortKey = "game";
-    state.sortDir = "asc";
   } else {
     state.page = { type: "dashboard" };
     state.sortKey = isTeamView() ? "wins" : "goals";
@@ -5956,9 +5446,6 @@ els.body.addEventListener("click", (event) => {
   } else if (action.type === "scheduleSeries") {
     state.sortKey = "game";
     state.sortDir = "asc";
-  } else if (action.type === "scheduleGame") {
-    state.sortKey = "score";
-    state.sortDir = "desc";
   } else if (action.type === "schedule") {
     state.page = { type: "dashboard" };
     state.view = "schedule";
@@ -6184,9 +5671,6 @@ els.detailExtras.addEventListener("click", (event) => {
   } else if (action.type === "seasonLeaders") {
     state.sortKey = "stat";
     state.sortDir = "asc";
-  } else if (action.type === "scheduleGame") {
-    state.sortKey = "score";
-    state.sortDir = "desc";
   } else if (action.type === "schedule") {
     state.view = "schedule";
     state.season = action.season;

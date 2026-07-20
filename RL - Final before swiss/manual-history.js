@@ -1231,10 +1231,10 @@ Byes: Past Our Prime, Ball Chasin & Sauce Tastin
     ...parseScheduleBlock("S6", "swiss", `
 Round 1
 (15) Hook Line & Blinker	(0) 0-0 (0)	Deceptitards (3)	Locked: G1 vs T6
-(9) Giga's In Paris	(10) 3-0 (4)	Crossbar Cartel (4)	Locked: G2 vs T5
+(9) Giga's In Paris	(0) 0-0 (0)	Crossbar Cartel (4)	Locked: G2 vs T5
 (9) Quack Wok	(0) 0-0 (0)	Ball Chasin & Sauce Tastin (9)	Locked: G3 vs T4
 (13) Past Our Prime	(0) 0-0 (0)	Spirit Airlines (4)	Locked: T1 vs G6
-(11) Supernova Abyss	(3) 0-3 (7)	ESC (6)	Locked: T2 vs G5
+(11) Supernova Abyss	(0) 0-0 (0)	ESC (6)	Locked: T2 vs G5
 (11) The Cox	(0) 0-0 (0)	Best Friends Club (7)	Locked: T3 vs G4
 Round 2
 (0) 0-0 (0)
