@@ -45,6 +45,10 @@ const playerAliasMap = new Map([
   ["EPO", "EPo -_-"],
   ["SQUID", "KWNSquid"],
   ["STARZYRL", "ttv_starzyrl"],
+  ["SIRVANTZ", "Sir_vantzzz"],
+  ["SIRVANTZZ", "Sir_vantzzz"],
+  ["SIRVANTZZZ", "Sir_vantzzz"],
+  ["VANTZ", "Sir_vantzzz"],
   ["VANTTZZ", "Sir_vantzzz"],
   ["VIZPICK", "Vizpick"],
 ]);
@@ -260,7 +264,7 @@ function mergeManualHistory() {
 mergeManualHistory();
 
 const state = {
-  view: "teams",
+  view: "home",
   season: latestRegularSeason(),
   searchText: "",
   sortKey: "wins",
@@ -271,10 +275,11 @@ const state = {
   seasonPhase: "regular",
   s5Stage: "overall",
   s5Pool: "overall",
-  s6Stage: "group",
+  s6Stage: "overall",
   s6Pool: "overall",
   scheduleTeamFilter: "All",
   scheduleUnplayedOnly: false,
+  showMatchupPreview: false,
   analyticsMode: "selena",
   archiveMode: "awards",
   awardFilter: "All",
@@ -385,6 +390,7 @@ const standingsColumns = [
   ["matchWinPct", "Match Win %"],
   ["gameWinPct", "Game Win %"],
   ["sweepsText", "SWPS-GM5L"],
+  ["accruedBonuses", "Accrued Bonuses"],
   ["remainingMatches", "Remaining Matches"],
   ["maxScore", "Max Score"],
   ["wins", "Match Wins"],
@@ -475,6 +481,36 @@ const s6PoolRanks = {
 const s6PoolClinches = {
   "Hook Line & Blinker": "X",
 };
+
+const s6AccruedBonuses = {
+  "Hook Line & Blinker": 3,
+  "Past Our Prime": 3,
+  "Giga's In Paris": 2,
+  "The Cox": 2,
+  "Supernova Abyss": 2,
+  "Ball Chasin & Sauce Tastin": 1,
+  "ESC": 1,
+  "Quack Wok": 2,
+  "Best Friends Club": 1,
+  "Spirit Airlines": 0,
+  "Crossbar Cartel": 1,
+  "Deceptitards": 0,
+};
+
+const s6OverallStandingsRows = [
+  ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, 3],
+  ["Past Our Prime", 2, 13, "5 - 0", 12, "15 - 9", 0, 0, 3],
+  ["Giga's In Paris", 3, 12, "4 - 2", 14, "13 - 8", 2, 0, 2],
+  ["The Cox", 4, 11, "3 - 2", 11, "12 - 8", 2, 1, 2],
+  ["Supernova Abyss", 5, 11, "3 - 3", -4, "13 - 12", 1, 2, 2],
+  ["Ball Chasin & Sauce Tastin", 6, 9, "3 - 2", 5, "13 - 11", 0, 2, 1],
+  ["ESC", 7, 9, "3 - 3", 14, "10 - 11", 2, 0, 1],
+  ["Quack Wok", 8, 9, "2 - 3", -3, "11 - 11", 1, 2, 2],
+  ["Best Friends Club", 9, 7, "2 - 3", -25, "11 - 13", 0, 2, 1],
+  ["Spirit Airlines", 10, 4, "1 - 4", -21, "7 - 13", 0, 2, 0],
+  ["Crossbar Cartel", 11, 4, "1 - 5", -27, "6 - 17", 0, 1, 1],
+  ["Deceptitards", 12, 3, "0 - 5", -7, "7 - 15", 0, 3, 0],
+];
 
 const poolTiebreakRules = [
   "Match record",
@@ -567,7 +603,7 @@ const s6SwissTeamRows = [
   {
     name: "Giga's In Paris", rating: 1051.2, games: 3, score: 3792, goals: 10, goalsConceded: 4,
     assists: 5, saves: 16, shots: 28, shotsConceded: 21, wins: 1, losses: 0, gameWins: 3, gameLosses: 0,
-    standingsPoints: 2, sweeps: 1, gameFiveLosses: 0, amountStolen: 4047, demosInflicted: 5, demosTaken: 7,
+    standingsPoints: 3, sweeps: 1, gameFiveLosses: 0, amountStolen: 4047, demosInflicted: 5, demosTaken: 7,
     opponentSavesForced: 15, per: 1.7, perPerGame: 0.57,
   },
   {
@@ -579,7 +615,7 @@ const s6SwissTeamRows = [
   {
     name: "ESC", rating: 1046.6, games: 3, score: 2891, goals: 7, goalsConceded: 3,
     assists: 4, saves: 9, shots: 21, shotsConceded: 14, wins: 1, losses: 0, gameWins: 3, gameLosses: 0,
-    standingsPoints: 2, sweeps: 1, gameFiveLosses: 0, amountStolen: 3377, demosInflicted: 10, demosTaken: 8,
+    standingsPoints: 3, sweeps: 1, gameFiveLosses: 0, amountStolen: 3377, demosInflicted: 10, demosTaken: 8,
     opponentSavesForced: 11, per: 1.75, perPerGame: 0.58,
   },
   {
@@ -808,6 +844,9 @@ const playoffWinnerPattern = /(\d+)\s*-\s*(\d+)/;
 
 const els = {
   homeLogoButton: document.querySelector("#homeLogoButton"),
+  patchNotesButton: document.querySelector("#patchNotesButton"),
+  patchNotesOverlay: document.querySelector("#patchNotesOverlay"),
+  patchNotesClose: document.querySelector("#patchNotesClose"),
   generatedAt: document.querySelector("#generatedAt"),
   seasonSelect: document.querySelector("#seasonSelect"),
   searchInput: document.querySelector("#searchInput"),
@@ -825,6 +864,7 @@ const els = {
   tabButtons: [...document.querySelectorAll("[data-view]")],
   teamLeaderGrid: document.querySelector("#teamLeaderGrid"),
   awardRaceGrid: document.querySelector("#awardRaceGrid"),
+  homePanel: document.querySelector("#homePanel"),
   figureOneLabel: document.querySelector("#figureOneLabel"),
   figureOneValue: document.querySelector("#figureOneValue"),
   figureOneMeta: document.querySelector("#figureOneMeta"),
@@ -1342,10 +1382,10 @@ function snapshotContext() {
     seasonPhase: state.seasonPhase,
     sortKey: state.sortKey,
     sortDir: state.sortDir,
-    s5Stage: state.s5Stage,
-    s5Pool: state.s5Pool,
-    s6Stage: state.s6Stage,
-    s6Pool: state.s6Pool,
+  s5Stage: state.s5Stage,
+  s5Pool: state.s5Pool,
+  s6Stage: state.s6Stage,
+  s6Pool: state.s6Pool,
     scheduleTeamFilter: state.scheduleTeamFilter,
     scheduleUnplayedOnly: state.scheduleUnplayedOnly,
   };
@@ -1603,6 +1643,7 @@ const availabilitySensitiveStats = new Set([
 function isUnavailableValue(row, key) {
   if (row.__unavailableStats?.has(key)) return true;
   if (!(row.source === "manual" || row.source === "mixed")) return false;
+  if (unavailableWhenManualZero.has(key) && Number(row.advancedGames || 0) === 0) return true;
   if (key === "pressureRate" || key === "pressureIndex") return Number(row.amountStolen || 0) === 0 && Number(row.demosInflicted || 0) === 0 && Number(row.opponentSavesForced || 0) === 0;
   if (unavailableWhenManualZero.has(key)) return Number(row[key] || 0) === 0;
   if (["teamSaveRate", "opponentShootingPct", "shotsConcededPerGame"].includes(key)) return Number(row.shotsConceded || 0) === 0;
@@ -1613,6 +1654,7 @@ function isUnavailableValue(row, key) {
 
 function finalizeCommon(item) {
   const games = Math.max(1, item.games);
+  const advancedGames = Math.max(1, Number(item.advancedGames || 0) || ((Number(item.amountStolen || 0) || Number(item.demosInflicted || 0) || Number(item.opponentSavesForced || 0)) ? games : 0));
   const matchTotal = Math.max(1, (item.wins || 0) + (item.losses || 0));
   const gameWins = typeof item.gameWins === "number" ? item.gameWins : item.wins;
   const gameLosses = typeof item.gameLosses === "number" ? item.gameLosses : item.losses;
@@ -1638,16 +1680,18 @@ function finalizeCommon(item) {
   item.opponentShootingPct = item.shotsConceded > 0 ? Math.round((item.goalsConceded / item.shotsConceded) * 1000) / 10 : 0;
   item.pointsPerGame = Math.round(((item.standingsPoints || 0) / games) * 100) / 100;
   item.goalDiff = item.goals - item.goalsConceded;
-  item.demosPerGame = Math.round((item.demosInflicted / games) * 100) / 100;
+  item.demosPerGame = Math.round((item.demosInflicted / advancedGames) * 100) / 100;
   item.distancePerGame = Math.round(item.totalDistance / games);
-  item.boostCollectedPerGame = Math.round((item.amountCollected / games) * 100) / 100;
-  item.boostStolenPerGame = Math.round((item.amountStolen / games) * 100) / 100;
-  item.opponentSavesForcedPerGame = Math.round((item.opponentSavesForced / games) * 100) / 100;
+  item.boostCollectedPerGame = Math.round((item.amountCollected / advancedGames) * 100) / 100;
+  item.boostStolenPerGame = Math.round((item.amountStolen / advancedGames) * 100) / 100;
+  item.opponentSavesForcedPerGame = Math.round((item.opponentSavesForced / advancedGames) * 100) / 100;
+  const pressureShots = Number(item.pressureShots ?? item.shots ?? 0) || 0;
+  const pressureOpponentSaves = Number(item.pressureOpponentSaves ?? item.opponentSavesForced ?? 0) || 0;
   item.pressureIndex = Math.round((
-    (item.shots / games) +
-    (1.5 * (item.opponentSavesForced / games)) +
-    (0.05 * (item.amountStolen / games)) +
-    (item.demosInflicted / games)
+    (pressureShots / advancedGames) +
+    (1.5 * (pressureOpponentSaves / advancedGames)) +
+    (0.05 * (item.amountStolen / advancedGames)) +
+    (item.demosInflicted / advancedGames)
   ) * 100) / 100;
   return item;
 }
@@ -1730,7 +1774,17 @@ function makeS6PlayerRow(raw, teamRows = s6StageTeamRows("overall")) {
   return finalized;
 }
 
+function swissLeagueScore(row) {
+  const wins = Number(row.wins || 0);
+  const sweeps = Number(row.sweeps || 0);
+  const gameFiveLosses = Number(row.gameFiveLosses || 0);
+  return (Math.max(0, Math.min(wins, sweeps)) * 3)
+    + (Math.max(0, wins - sweeps) * 2)
+    + gameFiveLosses;
+}
+
 function makeS6SwissTeamRow(raw) {
+  const standingsPoints = swissLeagueScore(raw);
   const row = {
     season: "S6",
     name: canonicalTeamName(raw.name),
@@ -1742,7 +1796,7 @@ function makeS6SwissTeamRow(raw) {
     wins: raw.wins,
     losses: raw.losses,
     matchRecord: `${raw.wins} - ${raw.losses}`,
-    standingsPoints: raw.standingsPoints,
+    standingsPoints,
     score: raw.score,
     goals: raw.goals,
     goalsConceded: raw.goalsConceded,
@@ -1757,6 +1811,9 @@ function makeS6SwissTeamRow(raw) {
     demosInflicted: raw.demosInflicted,
     demosTaken: raw.demosTaken,
     opponentSavesForced: raw.opponentSavesForced,
+    pressureShots: raw.shots,
+    pressureOpponentSaves: raw.opponentSavesForced,
+    advancedGames: raw.games,
     per: raw.per,
     perPerGame: raw.perPerGame,
     source: "manual",
@@ -1766,6 +1823,8 @@ function makeS6SwissTeamRow(raw) {
   const finalized = finalizeCommon(row);
   finalized.per = raw.per;
   finalized.perPerGame = raw.perPerGame;
+  finalized.standingsPoints = standingsPoints;
+  finalized.pointsPerGame = Math.round((standingsPoints / Math.max(1, finalized.games)) * 100) / 100;
   return finalized;
 }
 
@@ -1795,6 +1854,8 @@ function makeS6SwissPlayerRow(raw, teamRows = s6StageTeamRows("swiss", "overall"
     amountStolen,
     demosInflicted,
     demosTaken,
+    pressureShots: shots,
+    advancedGames: games,
     source: "manual",
     overrideGenerated: true,
     stage: "swiss",
@@ -1819,7 +1880,7 @@ function combineS6Rows(rows, type) {
     [
       "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "score", "goals",
       "goalsConceded", "assists", "saves", "shots", "shotsConceded", "sweeps", "gameFiveLosses",
-      "amountStolen", "demosInflicted", "demosTaken", "opponentSavesForced", "mvps", "per",
+      "amountStolen", "demosInflicted", "demosTaken", "opponentSavesForced", "pressureShots", "pressureOpponentSaves", "advancedGames", "mvps", "per",
     ].forEach((field) => {
       item[field] = (Number(item[field]) || 0) + (Number(row[field]) || 0);
     });
@@ -2102,10 +2163,20 @@ function scheduleTeamOptions(rows) {
 function resetCrossTabFilters() {
   state.s5Stage = "overall";
   state.s5Pool = "overall";
-  state.s6Stage = "group";
+  state.s6Stage = "overall";
   state.s6Pool = "overall";
   state.scheduleTeamFilter = "All";
   state.scheduleUnplayedOnly = false;
+}
+
+function setDefaultStageForView() {
+  if (state.view === "schedule" && baseSeasonName(state.season) === "S6") {
+    state.s6Stage = "swiss";
+    state.s6Pool = "overall";
+  } else if (baseSeasonName(state.season) === "S6" && state.s6Stage === "group") {
+    state.s6Stage = "overall";
+    state.s6Pool = "overall";
+  }
 }
 
 function resetAnalyticsFilters() {
@@ -2204,9 +2275,189 @@ function aggregateSeriesPlayers(seriesData) {
   });
 }
 
+function aggregateSeriesTeams(seriesData) {
+  const map = new Map();
+  (seriesData?.games || []).forEach((game) => {
+    (game.teams || []).forEach((row) => {
+      const key = canonicalTeamName(row.team);
+      if (!map.has(key)) {
+        map.set(key, {
+          team: key,
+          games: 0,
+          gameWins: 0,
+          gameLosses: 0,
+          score: 0,
+          goals: 0,
+          assists: 0,
+          saves: 0,
+          shots: 0,
+          shotsConceded: 0,
+          goalsConceded: 0,
+          amountStolen: 0,
+          demosInflicted: 0,
+        });
+      }
+      const item = map.get(key);
+      item.games += 1;
+      if (canonicalTeamName(row.team) === canonicalTeamName(game.winner)) item.gameWins += 1;
+      else item.gameLosses += 1;
+      ["score", "goals", "assists", "saves", "shots", "shotsConceded", "goalsConceded", "amountStolen", "demosInflicted"].forEach((field) => {
+        item[field] += Number(row[field]) || 0;
+      });
+    });
+  });
+  return [...map.values()].map((row) => {
+    row.shootingPct = row.shots ? Math.round((row.goals / row.shots) * 10000) / 100 : 0;
+    row.avgScore = Math.round((row.score / Math.max(1, row.games)) * 10) / 10;
+    row.goalsPerGame = Math.round((row.goals / Math.max(1, row.games)) * 100) / 100;
+    return row;
+  });
+}
+
 function seriesMvp(seriesData) {
   return aggregateSeriesPlayers(seriesData)
     .sort((a, b) => b.score - a.score || b.goals - a.goals || b.saves - a.saves || b.assists - a.assists || b.shots - a.shots)[0] || null;
+}
+
+function seriesTeamSummaryMarkup(seriesData) {
+  if (!seriesData) return "";
+  const rows = aggregateSeriesTeams(seriesData);
+  const teamOrder = [seriesData.home, seriesData.away].map(canonicalTeamName);
+  return `
+    <section class="game-summary-panel series-summary-panel">
+      <div class="game-summary-head">
+        <span>${escapeHtml(scheduleStageLabel(seriesData.stage))} / ${escapeHtml(seriesData.round || "Series")}</span>
+        <h3>Series Team Summary</h3>
+      </div>
+      <div class="game-team-summary-grid">
+        ${teamOrder.map((teamName) => rows.find((row) => canonicalTeamName(row.team) === teamName)).filter(Boolean).map((row) => `
+          <article class="${row.gameWins > row.gameLosses ? "game-winner" : ""}" style="--team-color:${escapeHtml(teamColor(row.team, seriesData.season))}">
+            <span>${escapeHtml(displayName(row.team, "team"))}</span>
+            <strong>${escapeHtml(fmt(row.gameWins))}-${escapeHtml(fmt(row.gameLosses))} games</strong>
+            <div>
+              <b>${escapeHtml(fmt(row.score))}<small>Score</small></b>
+              <b>${escapeHtml(fmt(row.goals))}<small>Goals</small></b>
+              <b>${escapeHtml(fmt(row.shots))}<small>Shots</small></b>
+              <b>${escapeHtml(fmt(row.amountStolen))}<small>Stolen</small></b>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function seriesPlayerSectionsMarkup(seriesData) {
+  if (!seriesData) return "";
+  const rows = aggregateSeriesPlayers(seriesData);
+  const teams = [seriesData.home, seriesData.away]
+    .map(canonicalTeamName)
+    .filter((teamName, index, list) => teamName && list.indexOf(teamName) === index);
+  const statColumns = [
+    ["name", "Player"],
+    ["score", "Score"],
+    ["goals", "G"],
+    ["assists", "A"],
+    ["saves", "Sv"],
+    ["shots", "Sh"],
+    ["shootingPct", "Shot %", "%"],
+    ["amountStolen", "Stolen"],
+    ["demosInflicted", "Demo"],
+  ];
+  return `
+    <section class="game-player-sections series-player-sections">
+      ${teams.map((teamName, index) => {
+        const teamRows = rows.filter((row) => canonicalTeamName(row.team) === teamName)
+          .sort((a, b) => b.score - a.score || b.goals - a.goals);
+        const label = index === 0 ? "Home Team" : "Away Team";
+        return `
+          <article style="--team-color:${escapeHtml(teamColor(teamName, seriesData.season))}">
+            <div class="game-player-section-head">
+              <span>${escapeHtml(label)} / Series Totals</span>
+              <h3>${escapeHtml(displayName(teamName, "team"))}</h3>
+            </div>
+            <table>
+              <thead><tr>${statColumns.map(([, labelText]) => `<th>${escapeHtml(labelText)}</th>`).join("")}</tr></thead>
+              <tbody>
+                ${teamRows.map((row) => `
+                  <tr>
+                    ${statColumns.map(([key, , suffix]) => {
+                      if (key === "name") {
+                        const action = encodeURIComponent(JSON.stringify({ type: "player", player: row.name }));
+                        return `<td><button type="button" class="inline-player-link" data-action="${action}">${escapeHtml(displayName(row.name, "name"))}</button></td>`;
+                      }
+                      return `<td>${escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
+                    }).join("")}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </article>
+        `;
+      }).join("")}
+    </section>
+  `;
+}
+
+function scheduleSeriesGamesMarkup(page) {
+  const rows = scheduleSeriesRows(page);
+  return `
+    <section class="series-games-panel">
+      <div class="game-summary-head">
+        <span>Drill Down</span>
+        <h3>Series Games</h3>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Game</th>
+            <th>Date</th>
+            <th>Home</th>
+            <th>Result</th>
+            <th>Away</th>
+            <th>Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((row) => {
+            const action = row.gameId ? encodeURIComponent(JSON.stringify({
+              type: "scheduleGame",
+              season: page.season,
+              stage: page.stage,
+              pool: page.pool,
+              round: page.round,
+              team: page.team,
+              result: page.result,
+              opponent: page.opponent,
+              winner: page.winner,
+              game: row.game,
+              gameId: row.gameId,
+            })) : "";
+            return `
+              <tr${action ? ` class="clickable" data-action="${action}"` : ""}>
+                <td>${escapeHtml(row.game)}</td>
+                <td>${escapeHtml(row.date || "-")}</td>
+                <td>${escapeHtml(displayName(row.team, "team"))}</td>
+                <td><strong>${scheduleResultMarkup(row)}</strong></td>
+                <td>${escapeHtml(displayName(row.opponent, "team"))}</td>
+                <td>${escapeHtml(row.winner ? displayName(row.winner, "team") : row.note || "-")}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
+function matchupPreviewToggleMarkup() {
+  return `
+    <section class="matchup-preview-toggle">
+      <button type="button" data-toggle-matchup-preview>
+        ${state.showMatchupPreview ? "Hide pre-match comparison" : "Show pre-match comparison"}
+      </button>
+    </section>
+  `;
 }
 
 function seriesMvpMarkup(seriesData) {
@@ -2297,6 +2548,61 @@ function gameTeamSummaryMarkup(page) {
           </article>
         `).join("")}
       </div>
+    </section>
+  `;
+}
+
+function scheduleGamePlayerSectionsMarkup(page) {
+  const game = scheduleGameData(page);
+  if (!game) return "";
+  const rows = scheduleGamePlayerRows(page);
+  const teams = [page.team, page.opponent]
+    .map(canonicalTeamName)
+    .filter((teamName, index, list) => teamName && list.indexOf(teamName) === index);
+  const statColumns = [
+    ["name", "Player"],
+    ["score", "Score"],
+    ["goals", "G"],
+    ["assists", "A"],
+    ["saves", "Sv"],
+    ["shots", "Sh"],
+    ["shootingPct", "Shot %", "%"],
+    ["amountStolen", "Stolen"],
+    ["demosInflicted", "Demo"],
+  ];
+  return `
+    <section class="game-player-sections">
+      ${teams.map((teamName, index) => {
+        const teamRows = rows.filter((row) => canonicalTeamName(row.team) === teamName)
+          .sort((a, b) => b.score - a.score || b.goals - a.goals);
+        const label = index === 0 ? "Home Team" : "Away Team";
+        return `
+          <article style="--team-color:${escapeHtml(teamColor(teamName, page.season))}">
+            <div class="game-player-section-head">
+              <span>${escapeHtml(label)}</span>
+              <h3>${escapeHtml(displayName(teamName, "team"))}</h3>
+            </div>
+            <table>
+              <thead>
+                <tr>${statColumns.map(([, labelText]) => `<th>${escapeHtml(labelText)}</th>`).join("")}</tr>
+              </thead>
+              <tbody>
+                ${teamRows.map((row) => `
+                  <tr>
+                    ${statColumns.map(([key, , suffix]) => {
+                      if (key === "name") {
+                        const action = encodeURIComponent(JSON.stringify({ type: "player", player: row.name }));
+                        return `<td><button type="button" class="inline-player-link" data-action="${action}">${escapeHtml(displayName(row.name, "name"))}</button></td>`;
+                      }
+                      return `<td>${escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
+                    }).join("")}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </article>
+        `;
+      }).join("")}
     </section>
   `;
 }
@@ -2666,8 +2972,181 @@ function scheduleManualRow(row) {
   };
 }
 
+function actionAttr(action) {
+  return encodeURIComponent(JSON.stringify(action));
+}
+
+function homeSwissRows() {
+  const rows = (data.manualHistory?.schedules || [])
+    .filter((row) => row.season === "S6" && String(row.stage || "").toLowerCase() === "swiss")
+    .map(scheduleManualRow)
+    .filter((row) => row.team && row.opponent && !/match|team|bye/i.test(`${row.team} ${row.opponent}`));
+  const upcoming = rows.filter(scheduleRowUnplayed);
+  return [...upcoming, ...rows.filter((row) => !scheduleRowUnplayed(row))].slice(0, 6);
+}
+
+function topPlayerForTeam(teamName, metric = "perPerGame") {
+  const team = canonicalTeamName(teamName);
+  return s6StagePlayerRows("overall", "overall")
+    .filter((row) => (row.teams || []).map(canonicalTeamName).includes(team))
+    .filter((row) => typeof row[metric] === "number" && Number.isFinite(row[metric]))
+    .sort((a, b) => b[metric] - a[metric] || b.score - a.score)[0] || null;
+}
+
+function homePlayerWatchList() {
+  const rows = s6StagePlayerRows("overall", "overall");
+  const picks = [
+    { label: "PER/G", metric: "perPerGame", suffix: "", note: "Best all-around efficiency" },
+    { label: "Score/G", metric: "avgScore", suffix: "", note: "Most reliable scoreboard pressure" },
+    { label: "Goals/G", metric: "goalsPerGame", suffix: "", note: "Primary finisher" },
+    { label: "Saves/G", metric: "savesPerGame", suffix: "", note: "Backline workhorse" },
+  ];
+  const used = new Set();
+  return picks.map((pick) => {
+    const row = rows
+      .filter((candidate) => !used.has(candidate.name))
+      .filter((candidate) => typeof candidate[pick.metric] === "number" && Number.isFinite(candidate[pick.metric]))
+      .sort((a, b) => b[pick.metric] - a[pick.metric] || b.score - a.score)[0];
+    if (row) used.add(row.name);
+    return row ? { ...pick, row } : null;
+  }).filter(Boolean);
+}
+
+function homeTeamSnapshotRows() {
+  return s6StageTeamRows("overall", "overall")
+    .slice()
+    .sort((a, b) => b.standingsPoints - a.standingsPoints || b.wins - a.wins || b.gameWinPct - a.gameWinPct)
+    .slice(0, 6);
+}
+
+function homeSeriesCard(row) {
+  const home = displayName(row.team, "team");
+  const away = displayName(row.opponent, "team");
+  const homePlayer = topPlayerForTeam(row.team);
+  const awayPlayer = topPlayerForTeam(row.opponent);
+  const played = !scheduleRowUnplayed(row);
+  const action = {
+    type: "scheduleSeries",
+    season: row.season,
+    stage: row.stage,
+    pool: row.pool,
+    round: row.round,
+    team: row.team,
+    result: row.result,
+    opponent: row.opponent,
+    winner: row.winner,
+    preMatchOnly: !played,
+  };
+  return `
+    <article class="home-match-card ${played ? "is-played" : "is-upcoming"}" style="--home-team:${escapeHtml(teamColor(row.team, "S6"))}; --away-team:${escapeHtml(teamColor(row.opponent, "S6"))}">
+      <div class="home-match-band"></div>
+      <div class="home-match-top">
+        <span>${escapeHtml(scheduleStageLabel(row.stage))}${row.round ? ` / ${escapeHtml(row.round)}` : ""}</span>
+        <small>${played ? "Played" : "Upcoming"}</small>
+        <button type="button" data-action="${actionAttr(action)}">View Match</button>
+      </div>
+      <div class="home-match-teams">
+        <strong>${escapeHtml(home)}</strong>
+        <b>${scheduleResultMarkup(row)}</b>
+        <strong>${escapeHtml(away)}</strong>
+      </div>
+      <div class="home-watch-row">
+        ${[homePlayer, awayPlayer].filter(Boolean).map((playerRow) => `
+          <button type="button" data-action="${actionAttr({ type: "player", player: playerRow.name })}">
+            <span>${escapeHtml(displayName(playerRow.name, "name"))}</span>
+            <small>${escapeHtml(displayName((playerRow.teams || [])[0], "team"))} / ${fmtGameAvg(playerRow.perPerGame)} PER/G</small>
+          </button>
+        `).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderHomePage() {
+  const swissRows = homeSwissRows();
+  const teamRows = homeTeamSnapshotRows();
+  const watchRows = homePlayerWatchList();
+  const s6OverallTeams = s6StageTeamRows("overall", "overall");
+  const summary = {
+    seasons: data.seasons.filter((season) => /^S\d+$/.test(season) && !isPlayoffSeason(season) && !isScrimSeason(season)).length,
+    teams: lifetimeTeams().length,
+    players: lifetimePlayers().length,
+    games: s6OverallTeams.reduce((max, row) => Math.max(max, row.games || 0), 0),
+  };
+  els.homePanel.innerHTML = `
+    <section class="home-hero">
+      <div>
+        <span class="home-kicker">Gravy Train Rocket League Series</span>
+        <h1>selena's kitchen</h1>
+        <p>A reference hub for GTRLS seasons, teams, players, schedules, awards, records, and replay-fed game stats. It keeps the old spreadsheet spirit, but makes it searchable, sortable, and a lot easier to argue about.</p>
+      </div>
+      <div class="home-summary-grid">
+        <article><span>Seasons</span><strong>${fmt(summary.seasons)}</strong><small>Regular seasons tracked</small></article>
+        <article><span>Teams</span><strong>${fmt(summary.teams)}</strong><small>Lifetime team records</small></article>
+        <article><span>Players</span><strong>${fmt(summary.players)}</strong><small>Career profiles</small></article>
+        <article><span>S6 GP</span><strong>${fmt(summary.games)}</strong><small>Group + Swiss included</small></article>
+      </div>
+    </section>
+
+    <section class="home-grid">
+      <div class="home-module home-module-wide">
+        <div class="home-module-head">
+          <div>
+            <span>S6 Swiss</span>
+            <h2>Upcoming Matchups</h2>
+          </div>
+          <button type="button" data-action="${actionAttr({ type: "schedule", season: "S6", team: "All" })}">Full Schedule</button>
+        </div>
+        <div class="home-match-grid">
+          ${swissRows.length ? swissRows.map(homeSeriesCard).join("") : `<p class="empty-note">Swiss schedule is not loaded yet.</p>`}
+        </div>
+      </div>
+
+      <div class="home-module">
+        <div class="home-module-head">
+          <div>
+            <span>Current Table</span>
+            <h2>S6 Team Snapshot</h2>
+          </div>
+          <button type="button" data-action="${actionAttr({ type: "view", view: "standings", season: "S6" })}">Standings</button>
+        </div>
+        <div class="home-standings-list">
+          ${teamRows.map((row, index) => `
+            <button type="button" data-action="${actionAttr({ type: "team", team: row.name, season: "S6" })}" style="--team-color:${escapeHtml(teamColor(row.name, "S6"))}">
+              <span>${index + 1}</span>
+              <strong>${escapeHtml(displayName(row.name, "team"))}</strong>
+              <small>${escapeHtml(row.matchRecord || `${row.wins} - ${row.losses}`)} / ${fmt(row.standingsPoints)} pts</small>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="home-module">
+        <div class="home-module-head">
+          <div>
+            <span>Players To Watch</span>
+            <h2>Current Form</h2>
+          </div>
+          <button type="button" data-action="${actionAttr({ type: "view", view: "players", season: "S6" })}">Players</button>
+        </div>
+        <div class="home-player-list">
+          ${watchRows.map(({ label, metric, note, row }) => `
+            <button type="button" data-action="${actionAttr({ type: "player", player: row.name })}" style="--team-color:${escapeHtml(teamColor((row.teams || [])[0], "S6"))}">
+              <span>${escapeHtml(label)}</span>
+              <strong>${escapeHtml(displayName(row.name, "name"))}</strong>
+              <small>${escapeHtml(displayName((row.teams || [])[0], "team"))} / ${fmtGameAvg(row[metric])} / ${escapeHtml(note)}</small>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+  els.homePanel.classList.remove("hidden");
+}
+
 function s6StandingRow(raw) {
-  const [name, standingsRank, standingsPoints, matchRecord, goalDiff, gameRecord, sweeps, gameFiveLosses, sweepsText] = raw;
+  const [name, standingsRank, standingsPoints, matchRecord, goalDiff, gameRecord, sweeps, gameFiveLosses, extra] = raw;
+  const accruedBonuses = typeof extra === "number" ? extra : (s6AccruedBonuses[name] || 0);
   const [wins, losses] = String(matchRecord).split("-").map((part) => Number(part.trim()) || 0);
   const [gameWins, gameLosses] = String(gameRecord).split("-").map((part) => Number(part.trim()) || 0);
   const games = gameWins + gameLosses;
@@ -2691,7 +3170,8 @@ function s6StandingRow(raw) {
     gameWinPct: games ? Math.round((gameWins / games) * 1000) / 10 : 0,
     sweeps,
     gameFiveLosses,
-    sweepsText,
+    sweepsText: `${sweeps || 0} - ${gameFiveLosses || 0}`,
+    accruedBonuses,
     remainingMatches: 0,
     maxScore: standingsPoints,
   };
@@ -2704,7 +3184,7 @@ function aggregateLifetimeRows(rows, type) {
     "standingsPoints", "gameWins", "gameLosses", "per",
     "shotsConceded", "goalsConceded", "lastDefenderGoalsConceded", "opponentSavesForced",
     "demosInflicted", "demosTaken", "avgSpeedTotal", "avgBoostTotal", "amountCollected",
-    "amountStolen", "totalDistance",
+    "amountStolen", "pressureShots", "pressureOpponentSaves", "advancedGames", "totalDistance",
   ];
 
   rows.forEach((row) => {
@@ -2739,14 +3219,17 @@ function aggregateLifetimeRows(rows, type) {
       item.per = Math.round(carriedPer * 100) / 100;
       item.perPerGame = Math.round((item.per / Math.max(1, item.games)) * 100) / 100;
     }
+    const advancedGames = Math.max(1, Number(item.advancedGames || 0));
+    const pressureShots = Number(item.pressureShots ?? item.shots ?? 0) || 0;
+    const pressureOpponentSaves = Number(item.pressureOpponentSaves ?? item.opponentSavesForced ?? 0) || 0;
     if (type === "team") {
-      item.pressureRate = Math.round(((item.shots + item.opponentSavesForced + item.amountStolen + item.demosInflicted) / Math.max(1, item.games)) * 100) / 100;
+      item.pressureRate = Math.round(((pressureShots + pressureOpponentSaves + item.amountStolen + item.demosInflicted) / advancedGames) * 100) / 100;
       item.missPct = item.shots > 0 ? Math.round(((item.shots - item.goals - item.opponentSavesForced) / item.shots) * 1000) / 10 : 0;
       delete item.teams;
     } else {
       item.avgSpeed = Math.round((item.avgSpeedTotal || 0) / Math.max(1, item.games));
       item.avgBoost = Math.round(((item.avgBoostTotal || 0) / Math.max(1, item.games)) * 10) / 10;
-      item.pressureRate = Math.round(((item.shots + item.amountStolen + item.demosInflicted) / Math.max(1, item.games)) * 100) / 100;
+      item.pressureRate = Math.round(((pressureShots + item.amountStolen + item.demosInflicted) / advancedGames) * 100) / 100;
       item.teams = [...item.teams].sort();
     }
     item.__unavailableStats = new Set([...availabilitySensitiveStats].filter((key) => !item.__availableStats.has(key)));
@@ -2777,13 +3260,16 @@ function addGameToPlayerAggregate(item, game) {
   item.assists += game.assists || 0;
   item.saves += game.saves || 0;
   item.shots += game.shots || 0;
+  item.pressureShots += game.shots || 0;
   item.shotsConceded += game.shotsConceded || 0;
   item.goalsConceded += game.goalsConceded || 0;
   item.opponentSavesForced += game.opponentSavesForced || 0;
+  item.pressureOpponentSaves += game.opponentSavesForced || 0;
   item.demosInflicted += game.demosInflicted || 0;
   item.demosTaken += game.demosTaken || 0;
   item.amountCollected += game.boostCollected || 0;
   item.amountStolen += game.boostStolen || 0;
+  if ((game.boostStolen || 0) || (game.demosInflicted || 0) || (game.opponentSavesForced || 0)) item.advancedGames += 1;
   item.avgSpeedTotal += game.avgSpeed || 0;
   item.avgBoostTotal += game.avgBoost || 0;
   item.teams.add(game.team);
@@ -2818,6 +3304,9 @@ function emptyPlayerAggregate(name, season = "") {
     avgBoostTotal: 0,
     amountCollected: 0,
     amountStolen: 0,
+    pressureShots: 0,
+    pressureOpponentSaves: 0,
+    advancedGames: 0,
     totalDistance: 0,
     firstDate: "",
     lastDate: "",
@@ -2828,7 +3317,7 @@ function finalizePlayerAggregate(item) {
   finalizeCommon(item);
   item.avgSpeed = Math.round((item.avgSpeedTotal || 0) / Math.max(1, item.games));
   item.avgBoost = Math.round(((item.avgBoostTotal || 0) / Math.max(1, item.games)) * 10) / 10;
-  item.pressureRate = Math.round(((item.shots + item.amountStolen + item.demosInflicted) / Math.max(1, item.games)) * 100) / 100;
+  item.pressureRate = Math.round((((item.pressureShots || item.shots) + item.amountStolen + item.demosInflicted) / Math.max(1, Number(item.advancedGames || 0))) * 100) / 100;
   item.teams = [...item.teams].sort();
   item.teamsText = item.teams.join(", ");
   return item;
@@ -3127,6 +3616,10 @@ function standingsRows() {
           remainingMatches: "",
           maxScore: row.standingsPoints || 0,
         }));
+    }
+    if (state.s6Stage === "overall") {
+      return s6OverallStandingsRows.map(s6StandingRow)
+        .map((row) => ({ ...row, remainingMatches: "", maxScore: row.standingsPoints || 0 }));
     }
     const isPoolView = state.s6Pool !== "overall";
     return s6FilterByPool(s6GroupStandingsRows.map(s6StandingRow))
@@ -5146,13 +5639,19 @@ function draftRole(row, player) {
 function renderDetailExtras() {
   if (state.page.type === "scheduleSeries") {
     const uploaded = scheduleSeriesData(state.page);
-    els.detailExtras.innerHTML = `${matchupComparisonMarkup(state.page)}${seriesMvpMarkup(uploaded)}`;
+    if (state.page.preMatchOnly && !uploaded) {
+      els.detailExtras.innerHTML = matchupComparisonMarkup(state.page);
+    } else {
+      els.detailExtras.innerHTML = uploaded
+        ? `${seriesMvpMarkup(uploaded)}${seriesTeamSummaryMarkup(uploaded)}${seriesPlayerSectionsMarkup(uploaded)}${scheduleSeriesGamesMarkup(state.page)}${matchupPreviewToggleMarkup()}${state.showMatchupPreview ? matchupComparisonMarkup(state.page) : ""}`
+        : `${scheduleSeriesGamesMarkup(state.page)}${matchupPreviewToggleMarkup()}${state.showMatchupPreview ? matchupComparisonMarkup(state.page) : ""}`;
+    }
     els.detailExtras.classList.toggle("hidden", !els.detailExtras.innerHTML.trim());
     return;
   }
 
   if (state.page.type === "scheduleGame") {
-    els.detailExtras.innerHTML = gameTeamSummaryMarkup(state.page);
+    els.detailExtras.innerHTML = `${gameTeamSummaryMarkup(state.page)}${scheduleGamePlayerSectionsMarkup(state.page)}`;
     els.detailExtras.classList.toggle("hidden", !els.detailExtras.innerHTML.trim());
     return;
   }
@@ -5582,6 +6081,8 @@ function render() {
   els.tableShell.classList.remove("hidden");
   els.kitchenPanel.classList.add("hidden");
   els.kitchenPanel.innerHTML = "";
+  els.homePanel.classList.add("hidden");
+  els.homePanel.innerHTML = "";
   els.teamInfoPanel.classList.add("hidden");
   els.teamInfoPanel.innerHTML = "";
   els.yourKitchenPanel.classList.add("hidden");
@@ -5610,11 +6111,22 @@ function render() {
       els.detailActions.innerHTML = youtubeLogoLink(draftVodLinks.get(state.page.season), "draft-vod-link", `${state.page.season} draft video`);
     }
     renderTable(detail.rows, detail.columns, detail.tableTitle, detail.action);
+    if (state.page.type === "scheduleSeries") els.tableShell.classList.add("hidden");
+    if (state.page.type === "scheduleGame") els.tableShell.classList.add("hidden");
     renderDetailExtras();
     return;
   }
 
   renderDetailExtras();
+
+  if (state.view === "home") {
+    renderKpis([]);
+    els.tableShell.classList.add("hidden");
+    els.playoffStats.classList.add("hidden");
+    els.playoffStats.innerHTML = "";
+    renderHomePage();
+    return;
+  }
 
   if (state.view === "awards") {
     renderKpis([]);
@@ -5732,6 +6244,7 @@ els.seasonSelect.addEventListener("change", (event) => {
   if (state.view === "lifetimeTeams") state.view = "teams";
   if (state.view === "lifetimePlayers") state.view = "players";
   state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(selected) ? playoffSeasonName(selected) : selected;
+  setDefaultStageForView();
   resetLifetimeEraFiltersIfNeeded();
   if (state.view === "standings") {
     state.sortKey = "standingsRank";
@@ -5751,10 +6264,10 @@ els.seasonSelect.addEventListener("change", (event) => {
 
 els.homeLogoButton.addEventListener("click", () => {
   state.page = { type: "dashboard" };
-  state.view = "teams";
+  state.view = "home";
   state.season = latestRegularSeason();
   state.seasonPhase = "regular";
-  state.s6Stage = "group";
+  state.s6Stage = "overall";
   state.s6Pool = "overall";
   state.s5Pool = "overall";
   state.searchText = "";
@@ -5765,6 +6278,28 @@ els.homeLogoButton.addEventListener("click", () => {
   els.searchInput.value = "";
   resetLifetimeEraFiltersIfNeeded();
   render();
+});
+
+function openPatchNotes() {
+  els.patchNotesOverlay.classList.remove("hidden");
+  els.patchNotesClose.focus();
+}
+
+function closePatchNotes() {
+  els.patchNotesOverlay.classList.add("hidden");
+  els.patchNotesButton.focus();
+}
+
+els.patchNotesButton.addEventListener("click", openPatchNotes);
+
+els.patchNotesClose.addEventListener("click", closePatchNotes);
+
+els.patchNotesOverlay.querySelector(".patch-notes-backdrop").addEventListener("click", closePatchNotes);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !els.patchNotesOverlay.classList.contains("hidden")) {
+    closePatchNotes();
+  }
 });
 
 els.seasonPhaseControl.addEventListener("click", (event) => {
@@ -5848,10 +6383,12 @@ els.tabButtons.forEach((button) => {
     const requestedView = button.dataset.view;
     resetCrossTabFilters();
     if (requestedView === "analytics") resetAnalyticsFilters();
-    if (requestedView === "teams") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimeTeams" : "teams";
+    if (requestedView === "home") state.view = "home";
+    else if (requestedView === "teams") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimeTeams" : "teams";
     else if (requestedView === "players") state.view = els.seasonSelect.value === "Lifetime" ? "lifetimePlayers" : "players";
     else if (requestedView === "analytics") state.view = state.analyticsMode === "your" ? "yourKitchen" : "kitchen";
     else state.view = requestedView;
+    setDefaultStageForView();
     if (!["teams", "players", "lifetimeTeams", "lifetimePlayers"].includes(state.view) && isLifetimeView()) {
       state.season = latestRegularSeason();
       state.seasonPhase = "regular";
@@ -5861,7 +6398,8 @@ els.tabButtons.forEach((button) => {
       state.seasonPhase = "regular";
     }
     resetLifetimeEraFiltersIfNeeded();
-    state.sortKey = state.view === "awards" || state.view === "kitchen" || state.view === "yourKitchen" || state.view === "schedule" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals"));
+    setDefaultStageForView();
+    state.sortKey = state.view === "home" ? "wins" : (state.view === "awards" || state.view === "kitchen" || state.view === "yourKitchen" || state.view === "schedule" ? "season" : (state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals")));
     state.sortDir = "desc";
     if (state.view === "standings" || state.view === "schedule") state.sortDir = "asc";
     render();
@@ -5934,11 +6472,7 @@ els.backButton.addEventListener("click", () => {
   render();
 });
 
-els.body.addEventListener("click", (event) => {
-  if (event.target.closest("[data-vod-link]")) return;
-  const row = event.target.closest("[data-action]");
-  if (!row) return;
-  const action = JSON.parse(decodeURIComponent(row.dataset.action));
+function handleDashboardAction(action) {
   if (action.type === "draft") state.previousContext = snapshotContext();
   state.page = action;
   if (action.type === "team") {
@@ -5956,6 +6490,7 @@ els.body.addEventListener("click", (event) => {
   } else if (action.type === "scheduleSeries") {
     state.sortKey = "game";
     state.sortDir = "asc";
+    state.showMatchupPreview = !!action.preMatchOnly;
   } else if (action.type === "scheduleGame") {
     state.sortKey = "score";
     state.sortDir = "desc";
@@ -5964,11 +6499,34 @@ els.body.addEventListener("click", (event) => {
     state.view = "schedule";
     state.season = action.season;
     state.seasonPhase = "regular";
+    setDefaultStageForView();
     state.scheduleTeamFilter = action.team || "All";
     state.sortKey = "season";
     state.sortDir = "asc";
+  } else if (action.type === "view") {
+    state.page = { type: "dashboard" };
+    state.view = action.view;
+    state.season = action.season || state.season;
+    state.seasonPhase = "regular";
+    setDefaultStageForView();
+    state.sortKey = state.view === "standings" ? "standingsRank" : (isTeamView() ? "wins" : "goals");
+    state.sortDir = state.view === "standings" ? "asc" : "desc";
   }
   render();
+}
+
+els.body.addEventListener("click", (event) => {
+  if (event.target.closest("[data-vod-link]")) return;
+  const row = event.target.closest("[data-action]");
+  if (!row) return;
+  handleDashboardAction(JSON.parse(decodeURIComponent(row.dataset.action)));
+});
+
+els.homePanel.addEventListener("click", (event) => {
+  if (event.target.closest("[data-vod-link]")) return;
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  handleDashboardAction(JSON.parse(decodeURIComponent(target.dataset.action)));
 });
 
 document.querySelector(".kpis").addEventListener("click", (event) => {
@@ -6156,6 +6714,12 @@ els.kitchenPanel.addEventListener("focusout", (event) => {
 });
 
 els.detailExtras.addEventListener("click", (event) => {
+  const matchupToggle = event.target.closest("[data-toggle-matchup-preview]");
+  if (matchupToggle) {
+    state.showMatchupPreview = !state.showMatchupPreview;
+    render();
+    return;
+  }
   const awardFilter = event.target.closest("[data-award-filter]");
   if (awardFilter) {
     state.awardFilter = awardFilter.dataset.awardFilter;
@@ -6184,6 +6748,10 @@ els.detailExtras.addEventListener("click", (event) => {
   } else if (action.type === "seasonLeaders") {
     state.sortKey = "stat";
     state.sortDir = "asc";
+  } else if (action.type === "scheduleSeries") {
+    state.sortKey = "game";
+    state.sortDir = "asc";
+    state.showMatchupPreview = false;
   } else if (action.type === "scheduleGame") {
     state.sortKey = "score";
     state.sortDir = "desc";
@@ -6191,6 +6759,7 @@ els.detailExtras.addEventListener("click", (event) => {
     state.view = "schedule";
     state.season = action.season;
     state.seasonPhase = "regular";
+    setDefaultStageForView();
     state.scheduleTeamFilter = action.team || "All";
     state.page = { type: "dashboard" };
     state.sortKey = "season";

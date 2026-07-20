@@ -2741,6 +2741,146 @@ input {
   color: var(--ink);
 }
 
+.series-mvp-card,
+.game-summary-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--team-color, var(--accent-2)) 38%, var(--line));
+  border-left: 5px solid var(--team-color, var(--accent-2));
+  border-radius: 8px;
+  background: #101820;
+  padding: 14px;
+}
+
+.series-mvp-card {
+  grid-template-columns: minmax(170px, 0.8fr) minmax(260px, 1.2fr);
+  align-items: center;
+}
+
+.series-mvp-card span,
+.game-summary-head span,
+.game-team-summary-grid article > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.series-mvp-card h3,
+.series-mvp-card p,
+.game-summary-head h3 {
+  margin: 0;
+}
+
+.series-mvp-card h3 {
+  color: var(--ink);
+  font-size: 1.35rem;
+}
+
+.series-mvp-card p {
+  color: var(--team-color, var(--accent-2));
+  font-weight: 900;
+}
+
+.series-mvp-stats,
+.game-team-summary-grid article > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.series-mvp-stats b,
+.game-team-summary-grid b {
+  display: grid;
+  gap: 2px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.035);
+  color: var(--ink);
+  padding: 8px;
+  text-align: center;
+}
+
+.series-mvp-stats small,
+.game-team-summary-grid small {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.game-summary-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.game-team-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.game-team-summary-grid article {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--team-color, var(--accent));
+  border-radius: 8px;
+  background: #0b1117;
+  padding: 12px;
+}
+
+.game-team-summary-grid article.game-winner {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, #0b1117);
+}
+
+.game-team-summary-grid article > strong {
+  color: var(--ink);
+  font-size: 1.12rem;
+}
+
+.series-games-table,
+.game-player-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.series-games-table th,
+.series-games-table td,
+.game-player-table th,
+.game-player-table td {
+  padding: 8px 9px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 0.84rem;
+}
+
+.series-games-table th:first-child,
+.series-games-table td:first-child,
+.game-player-table th:first-child,
+.game-player-table td:first-child {
+  position: static;
+  min-width: 0;
+  max-width: none;
+  box-shadow: none;
+}
+
+.series-games-table .col-game { width: 12%; }
+.series-games-table .col-date { width: 14%; }
+.series-games-table .col-team,
+.series-games-table .col-opponent { width: 21%; }
+.series-games-table .col-result { width: 12%; }
+.series-games-table .col-winner { width: 14%; }
+.series-games-table .col-note { width: 6%; }
+
+.game-player-table .col-team { width: 18%; }
+.game-player-table .col-name { width: 16%; }
+.game-player-table .col-result { width: 8%; }
+
 .matchup-notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));

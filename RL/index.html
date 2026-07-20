@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=swiss-prematch-history-20260706">
+  <link rel="stylesheet" href="styles.css?v=s6-overall-standings-20260720">
 </head>
 <body>
   <header class="topbar">
@@ -12,6 +12,7 @@
       <button id="homeLogoButton" class="home-logo-button" type="button" aria-label="Return to main landing page">
         <img class="brand-logo" src="assets/main-mini-logo.png?v=20260629" alt="Gravy Train Rocket League Series logo">
       </button>
+      <button id="patchNotesButton" class="patch-notes-button" type="button">Patch Notes</button>
     </div>
     <nav class="social-links" aria-label="GTRLS social links">
       <a href="https://www.twitch.tv/gravytrainrls" target="_blank" rel="noopener noreferrer" aria-label="Open Gravy Train RLS on Twitch">
@@ -28,6 +29,25 @@
       <span id="generatedAt">Last Update: loading...</span>
     </div>
   </header>
+
+  <section id="patchNotesOverlay" class="patch-notes-overlay hidden" aria-label="Latest patch notes" aria-modal="true" role="dialog">
+    <button class="patch-notes-backdrop" type="button" aria-label="Close patch notes"></button>
+    <article class="patch-notes-card">
+      <div class="patch-notes-head">
+        <div>
+          <span>Latest Update</span>
+          <h2>Patch Notes</h2>
+        </div>
+        <button id="patchNotesClose" type="button" aria-label="Close patch notes">Close</button>
+      </div>
+      <div class="patch-notes-body">
+        <p>S6 now defaults to Overall for the main stats pages, while the Schedule opens on Swiss because that is the active stage.</p>
+        <p>Played Swiss series now have cleaner drill-down pages with Series MVP, home/away team summaries, home/away player totals, and clickable individual games.</p>
+        <p>Individual game pages now split player stats by home and away team, and advanced stats like stolen per game, demos per game, and pressure metrics only use games where that data exists.</p>
+        <p>Pre-match comparison is still available on matchup pages, but it now starts hidden behind a button so played-match pages stay cleaner.</p>
+      </div>
+    </article>
+  </section>
 
   <main>
     <section class="controls" aria-label="Dashboard controls">
@@ -63,7 +83,7 @@
         <span>Exclude 3's Era</span>
       </label>
       <div class="segmented" role="tablist" aria-label="Stats view">
-        <button class="active" type="button" data-view="teams">Teams</button>
+        <button type="button" data-view="teams">Teams</button>
         <button type="button" data-view="players">Players</button>
         <button type="button" data-view="standings">Standings</button>
         <button type="button" data-view="schedule">Schedule</button>
@@ -82,6 +102,8 @@
       </div>
       <div id="detailActions" class="detail-actions"></div>
     </section>
+
+    <section id="homePanel" class="home-panel hidden" aria-label="Dashboard home"></section>
 
     <section class="kpis" aria-label="Season summary">
       <div id="teamLeaderPanel">
@@ -148,9 +170,9 @@
       </div>
       <section class="stage-filter-row" aria-label="Stage and pool filters">
         <div id="s6StageControl" class="phase-control hidden" role="group" aria-label="Season 6 stage">
-          <button type="button" data-s6-stage="group" class="active">Group Stage</button>
+          <button type="button" data-s6-stage="group">Group Stage</button>
           <button type="button" data-s6-stage="swiss">Swiss</button>
-          <button type="button" data-s6-stage="overall">Overall</button>
+          <button type="button" data-s6-stage="overall" class="active">Overall</button>
         </div>
         <div id="s6PoolControl" class="s6-pool-strip hidden" role="group" aria-label="Season 6 pool">
           <span>Group Stage Filter</span>
@@ -173,7 +195,7 @@
   </main>
 
   <script src="dashboard-data.js"></script>
-  <script src="manual-history.js?v=s6-swiss-games-20260719"></script>
-  <script src="app.js?v=s6-swiss-games-20260719"></script>
+  <script src="manual-history.js?v=s6-overall-standings-20260720"></script>
+  <script src="app.js?v=s6-overall-standings-20260720"></script>
 </body>
 </html>
