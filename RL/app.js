@@ -291,6 +291,7 @@ const state = {
   s6Pool: "overall",
   scheduleTeamFilter: "All",
   scheduleUnplayedOnly: false,
+  playerRoleFilter: "All",
   showMatchupPreview: false,
   analyticsMode: "selena",
   archiveMode: "awards",
@@ -315,6 +316,8 @@ const state = {
   yourKitchenFormula: "",
   yourKitchenVariableName: "",
   yourKitchenError: "",
+  csvImportMessage: "",
+  csvImportBusy: false,
   page: { type: "dashboard" },
   previousContext: null,
 };
@@ -943,7 +946,171 @@ addCompactS6SwissSeries([
   {"season":"S6","stage":"Swiss","round":"Round 2","home":"Past Our Prime","away":"ESC","games":[{"id":"0ef4388c-a9db-4722-b9cb-26505f7c314c","game":"Game 1","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",1082,3,2,4,8,5,1,1426,1,2],["Past Our Prime","ESC",842,1,1,4,5,8,3,1291,2,1]],"players":[["ESC","EPo -_-",537,2,1,2,3,393,0,0],["ESC","Clamp2much",335,0,1,2,2,364,0,0],["ESC","SirSkittleZ",210,1,0,0,3,669,1,2],["Past Our Prime","AtownSteelers",104,0,0,0,0,339,1,0],["Past Our Prime","MerkWTM",242,0,1,2,1,181,1,1],["Past Our Prime","RoyalxRenegade",496,1,0,2,4,771,0,0]]},{"id":"00537806-7d9c-4c65-9146-bf63fa2f2b67","game":"Game 2","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",886,2,2,4,4,6,1,1085,3,2],["Past Our Prime","ESC",598,1,1,0,6,4,2,1495,2,3]],"players":[["ESC","EPo -_-",348,1,1,2,1,310,1,1],["ESC","Clamp2much",240,0,1,1,2,250,0,1],["ESC","SirSkittleZ",298,1,0,1,1,525,2,0],["Past Our Prime","AtownSteelers",98,0,0,0,2,518,0,1],["Past Our Prime","MerkWTM",288,1,0,0,2,516,0,0],["Past Our Prime","RoyalxRenegade",212,0,1,0,2,461,2,2]]},{"id":"00ebf326-7e9b-44c9-b905-fcea584e864f","game":"Game 3","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",968,2,2,4,9,6,1,1641,4,0],["Past Our Prime","ESC",1007,1,1,7,6,9,2,1511,0,4]],"players":[["ESC","EPo -_-",533,2,0,2,4,615,2,0],["ESC","Clamp2much",148,0,1,1,3,223,0,0],["ESC","SirSkittleZ",287,0,1,1,2,803,2,0],["Past Our Prime","AtownSteelers",400,1,0,3,2,655,0,0],["Past Our Prime","MerkWTM",211,0,1,1,0,335,0,2],["Past Our Prime","RoyalxRenegade",396,0,0,3,4,521,0,2]]},{"id":"b96b39ef-3448-4525-8552-5a5ad95a0bbd","game":"Game 4","date":"2026-07-29","winner":"Past Our Prime","teams":[["ESC","Past Our Prime",691,1,0,3,6,5,2,1010,3,1],["Past Our Prime","ESC",1014,2,1,5,5,6,1,1051,1,3]],"players":[["ESC","Clamp2much",130,0,0,1,1,137,0,0],["ESC","EPo -_-",417,1,0,2,3,301,2,1],["ESC","SirSkittleZ",144,0,0,0,2,572,1,0],["Past Our Prime","MerkWTM",176,0,0,1,1,383,1,2],["Past Our Prime","AtownSteelers",220,1,0,0,0,161,0,1],["Past Our Prime","RoyalxRenegade",618,1,1,4,4,507,0,0]]},{"id":"b6d5dc75-86a8-4efb-bc9e-bbfc178055ef","game":"Game 5","date":"2026-07-29","winner":"Past Our Prime","teams":[["ESC","Past Our Prime",548,0,0,2,3,5,1,1187,5,1],["Past Our Prime","ESC",831,1,0,3,5,3,0,1120,1,5]],"players":[["ESC","EPo -_-",236,0,0,0,1,550,1,0],["ESC","Clamp2much",144,0,0,1,1,133,1,1],["ESC","SirSkittleZ",168,0,0,1,1,504,3,0],["Past Our Prime","MerkWTM",76,0,0,0,1,171,0,2],["Past Our Prime","AtownSteelers",112,0,0,0,1,223,0,1],["Past Our Prime","RoyalxRenegade",643,1,0,3,3,726,1,2]]}]},
   {"season":"S6","stage":"Swiss","round":"Round 2","home":"The Cox","away":"Giga's In Paris","games":[{"id":"53880050-61e4-4802-b69a-739241d9f134","game":"Game 1","date":"2026-07-29","winner":"The Cox","teams":[["The Cox","Giga's In Paris",880,2,0,3,11,4,1,1273,1,1],["Giga's In Paris","The Cox",941,1,1,7,4,11,2,759,1,1]],"players":[["Giga's In Paris","Ax1mov",621,1,0,6,3,195,1,0],["Giga's In Paris","Mastergiga9",156,0,1,0,0,293,0,0],["Giga's In Paris","selena.",164,0,0,1,1,271,0,1],["The Cox","CoalTrainLLC",222,0,0,1,3,290,0,1],["The Cox","Hyroshi",36,0,0,0,1,264,0,0],["The Cox","roo",622,2,0,2,7,719,1,0]]},{"id":"edf30f9b-c0db-436c-9307-b37e2e945c27","game":"Game 2","date":"2026-07-29","winner":"The Cox","teams":[["Giga's In Paris","The Cox",649,1,0,3,7,7,3,1179,4,3],["The Cox","Giga's In Paris",1050,3,0,5,7,7,1,1332,3,4]],"players":[["Giga's In Paris","Ax1mov",265,0,0,1,3,412,0,1],["Giga's In Paris","Mastergiga9",172,0,0,1,3,343,0,2],["Giga's In Paris","selena.",212,1,0,1,1,424,4,0],["The Cox","CoalTrainLLC",377,1,0,2,2,176,0,2],["The Cox","Hyroshi",30,0,0,0,0,538,3,1],["The Cox","roo",643,2,0,3,5,618,0,1]]},{"id":"12c5ebbd-374f-43c8-9897-a2cd719c42db","game":"Game 3","date":"2026-07-30","winner":"The Cox","teams":[["Giga's In Paris","The Cox",1080,3,2,3,8,11,4,1620,5,1],["The Cox","Giga's In Paris",1196,4,4,3,11,8,3,1211,1,5]],"players":[["Giga's In Paris","Ax1mov",655,3,0,2,7,672,3,0],["Giga's In Paris","selena.",275,0,1,1,1,732,2,0],["Giga's In Paris","Mastergiga9",150,0,1,0,0,216,0,1],["The Cox","CoalTrainLLC",463,1,2,2,5,213,0,3],["The Cox","Hyroshi",182,0,2,0,2,527,1,1],["The Cox","roo",551,3,0,1,4,471,0,1]]}]},
   {"season":"S6","stage":"Swiss","round":"Round 2","home":"Supernova Abyss","away":"Spirit Airlines","games":[{"id":"1a3369ab-0c3d-4846-ae1a-7d0461acf220","game":"Game 1","date":"2026-07-28","winner":"Supernova Abyss","teams":[["Spirit Airlines","Supernova Abyss",455,1,0,1,6,6,4,1132,2,2],["Supernova Abyss","Spirit Airlines",1187,4,4,4,6,6,1,1301,2,2]],"players":[["Supernova Abyss","MrStratty",326,2,1,0,3,450,1,0],["Supernova Abyss","KWNSquid",442,0,2,3,1,424,1,1],["Supernova Abyss","ttv_starzyrl",419,2,1,1,2,427,0,1],["Spirit Airlines","JulietAlphaRomeo",101,0,0,0,0,488,0,0],["Spirit Airlines","dailcowgs94",300,1,0,1,4,176,0,1],["Spirit Airlines","MadJanitor88",54,0,0,0,2,468,2,1]]},{"id":"0d20be9c-4f58-4beb-84ab-95258acf6399","game":"Game 2","date":"2026-07-27","winner":"Supernova Abyss","teams":[["Supernova Abyss","Spirit Airlines",1481,5,5,3,15,7,4,1643,2,6],["Spirit Airlines","Supernova Abyss",1438,4,0,9,7,15,5,950,6,2]],"players":[["Supernova Abyss","ttv_starzyrl",396,2,0,1,6,475,0,3],["Supernova Abyss","MrStratty",514,2,2,1,3,448,1,2],["Supernova Abyss","KWNSquid",571,1,3,1,6,720,1,1],["Spirit Airlines","JulietAlphaRomeo",940,4,0,4,4,411,3,1],["Spirit Airlines","dailcowgs94",284,0,0,3,2,232,1,0],["Spirit Airlines","MadJanitor88",214,0,0,2,1,307,2,1]]},{"id":"758efc7d-e381-4341-995e-e8c55b55e816","game":"Game 3","date":"2026-07-27","winner":"Supernova Abyss","teams":[["Supernova Abyss","Spirit Airlines",1346,4,4,3,9,4,1,1100,3,5],["Spirit Airlines","Supernova Abyss",677,1,0,4,4,9,4,970,5,3]],"players":[["Supernova Abyss","KWNSquid",603,3,1,1,3,264,2,2],["Supernova Abyss","ttv_starzyrl",533,0,3,2,3,534,1,1],["Supernova Abyss","MrStratty",210,1,0,0,3,302,0,2],["Spirit Airlines","JulietAlphaRomeo",309,0,0,2,0,467,0,0],["Spirit Airlines","dailcowgs94",146,0,0,1,2,370,3,2],["Spirit Airlines","MadJanitor88",222,1,0,1,2,133,2,1]]}]},
+  {"season":"S6","stage":"Swiss","round":"Round 2","home":"Quack Wok","away":"Deceptitards","games":[{"id":"05c33082-4201-4a73-874b-1c72f24d3e96","game":"Game 1","date":"2026-07-27","winner":"QUACK WOK","teams":[["DECEPTITARDS","QUACK WOK",808,1,1,3,8,11,3,1680,2,2],["QUACK WOK","DECEPTITARDS",1238,3,3,5,11,8,1,908,2,2]],"players":[["QUACK WOK","Original_6_Hawks",648,1,2,3,6,661,2,1],["QUACK WOK","LIL HATED ONE",272,1,0,1,3,99,0,0],["QUACK WOK","godfatherjones",318,1,1,1,2,148,0,1],["DECEPTITARDS","Burt",317,0,1,1,1,246,0,1],["DECEPTITARDS","MegatronMD",343,1,0,1,5,907,2,1],["DECEPTITARDS","Dukeofdope7",148,0,0,1,2,527,0,0]]},{"id":"e720c911-14e2-4e17-8342-f59c5212f7e8","game":"Game 2","date":"2026-07-27","winner":"QUACK WOK","teams":[["QUACK WOK","DECEPTITARDS",1175,4,3,2,10,7,3,932,3,2],["DECEPTITARDS","QUACK WOK",900,3,0,4,7,10,4,1854,2,3]],"players":[["QUACK WOK","Original_6_Hawks",546,2,0,1,6,328,0,1],["QUACK WOK","LIL HATED ONE",247,0,2,1,1,342,0,1],["QUACK WOK","godfatherjones",382,2,1,0,3,262,3,0],["DECEPTITARDS","Burt",232,0,0,2,1,371,0,1],["DECEPTITARDS","MegatronMD",471,3,0,1,5,839,1,1],["DECEPTITARDS","Dukeofdope7",197,0,0,1,1,644,1,1]]},{"id":"e34ff860-c3bb-44aa-a2e1-13a4fab6a514","game":"Game 3","date":"2026-07-27","winner":"DECEPTITARDS","teams":[["QUACK WOK","DECEPTITARDS",1128,3,2,3,10,8,4,1055,1,7],["DECEPTITARDS","QUACK WOK",1473,4,2,7,8,10,3,1753,7,1]],"players":[["QUACK WOK","Original_6_Hawks",654,3,0,1,5,410,1,4],["QUACK WOK","LIL HATED ONE",204,0,1,1,0,170,0,2],["QUACK WOK","godfatherjones",270,0,1,1,5,475,0,1],["DECEPTITARDS","Burt",301,0,0,4,0,115,0,0],["DECEPTITARDS","Dukeofdope7",713,3,0,2,3,703,2,0],["DECEPTITARDS","MegatronMD",459,1,2,1,5,935,5,1]]},{"id":"160bb30b-e650-4ad7-a8f0-9bb8dc9e0d69","game":"Game 4","date":"2026-07-27","winner":"DECEPTITARDS","teams":[["QUACK WOK","DECEPTITARDS",948,2,1,4,8,9,3,740,2,8],["DECEPTITARDS","QUACK WOK",1138,3,1,6,9,8,2,1592,8,2]],"players":[["QUACK WOK","Original_6_Hawks",448,1,0,2,2,302,2,4],["QUACK WOK","LIL HATED ONE",186,0,0,2,1,132,0,3],["QUACK WOK","godfatherjones",314,1,1,0,5,306,0,1],["DECEPTITARDS","Burt",275,0,1,1,4,405,0,0],["DECEPTITARDS","Dukeofdope7",464,2,0,3,2,483,3,1],["DECEPTITARDS","MegatronMD",399,1,0,2,3,704,5,1]]},{"id":"c3aa5af3-34ca-4170-b8ec-c5780046757f","game":"Game 5","date":"2026-07-27","winner":"QUACK WOK","teams":[["QUACK WOK","DECEPTITARDS",1253,5,3,2,8,6,4,931,4,6],["DECEPTITARDS","QUACK WOK",1121,4,2,3,6,8,5,2040,6,4]],"players":[["QUACK WOK","LIL HATED ONE",58,0,0,0,0,54,1,2],["QUACK WOK","Original_6_Hawks",528,2,2,1,4,266,1,4],["QUACK WOK","godfatherjones",667,3,1,1,4,611,2,0],["DECEPTITARDS","Burt",549,3,0,0,4,305,1,1],["DECEPTITARDS","Dukeofdope7",234,1,0,1,2,762,0,0],["DECEPTITARDS","MegatronMD",338,0,2,2,0,973,5,3]]}]},
 ]);
+
+const importedReplayStorageKey = "gtrls.importedReplaySeries.v1";
+const importedReplaySeries = [];
+
+function existingReplayIds() {
+  return new Set(s6SwissSeriesGameStats.flatMap((series) => (series.games || []).map((game) => game.id)).filter(Boolean));
+}
+
+function splitCsvLine(line, delimiter) {
+  const cells = [];
+  let cell = "";
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+    if (char === '"' && quoted && next === '"') {
+      cell += '"';
+      index += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === delimiter && !quoted) {
+      cells.push(cell);
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+  cells.push(cell);
+  return cells.map((value) => value.trim());
+}
+
+function parseReplayCsv(text) {
+  const lines = String(text || "").replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.trim());
+  if (!lines.length) return [];
+  const delimiter = lines[0].includes(";") ? ";" : ",";
+  const headers = splitCsvLine(lines[0], delimiter).map((header) => header.toLowerCase().trim());
+  return lines.slice(1).map((line) => {
+    const values = splitCsvLine(line, delimiter);
+    return Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]));
+  });
+}
+
+function csvNum(row, key) {
+  const value = String(row[key] ?? "").replace(/[%,$]/g, "").trim();
+  if (!value || value.toUpperCase() === "N/A") return 0;
+  return Number(value) || 0;
+}
+
+function csvDate(row) {
+  return String(row.date || "").slice(0, 10);
+}
+
+function csvGameLabel(rows, replayId, fallbackIndex) {
+  const title = String(rows.find((row) => row["replay id"] === replayId)?.["replay title"] || "").trim();
+  const match = title.match(/\b(?:g|game)\s*(\d+)\b/i);
+  return `Game ${match ? Number(match[1]) : fallbackIndex}`;
+}
+
+function replayRowsById(rows) {
+  const grouped = new Map();
+  rows.forEach((row) => {
+    const id = String(row["replay id"] || "").trim();
+    if (!id) return;
+    if (!grouped.has(id)) grouped.set(id, []);
+    grouped.get(id).push(row);
+  });
+  return grouped;
+}
+
+function compactSeriesFromCsv({ teamsCsv, playersCsv, season, stage, round, home, away }) {
+  const teamRows = parseReplayCsv(teamsCsv);
+  const playerRows = parseReplayCsv(playersCsv);
+  const teamsById = replayRowsById(teamRows);
+  const playersById = replayRowsById(playerRows);
+  const replayIds = [...new Set([...teamsById.keys(), ...playersById.keys()])];
+  if (!replayIds.length) throw new Error("No replay IDs found in the selected CSV files.");
+  const inferredTeams = [...new Set(teamRows.flatMap((row) => [row["team name"], row["opposing team name"]]).filter(Boolean).map(canonicalTeamName))];
+  const seriesHome = canonicalTeamName(home || inferredTeams[0]);
+  const seriesAway = canonicalTeamName(away || inferredTeams.find((team) => team !== seriesHome) || inferredTeams[1]);
+  if (!seriesHome || !seriesAway || seriesHome === seriesAway) throw new Error("Choose a valid home and away team for this import.");
+  const sortedIds = replayIds.sort((a, b) => {
+    const aDate = String((teamsById.get(a) || playersById.get(a) || [])[0]?.date || "");
+    const bDate = String((teamsById.get(b) || playersById.get(b) || [])[0]?.date || "");
+    return aDate.localeCompare(bDate);
+  });
+  const games = sortedIds.map((id, index) => {
+    const tRows = teamsById.get(id) || [];
+    const pRows = playersById.get(id) || [];
+    const winnerRow = tRows.find((row) => String(row.result || "").toLowerCase() === "win")
+      || tRows.slice().sort((a, b) => csvNum(b, "goals") - csvNum(a, "goals"))[0];
+    return {
+      id,
+      game: csvGameLabel([...tRows, ...pRows], id, index + 1),
+      date: csvDate(tRows[0] || pRows[0] || {}),
+      winner: canonicalTeamName(winnerRow?.["team name"]),
+      teams: tRows.map((row) => [
+        canonicalTeamName(row["team name"]),
+        canonicalTeamName(row["opposing team name"]),
+        csvNum(row, "score"),
+        csvNum(row, "goals"),
+        csvNum(row, "assists"),
+        csvNum(row, "saves"),
+        csvNum(row, "shots"),
+        csvNum(row, "shots conceded"),
+        csvNum(row, "goals conceded"),
+        csvNum(row, "amount stolen"),
+        csvNum(row, "demos inflicted"),
+        csvNum(row, "demos taken"),
+      ]),
+      players: pRows.map((row) => [
+        canonicalTeamName(row["team name"]),
+        canonicalPlayerName(row["player name"]),
+        csvNum(row, "score"),
+        csvNum(row, "goals"),
+        csvNum(row, "assists"),
+        csvNum(row, "saves"),
+        csvNum(row, "shots"),
+        csvNum(row, "amount stolen"),
+        csvNum(row, "demos inflicted"),
+        csvNum(row, "demos taken"),
+      ]),
+    };
+  });
+  return {
+    season: baseSeasonName(season || state.season || "S6"),
+    stage: scheduleStageLabel(stage || state.s6Stage || "Swiss"),
+    round: round || "Imported",
+    home: seriesHome,
+    away: seriesAway,
+    games,
+    source: "csv-import",
+    importedAt: new Date().toISOString(),
+  };
+}
+
+function applyImportedReplaySeries(seriesList, { persist = false } = {}) {
+  const seenReplayIds = existingReplayIds();
+  const accepted = [];
+  seriesList.forEach((series) => {
+    const freshGames = (series.games || []).filter((game) => game.id && !seenReplayIds.has(game.id));
+    freshGames.forEach((game) => seenReplayIds.add(game.id));
+    if (!freshGames.length) return;
+    const cleanSeries = { ...series, games: freshGames };
+    importedReplaySeries.push(cleanSeries);
+    addCompactS6SwissSeries([cleanSeries]);
+    accepted.push(cleanSeries);
+  });
+  if (persist && accepted.length) {
+    localStorage.setItem(importedReplayStorageKey, JSON.stringify(importedReplaySeries));
+  }
+  return accepted;
+}
+
+function loadImportedReplaySeries() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(importedReplayStorageKey) || "[]");
+    if (Array.isArray(stored)) applyImportedReplaySeries(stored);
+  } catch (error) {
+    console.warn("Unable to load imported replay CSVs", error);
+  }
+}
+
+loadImportedReplaySeries();
 
 const s6GroupStandingsRows = [
   ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
@@ -1072,6 +1239,8 @@ const els = {
   detailExtras: document.querySelector("#detailExtras"),
   awardFilters: document.querySelector("#awardFilters"),
   scheduleFilters: document.querySelector("#scheduleFilters"),
+  playerFilters: document.querySelector("#playerFilters"),
+  csvImportPanel: document.querySelector("#csvImportPanel"),
   kitchenPanel: document.querySelector("#kitchenPanel"),
   teamInfoPanel: document.querySelector("#teamInfoPanel"),
   yourKitchenPanel: document.querySelector("#yourKitchenPanel"),
@@ -1499,6 +1668,10 @@ function columnsForView() {
   const columns = isTeamView() ? teamColumns : playerColumns;
   return columns
     .filter(([key]) => !isLifetimeView() || key !== "season")
+    .flatMap(([key, label]) => {
+      if (state.view === "players" && state.season === "S6" && key === "teamsText") return [[key, label], ["role", "Role"]];
+      return [[key, label]];
+    })
     .map(([key, label]) => {
       if (key === "teamsText" && isLifetimeView()) return [key, "Team(s) All Time"];
       return [key, label];
@@ -1893,6 +2066,7 @@ function makeS6TeamRow(raw) {
     losses,
     matchRecord: `${wins} - ${losses}`,
     standingsPoints,
+    accruedBonuses: s6AccruedBonuses[name] || 0,
     score,
     goals,
     goalsConceded,
@@ -1972,6 +2146,7 @@ function makeS6SwissTeamRow(raw) {
     losses: raw.losses,
     matchRecord: `${raw.wins} - ${raw.losses}`,
     standingsPoints,
+    accruedBonuses: 0,
     score: raw.score,
     goals: raw.goals,
     goalsConceded: raw.goalsConceded,
@@ -2053,7 +2228,7 @@ function combineS6Rows(rows, type) {
     }
     const item = byKey.get(key);
     [
-      "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "score", "goals",
+      "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "accruedBonuses", "score", "goals",
       "goalsConceded", "assists", "saves", "shots", "shotsConceded", "sweeps", "gameFiveLosses",
       "amountStolen", "demosInflicted", "demosTaken", "opponentSavesForced", "pressureShots", "pressureOpponentSaves", "advancedGames", "mvps", "per",
     ].forEach((field) => {
@@ -2063,6 +2238,9 @@ function combineS6Rows(rows, type) {
   });
   return [...byKey.values()].map((row) => {
     row.matchRecord = `${row.wins || 0} - ${row.losses || 0}`;
+    delete row.matchWinPct;
+    delete row.gameWinPct;
+    delete row.winPct;
     const carriedPer = Number(row.per) || 0;
     const finalized = finalizeCommon(row);
     finalized.per = Math.round(carriedPer * 100) / 100;
@@ -2164,10 +2342,11 @@ function s6StageTeamRows(stage = state.s6Stage, pool = state.s6Pool) {
   const swissRows = s6SwissTeamRows.map(makeS6SwissTeamRow);
   const groupPlayerRows = s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, groupRows));
   const swissPlayerRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissRows));
+  const combinedSwissRows = s6TeamRowsWithPlayerPer(combineS6Rows(swissRows, "team"), combineS6Rows(swissPlayerRows, "player"));
   const rows = stage === "swiss"
-    ? s6TeamRowsWithPlayerPer(swissRows, swissPlayerRows)
+    ? combinedSwissRows
     : (stage === "overall"
-      ? s6TeamRowsWithPlayerPer(combineS6Rows([...groupRows, ...swissRows], "team"), combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player"))
+      ? s6TeamRowsWithPlayerPer(combineS6Rows([...groupRows, ...combinedSwissRows], "team"), combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player"))
       : s6TeamRowsWithPlayerPer(groupRows, groupPlayerRows));
   return s6FilterByPool(rows, pool);
 }
@@ -2178,9 +2357,30 @@ function s6StagePlayerRows(stage = state.s6Stage, pool = state.s6Pool) {
   const swissTeams = s6StageTeamRows("swiss", "overall");
   const swissRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissTeams));
   const rows = stage === "swiss"
-    ? swissRows
+    ? combineS6Rows(swissRows, "player")
     : (stage === "overall" ? combineS6Rows([...groupRows, ...swissRows], "player") : groupRows);
   return s6FilterByPool(rows, pool);
+}
+
+function s6ComputedStandingsRows(stage) {
+  const rows = s6StageTeamRows(stage, "overall")
+    .sort((a, b) => b.standingsPoints - a.standingsPoints
+      || b.wins - a.wins
+      || a.losses - b.losses
+      || b.gameWinPct - a.gameWinPct
+      || b.goalDiff - a.goalDiff
+      || a.name.localeCompare(b.name));
+  return rows.map((row, index) => ({
+    ...row,
+    standingsRank: index + 1,
+    poolRank: s6PoolRanks[row.name] || index + 1,
+    matchRecord: `${row.wins || 0} - ${row.losses || 0}`,
+    gameRecord: `${row.gameWins || 0} - ${row.gameLosses || 0}`,
+    sweepsText: `${row.sweeps || 0} - ${row.gameFiveLosses || 0}`,
+    accruedBonuses: Number(row.accruedBonuses || 0),
+    remainingMatches: "",
+    maxScore: row.standingsPoints || 0,
+  }));
 }
 
 function s6StageLabel() {
@@ -2365,6 +2565,7 @@ function resetCrossTabFilters() {
   state.s6Pool = "overall";
   state.scheduleTeamFilter = "All";
   state.scheduleUnplayedOnly = false;
+  state.playerRoleFilter = "All";
 }
 
 function setDefaultStageForView() {
@@ -2413,6 +2614,102 @@ function renderScheduleFilters(rows) {
   els.scheduleFilters.classList.remove("hidden");
 }
 
+function scheduleImportOptions(rows) {
+  return rows
+    .filter((row) => row.season === "S6" && row.team && row.opponent)
+    .map((row) => ({
+      label: `${scheduleStageLabel(row.stage)} - ${row.round || "Round"} - ${displayName(row.team, "team")} vs ${displayName(row.opponent, "team")}`,
+      value: encodeURIComponent(JSON.stringify({
+        season: row.season,
+        stage: row.stage,
+        round: row.round,
+        home: row.team,
+        away: row.opponent,
+      })),
+    }));
+}
+
+function renderCsvImportPanel(rows) {
+  if (state.season !== "S6" || state.view !== "schedule" || state.page.type !== "dashboard") {
+    els.csvImportPanel.classList.add("hidden");
+    els.csvImportPanel.innerHTML = "";
+    return;
+  }
+  const options = scheduleImportOptions(rows);
+  const message = state.csvImportMessage ? `<p class="csv-import-message">${escapeHtml(state.csvImportMessage)}</p>` : "";
+  els.csvImportPanel.innerHTML = `
+    <div class="csv-import-card">
+      <div class="csv-import-head">
+        <div>
+          <h2>Replay CSV Import</h2>
+          <p>Upload matching Ballchasing team/player CSVs. Imports are additive and deduped by replay ID.</p>
+        </div>
+        <span>${importedReplaySeries.length} imported series</span>
+      </div>
+      <form id="csvImportForm" class="csv-import-form">
+        <label>
+          <span>Match</span>
+          <select id="csvImportSeries">
+            <option value="">Choose schedule matchup</option>
+            ${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}
+          </select>
+        </label>
+        <label>
+          <span>Round</span>
+          <input id="csvImportRound" type="text" value="${escapeHtml(state.s6Stage === "swiss" ? "Round 2" : "Group Stage")}" placeholder="Round 2">
+        </label>
+        <label>
+          <span>Home</span>
+          <input id="csvImportHome" type="text" placeholder="Home team">
+        </label>
+        <label>
+          <span>Away</span>
+          <input id="csvImportAway" type="text" placeholder="Away team">
+        </label>
+        <label>
+          <span>Team CSV</span>
+          <input id="csvImportTeamsFile" type="file" accept=".csv,text/csv">
+        </label>
+        <label>
+          <span>Player CSV</span>
+          <input id="csvImportPlayersFile" type="file" accept=".csv,text/csv">
+        </label>
+        <button type="submit"${state.csvImportBusy ? " disabled" : ""}>${state.csvImportBusy ? "Importing..." : "Import CSVs"}</button>
+      </form>
+      <div class="csv-import-actions">
+        <button type="button" data-clear-csv-imports>Clear imported CSV layer</button>
+        <small>Manual history and hardcoded stats are never cleared by this.</small>
+      </div>
+      ${message}
+    </div>
+  `;
+  els.csvImportPanel.classList.remove("hidden");
+}
+
+function renderPlayerFilters() {
+  if (state.page.type !== "dashboard" || state.view !== "players" || state.season !== "S6") {
+    els.playerFilters.classList.add("hidden");
+    els.playerFilters.innerHTML = "";
+    return;
+  }
+  const baseRows = playerRoleRows(s6StagePlayerRows().map((row) => ({ ...row, teamsText: row.teams ? row.teams.join(", ") : "" })));
+  const roles = [...new Set(baseRows.map((row) => row.role).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
+  if (state.playerRoleFilter !== "All" && !roles.includes(state.playerRoleFilter)) state.playerRoleFilter = "All";
+  els.playerFilters.innerHTML = `
+    <div class="player-role-strip">
+      <label>
+        <span>Role</span>
+        <select id="playerRoleSelect">
+          <option value="All"${state.playerRoleFilter === "All" ? " selected" : ""}>All Roles</option>
+          ${roles.map((role) => `<option value="${escapeHtml(role)}"${state.playerRoleFilter === role ? " selected" : ""}>Role ${escapeHtml(role)}</option>`).join("")}
+        </select>
+      </label>
+      <small>${state.playerRoleFilter === "All" ? "Award races and table use all roles." : `Award races and table use Role ${escapeHtml(state.playerRoleFilter)} only.`}</small>
+    </div>
+  `;
+  els.playerFilters.classList.remove("hidden");
+}
+
 function scheduleSeriesKey(season, stage, home, away) {
   const teams = [canonicalTeamName(home), canonicalTeamName(away)].sort().join("|");
   return [baseSeasonName(season), scheduleStageLabel(stage).toLowerCase(), teams].join("::");
@@ -2420,7 +2717,19 @@ function scheduleSeriesKey(season, stage, home, away) {
 
 function scheduleSeriesData(series) {
   const key = scheduleSeriesKey(series.season, series.stage, series.team, series.opponent);
-  return s6SwissSeriesGameStats.find((item) => scheduleSeriesKey(item.season, item.stage, item.home, item.away) === key) || null;
+  const matches = s6SwissSeriesGameStats.filter((item) => scheduleSeriesKey(item.season, item.stage, item.home, item.away) === key);
+  if (!matches.length) return null;
+  const gameMap = new Map();
+  matches.flatMap((item) => item.games || []).forEach((game) => {
+    if (!game?.id || gameMap.has(game.id)) return;
+    gameMap.set(game.id, game);
+  });
+  const games = [...gameMap.values()].sort((a, b) => {
+    const dateCompare = String(a.date || "").localeCompare(String(b.date || ""));
+    if (dateCompare) return dateCompare;
+    return String(a.game || "").localeCompare(String(b.game || ""), undefined, { numeric: true });
+  }).map((game, index) => ({ ...game, game: game.game || `Game ${index + 1}` }));
+  return { ...matches[0], games };
 }
 
 function scheduleGameData(page) {
@@ -3149,8 +3458,41 @@ function matchupComparisonMarkup(series) {
   `;
 }
 
+function scheduleUploadedSummary(row) {
+  if (!row.home || !row.away) return null;
+  const series = scheduleSeriesData({
+    season: row.season,
+    stage: row.stage || row.round || "",
+    team: row.home,
+    opponent: row.away,
+  });
+  if (!series?.games?.length) return null;
+  const home = canonicalTeamName(row.home);
+  const away = canonicalTeamName(row.away);
+  let homeWins = 0;
+  let awayWins = 0;
+  let homeGoals = 0;
+  let awayGoals = 0;
+  series.games.forEach((game) => {
+    const homeRow = gameTeamRow(game, home);
+    const awayRow = gameTeamRow(game, away);
+    if (!homeRow || !awayRow) return;
+    homeGoals += Number(homeRow.goals) || 0;
+    awayGoals += Number(awayRow.goals) || 0;
+    if ((Number(homeRow.goals) || 0) > (Number(awayRow.goals) || 0)) homeWins += 1;
+    else if ((Number(awayRow.goals) || 0) > (Number(homeRow.goals) || 0)) awayWins += 1;
+  });
+  const winner = homeWins > awayWins ? home : (awayWins > homeWins ? away : "");
+  return {
+    result: `(${homeGoals}) ${homeWins}-${awayWins} (${awayGoals})`,
+    winner,
+    note: winner ? "" : "Played - stats pending",
+  };
+}
+
 function scheduleManualRow(row) {
   const stage = row.stage || row.round || "";
+  const uploaded = scheduleUploadedSummary(row);
   return {
     season: row.season,
     stage,
@@ -3161,12 +3503,12 @@ function scheduleManualRow(row) {
     homePoints: row.homePoints || "",
     opponent: row.away || "",
     awayPoints: row.awayPoints || "",
-    result: row.result || "",
+    result: uploaded?.result || row.result || "",
     vod: row.vod || "",
-    winner: row.winner || "",
+    winner: uploaded?.winner || row.winner || "",
     matchRecord: row.matchRecord || "",
     standingsPoints: row.standingsPoints ?? "",
-    note: row.note || "",
+    note: uploaded ? uploaded.note : (row.note || ""),
   };
 }
 
@@ -3542,11 +3884,24 @@ function hasManualPlayerTeamSeason(player, team, season) {
 }
 
 function playerRoleRows(rows) {
-  const rated = [...rows]
-    .filter((row) => typeof row.rating === "number")
-    .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name));
-  const roles = new Map(rated.map((row, index) => [row.name, `${index + 1}`]));
-  return rows.map((row) => ({ ...row, role: roles.get(row.name) || "" }));
+  const roles = new Map();
+  const byTeam = new Map();
+  rows.forEach((row) => {
+    const team = canonicalTeamName(row.teams?.[0] || row.teamsText || "");
+    if (!team) return;
+    if (!byTeam.has(team)) byTeam.set(team, []);
+    byTeam.get(team).push(row);
+  });
+  byTeam.forEach((teamRows, team) => {
+    teamRows
+      .filter((row) => typeof row.rating === "number")
+      .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name))
+      .forEach((row, index) => roles.set(`${team}|${row.name}`, `${index + 1}`));
+  });
+  return rows.map((row) => {
+    const team = canonicalTeamName(row.teams?.[0] || row.teamsText || "");
+    return { ...row, role: roles.get(`${team}|${row.name}`) || "" };
+  });
 }
 
 function teamRoster(team, season) {
@@ -3765,7 +4120,8 @@ function rowsForDataset(view, season = state.season) {
     return s6StageTeamRows().map((row) => ({ ...row, teamsText: "" }));
   }
   if (season === "S6" && view === "players") {
-    return s6StagePlayerRows().map((row) => ({ ...row, teamsText: row.teams ? row.teams.join(", ") : "" }));
+    return playerRoleRows(s6StagePlayerRows().map((row) => ({ ...row, teamsText: row.teams ? row.teams.join(", ") : "" })))
+      .filter((row) => state.playerRoleFilter === "All" || row.role === state.playerRoleFilter);
   }
   if (season === "S5" && view === "teams" && ["split1", "split2"].includes(state.s5Stage)) {
     return s5FilterByPool(data.teams.filter((row) => row.season === "S5")).map((row) => ({ ...row, teamsText: "" }));
@@ -3803,21 +4159,10 @@ function standingsRows() {
   }
   if (state.season === "S6") {
     if (state.s6Stage === "swiss") {
-      return s6StageTeamRows("swiss", "overall")
-        .sort((a, b) => b.wins - a.wins || a.losses - b.losses || b.gameWinPct - a.gameWinPct || b.goalDiff - a.goalDiff || a.name.localeCompare(b.name))
-        .map((row, index) => ({
-          ...row,
-          standingsRank: index + 1,
-          matchRecord: `${row.wins || 0} - ${row.losses || 0}`,
-          gameRecord: `${row.gameWins || 0} - ${row.gameLosses || 0}`,
-          sweepsText: `${row.sweeps || 0} - ${row.gameFiveLosses || 0}`,
-          remainingMatches: "",
-          maxScore: row.standingsPoints || 0,
-        }));
+      return s6ComputedStandingsRows("swiss");
     }
     if (state.s6Stage === "overall") {
-      return s6OverallStandingsRows.map(s6StandingRow)
-        .map((row) => ({ ...row, remainingMatches: "", maxScore: row.standingsPoints || 0 }));
+      return s6ComputedStandingsRows("overall");
     }
     const isPoolView = state.s6Pool !== "overall";
     return s6FilterByPool(s6GroupStandingsRows.map(s6StandingRow))
@@ -3936,8 +4281,9 @@ function awardIconMarkup(name, className = "award-icon") {
   return src ? `<img class="${className}" src="${escapeHtml(src)}" alt="" aria-hidden="true">` : "";
 }
 
-function awardLabelMarkup(name, className = "award-icon") {
-  return `<span class="award-title">${awardIconMarkup(name, className)}<span>${escapeHtml(name)}</span></span>`;
+function awardLabelMarkup(name, className = "award-icon", prizeKinkMarker = false) {
+  const marker = prizeKinkMarker ? `<span class="pilot-prize-marker" title="This award is part of the Pilot Praise Kink Collection" aria-label="This award is part of the Pilot Praise Kink Collection">*</span>` : "";
+  return `<span class="award-title">${awardIconMarkup(name, className)}<span>${escapeHtml(name)}${marker}</span></span>`;
 }
 
 function awardFootnoteCode(name) {
@@ -3997,11 +4343,13 @@ function silverStrikerEligible(row) {
   return row.shots >= 72 || row.shotsPerGame > 2.25;
 }
 
-function awardRaceRows(definition) {
+function awardRaceRows(definition, sourceRows = null) {
   if (!definition || definition.season === "2026" || isNonRaceAwardName(definition.award)) {
     return (definition?.winners || []).map((name, index) => ({ rank: index + 1, name, teamsText: definition.team, games: "", total: definition.amount, average: definition.perGameAmount, extra: "" }));
   }
-  const contenders = seasonPlayerRows(definition.season)
+  const playerRows = sourceRows || seasonPlayerRows(definition.season);
+  const contenders = playerRows
+    .filter((row) => !row.season || row.season === definition.season)
     .filter((row) => definition.award !== "Silver Striker" || silverStrikerEligible(row))
     .sort((a, b) => b[definition.avgStat] - a[definition.avgStat] || b[definition.stat] - a[definition.stat]);
   const shootingRanks = new Map([...contenders].sort((a, b) => b.shootingPct - a.shootingPct).map((row, index) => [row.name, index + 1]));
@@ -4525,7 +4873,9 @@ function renderMiniLeaderGrid(target, items, actionType = null) {
     const color = item.teamColor || teamColor(item.team || item.name, item.season || state.season);
     const style = ` style="--team-color:${escapeHtml(color)}"`;
     const nameType = item.type === "team" || item.entity === "team" ? "team" : "name";
-    const label = awardIconFor(item.label) ? awardLabelMarkup(item.label, "mini-award-icon") : escapeHtml(item.label);
+    const prizeKinkMarker = item.prizeKinkMarker && awardIconFor(item.label);
+    const marker = item.prizeKinkMarker && !awardIconFor(item.label) ? `<span class="pilot-prize-marker" title="This award is part of the Pilot Praise Kink Collection" aria-label="This award is part of the Pilot Praise Kink Collection">*</span>` : "";
+    const label = awardIconFor(item.label) ? awardLabelMarkup(item.label, "mini-award-icon", prizeKinkMarker) : `${escapeHtml(item.label)}${marker}`;
     return `
       <button type="button" class="mini-leader-card"${style}${action}>
         <span class="${awardIconFor(item.label) ? "mini-award-label" : ""}">${label}</span>
@@ -4571,7 +4921,8 @@ function renderLeagueLeaderPanels(rows) {
   }
 
   teamPanel.querySelector("h2").textContent = `${panelSeason} Team League Leaders`;
-  awardPanel.querySelector("h2").textContent = `${panelSeason} Award Races`;
+  const awardSourceRows = state.view === "players" && panelSeason === "S6" ? rows : null;
+  awardPanel.querySelector("h2").textContent = awardSourceRows && state.playerRoleFilter !== "All" ? `${panelSeason} Role ${state.playerRoleFilter} Award Races` : `${panelSeason} Award Races`;
 
   const regularTeamRows = state.season === "All" ? rowsForDataset("teams", "All") : rowsForDataset("teams", panelSeason);
   const teamItems = teamLeagueStats.flatMap(([key, label, suffix = "", direction = "desc"]) => {
@@ -4581,7 +4932,7 @@ function renderLeagueLeaderPanels(rows) {
   if (showTeamPanel) renderMiniLeaderGrid(els.teamLeaderGrid, teamItems, (item) => ({ type: "sort", key: item.key, dir: item.direction }));
 
   const awardItems = awardRaceDefinitionsForSeason(panelSeason).map((award) => {
-    const raceRows = awardRaceRows(award);
+    const raceRows = awardRaceRows(award, awardSourceRows);
     const leader = raceRows[0];
     const leaders = leader ? raceRows.filter((row) => row.average === leader.average) : [];
     const leaderTeam = leaders.map((row) => row.teamsText).filter(Boolean).join(", ") || award.team || "";
@@ -4592,6 +4943,7 @@ function renderLeagueLeaderPanels(rows) {
       meta: leader ? `${leaderTeam ? `${leaderTeam} | ` : ""}${award.avgLabel ? `${award.avgLabel}: ${fmtStat(leader.average, award.avgStat)} | ` : ""}${award.totalLabel}: ${fmt(leader.total)}` : "",
       sortKey: award.avgStat,
       award,
+      prizeKinkMarker: awardSourceRows && ["2", "3"].includes(state.playerRoleFilter),
     };
   });
   if (showAwardPanel) renderMiniLeaderGrid(els.awardRaceGrid, awardItems, (item) => ({ type: "sort", key: item.sortKey, dir: "desc" }));
@@ -6292,6 +6644,10 @@ function render() {
   els.awardFilters.innerHTML = "";
   els.scheduleFilters.classList.add("hidden");
   els.scheduleFilters.innerHTML = "";
+  els.playerFilters.classList.add("hidden");
+  els.playerFilters.innerHTML = "";
+  els.csvImportPanel.classList.add("hidden");
+  els.csvImportPanel.innerHTML = "";
   els.detailActions.innerHTML = "";
   renderSearchSuggestions();
 
@@ -6407,6 +6763,7 @@ function render() {
       : (state.season === "S6" ? `${s6DashboardPrefix()} Schedule` : `${state.season} Schedule`);
     const rows = scheduleRows();
     renderScheduleFilters(rows);
+    renderCsvImportPanel(rows);
     renderTable(filteredScheduleRows(rows), scheduleColumns, title, (row) => row.team && row.opponent ? ({
       type: "scheduleSeries",
       season: row.season,
@@ -6424,6 +6781,7 @@ function render() {
 
   const rows = rowsForView();
   renderKpis(rows);
+  renderPlayerFilters();
   renderTable(rows, columnsForView(), dashboardTitle(), dashboardAction);
   renderPlayoffStats();
 }
@@ -6442,6 +6800,7 @@ els.seasonSelect.addEventListener("change", (event) => {
   if (state.view === "lifetimeTeams") state.view = "teams";
   if (state.view === "lifetimePlayers") state.view = "players";
   state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(selected) ? playoffSeasonName(selected) : selected;
+  if (state.season !== "S6") state.playerRoleFilter = "All";
   setDefaultStageForView();
   resetLifetimeEraFiltersIfNeeded();
   if (state.view === "standings") {
@@ -6571,6 +6930,82 @@ els.scheduleFilters.addEventListener("change", (event) => {
   }
   if (event.target.id === "scheduleUnplayedOnly") {
     state.scheduleUnplayedOnly = event.target.checked;
+    render();
+  }
+});
+
+els.playerFilters.addEventListener("change", (event) => {
+  if (event.target.id !== "playerRoleSelect") return;
+  state.playerRoleFilter = event.target.value;
+  render();
+});
+
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("Unable to read file."));
+    reader.readAsText(file);
+  });
+}
+
+els.csvImportPanel.addEventListener("change", (event) => {
+  if (event.target.id !== "csvImportSeries" || !event.target.value) return;
+  const selected = JSON.parse(decodeURIComponent(event.target.value));
+  const roundInput = els.csvImportPanel.querySelector("#csvImportRound");
+  const homeInput = els.csvImportPanel.querySelector("#csvImportHome");
+  const awayInput = els.csvImportPanel.querySelector("#csvImportAway");
+  if (roundInput) roundInput.value = selected.round || "";
+  if (homeInput) homeInput.value = displayName(selected.home, "team");
+  if (awayInput) awayInput.value = displayName(selected.away, "team");
+});
+
+els.csvImportPanel.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-clear-csv-imports]")) return;
+  importedReplaySeries.length = 0;
+  localStorage.removeItem(importedReplayStorageKey);
+  state.csvImportMessage = "Imported CSV layer cleared. Refresh the page to fully remove imported stat rows from the current session.";
+  render();
+});
+
+els.csvImportPanel.addEventListener("submit", async (event) => {
+  if (event.target.id !== "csvImportForm") return;
+  event.preventDefault();
+  const teamsFile = els.csvImportPanel.querySelector("#csvImportTeamsFile")?.files?.[0];
+  const playersFile = els.csvImportPanel.querySelector("#csvImportPlayersFile")?.files?.[0];
+  if (!teamsFile || !playersFile) {
+    state.csvImportMessage = "Choose both a team CSV and a player CSV.";
+    render();
+    return;
+  }
+  const selectedValue = els.csvImportPanel.querySelector("#csvImportSeries")?.value;
+  const selected = selectedValue ? JSON.parse(decodeURIComponent(selectedValue)) : {};
+  const round = els.csvImportPanel.querySelector("#csvImportRound")?.value || selected.round || "Imported";
+  const home = els.csvImportPanel.querySelector("#csvImportHome")?.value || selected.home;
+  const away = els.csvImportPanel.querySelector("#csvImportAway")?.value || selected.away;
+  try {
+    state.csvImportBusy = true;
+    state.csvImportMessage = "Importing CSV files...";
+    render();
+    const [teamsCsv, playersCsv] = await Promise.all([readTextFile(teamsFile), readTextFile(playersFile)]);
+    const series = compactSeriesFromCsv({
+      teamsCsv,
+      playersCsv,
+      season: selected.season || "S6",
+      stage: selected.stage || "Swiss",
+      round,
+      home,
+      away,
+    });
+    const accepted = applyImportedReplaySeries([series], { persist: true });
+    const importedGames = accepted.reduce((sum, item) => sum + (item.games?.length || 0), 0);
+    state.csvImportMessage = importedGames
+      ? `Imported ${importedGames} new replay game${importedGames === 1 ? "" : "s"} for ${displayName(series.home, "team")} vs ${displayName(series.away, "team")}.`
+      : "No new replay games imported because those replay IDs are already in the dashboard.";
+  } catch (error) {
+    state.csvImportMessage = error.message || "Unable to import those CSV files.";
+  } finally {
+    state.csvImportBusy = false;
     render();
   }
 });

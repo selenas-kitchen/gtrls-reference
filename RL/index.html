@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=s6-team-per-player-sum-20260802">
+  <link rel="stylesheet" href="styles.css?v=s6-role-award-prize-marker-20260802">
 </head>
 <body>
   <header class="topbar">
@@ -42,10 +42,12 @@
       </div>
       <div class="patch-notes-body">
         <p>S6 team PER now recalculates from the sum of each player's PER on that team, so team totals match the player table.</p>
+        <p>S6 Overall and Swiss standings now recalculate from the same combined team-stat rows, including uploaded Swiss Round 2 results.</p>
         <p>PER/G for S6 teams now follows that summed team PER divided by team games across Group Stage, Swiss, and Overall views.</p>
         <p>Loaded four S6 Swiss Round 2 stat files: HLB/BCST, Past/ESC, Cox/Giga's, and Supernova/Spirit.</p>
-        <p>S6 Swiss schedule shows Round 2 results, the BFC/Crossbar pending matchup, and Quack Wok vs Deceptitards as played with stats pending.</p>
+        <p>S6 Swiss schedule now includes Quack Wok vs Deceptitards game stats, with Quack Wok taking the series 3-2 and Deceptitards receiving the game-five loss point.</p>
         <p>Round 3 Swiss matchups and bye notes are loaded, including the BFC/Crossbar winner and loser placeholders.</p>
+        <p>Added CSV imports for replay stat files. New uploads are stored as an imported layer and deduped by replay ID, so historical manual data stays untouched.</p>
       </div>
     </article>
   </section>
@@ -153,6 +155,8 @@
 
     <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
     <section id="scheduleFilters" class="award-filters hidden" aria-label="Schedule filters"></section>
+    <section id="playerFilters" class="award-filters hidden" aria-label="Player filters"></section>
+    <section id="csvImportPanel" class="csv-import-panel hidden" aria-label="CSV import panel"></section>
     <section id="analyticsModeControl" class="analytics-mode-control hidden" aria-label="Analytics view">
       <button type="button" data-analytics-mode="selena" class="active">Selena's Kitchen</button>
       <button type="button" data-analytics-mode="your">Your Kitchen</button>
@@ -196,7 +200,7 @@
   </main>
 
   <script src="dashboard-data.js"></script>
-  <script src="manual-history.js?v=s6-team-per-player-sum-20260802"></script>
-  <script src="app.js?v=s6-team-per-player-sum-20260802"></script>
+  <script src="manual-history.js?v=s6-player-role-filter-20260802"></script>
+  <script src="app.js?v=s6-role-award-prize-marker-20260802"></script>
 </body>
 </html>

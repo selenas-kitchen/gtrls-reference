@@ -1260,7 +1260,7 @@ Demoted Team	(0) 0-0 (0)
 (0) 0-0 (0)
 `),
     ...[
-      ["Round 2", "Quack Wok", "Played", "Deceptitards", "Played - stats pending"],
+      ["Round 2", "Quack Wok", "Played", "Deceptitards", "Played"],
       ["Round 3", "2-0 Bye 1", "", "", "+2"],
       ["Round 3", "2-0 Bye 2", "", "", "+2"],
       ["Round 3", "2-0 Bye 3", "", "", "+2"],
