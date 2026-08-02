@@ -44,7 +44,6 @@ const playerAliasMap = new Map([
   ["RAVENGLITCH", "Ravenglitch"],
   ["EPO", "EPo -_-"],
   ["SQUID", "KWNSquid"],
-  ["SQUIRT", "Ramen"],
   ["STARZYRL", "ttv_starzyrl"],
   ["SIRVANTZ", "Sir_vantzzz"],
   ["SIRVANTZZ", "Sir_vantzzz"],
@@ -52,10 +51,6 @@ const playerAliasMap = new Map([
   ["VANTZ", "Sir_vantzzz"],
   ["VANTTZZ", "Sir_vantzzz"],
   ["VIZPICK", "Vizpick"],
-  ["BURT", "Ravenglitch"],
-  ["NEMHYROSHI", "Hyroshi"],
-  ["TGSLOSTMOSS", "TGS_Lostmoss"],
-  ["PILOTSG1", "Pilot_SG1"],
 ]);
 
 const teamAliasMap = new Map([
@@ -65,21 +60,14 @@ const teamAliasMap = new Map([
   ["HOOKLINEBLINKER", "Hook Line & Blinker"],
   ["HOOKLINEANDBLINKER", "Hook Line & Blinker"],
   ["HLBLINKER", "Hook Line & Blinker"],
-  ["HLB", "Hook Line & Blinker"],
   ["BALLCHASINSAUCETASTIN", "Ball Chasin & Sauce Tastin"],
   ["BALLCHASINANDSAUCETASTIN", "Ball Chasin & Sauce Tastin"],
-  ["BCST", "Ball Chasin & Sauce Tastin"],
-  ["BCANDST", "Ball Chasin & Sauce Tastin"],
   ["SPIRITAIRLINES", "Spirit Airlines"],
   ["THECOX", "The Cox"],
   ["PASTOURPRIME", "Past Our Prime"],
-  ["POP", "Past Our Prime"],
   ["QUACKWOK", "Quack Wok"],
-  ["QUACKWOKS", "Quack Wok"],
   ["CROSSBARCARTEL", "Crossbar Cartel"],
-  ["BFC", "Best Friends Club"],
   ["DECEPTITARDS", "Deceptitards"],
-  ["DEC", "Deceptitards"],
   ["SUPERNOVAABYSS", "Supernova Abyss"],
   ["BIRDBATHBOMBERS", "BBB"],
   ["BIGMUSTYMILKERS", "BMM"],
@@ -510,18 +498,18 @@ const s6AccruedBonuses = {
 };
 
 const s6OverallStandingsRows = [
-  ["Hook Line & Blinker", 1, 19, "7 - 0", 39, "21 - 8", 2, 0, 3],
-  ["Past Our Prime", 2, 17, "6 - 1", 15, "20 - 12", 1, 1, 3],
-  ["The Cox", 3, 17, "5 - 2", 22, "18 - 8", 4, 1, 2],
-  ["Supernova Abyss", 4, 14, "4 - 3", 3, "16 - 12", 2, 2, 2],
-  ["Ball Chasin & Sauce Tastin", 5, 13, "4 - 3", 12, "18 - 14", 1, 3, 1],
-  ["Giga's In Paris", 6, 12, "4 - 3", 10, "13 - 11", 2, 0, 2],
-  ["ESC", 7, 11, "4 - 3", 16, "13 - 13", 2, 0, 1],
-  ["Quack Wok", 8, 9, "2 - 4", -10, "11 - 14", 1, 2, 2],
-  ["Best Friends Club", 9, 7, "2 - 4", -32, "11 - 16", 0, 2, 1],
-  ["Spirit Airlines", 10, 4, "1 - 5", -26, "7 - 16", 0, 2, 0],
+  ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, 3],
+  ["Past Our Prime", 2, 13, "5 - 0", 12, "15 - 9", 0, 0, 3],
+  ["Giga's In Paris", 3, 12, "4 - 2", 14, "13 - 8", 2, 0, 2],
+  ["The Cox", 4, 11, "3 - 2", 11, "12 - 8", 2, 1, 2],
+  ["Supernova Abyss", 5, 11, "3 - 3", -4, "13 - 12", 1, 2, 2],
+  ["Ball Chasin & Sauce Tastin", 6, 9, "3 - 2", 5, "13 - 11", 0, 2, 1],
+  ["ESC", 7, 9, "3 - 3", 14, "10 - 11", 2, 0, 1],
+  ["Quack Wok", 8, 9, "2 - 3", -3, "11 - 11", 1, 2, 2],
+  ["Best Friends Club", 9, 7, "2 - 3", -25, "11 - 13", 0, 2, 1],
+  ["Spirit Airlines", 10, 4, "1 - 4", -21, "7 - 13", 0, 2, 0],
   ["Crossbar Cartel", 11, 4, "1 - 5", -27, "6 - 17", 0, 1, 1],
-  ["Deceptitards", 12, 3, "0 - 6", -13, "8 - 18", 0, 3, 0],
+  ["Deceptitards", 12, 3, "0 - 5", -7, "7 - 15", 0, 3, 0],
 ];
 
 const poolTiebreakRules = [
@@ -781,169 +769,6 @@ const s6SwissSeriesGameStats = [
     ],
   },
 ];
-
-function s6TeamRating(teamName) {
-  const canonical = canonicalTeamName(teamName);
-  return s6OverallTeamRows.find((row) => canonicalTeamName(row[0]) === canonical)?.[1] || 0;
-}
-
-function s6PlayerRating(playerName) {
-  const canonical = canonicalPlayerName(playerName);
-  return s6OverallPlayerRows.find((row) => canonicalPlayerName(row[1]) === canonical)?.[11] || 0;
-}
-
-function compactSwissTeam(row, winner) {
-  const [team, opponent, score, goals, assists, saves, shots, shotsConceded, goalsConceded, amountStolen, demosInflicted, demosTaken] = row;
-  return {
-    team: canonicalTeamName(team),
-    opponent: canonicalTeamName(opponent),
-    result: canonicalTeamName(team) === canonicalTeamName(winner) ? "win" : "loss",
-    score,
-    goals,
-    assists,
-    saves,
-    shots,
-    shotsConceded,
-    goalsConceded,
-    amountStolen,
-    demosInflicted,
-    demosTaken,
-  };
-}
-
-function compactSwissPlayer(row) {
-  const [team, name, score, goals, assists, saves, shots, amountStolen, demosInflicted, demosTaken] = row;
-  return {
-    team: canonicalTeamName(team),
-    name: canonicalPlayerName(name),
-    score,
-    goals,
-    assists,
-    saves,
-    shots,
-    amountStolen,
-    demosInflicted,
-    demosTaken,
-  };
-}
-
-function addCompactS6SwissSeries(seriesList) {
-  seriesList.forEach((series) => {
-    const hydrated = {
-      season: series.season,
-      stage: series.stage,
-      round: series.round,
-      home: canonicalTeamName(series.home),
-      away: canonicalTeamName(series.away),
-      games: series.games.map((game) => ({
-        ...game,
-        winner: canonicalTeamName(game.winner),
-        teams: game.teams.map((row) => compactSwissTeam(row, game.winner)),
-        players: game.players.map(compactSwissPlayer),
-      })),
-    };
-
-    const teamAgg = new Map();
-    const playerAgg = new Map();
-    const seriesWins = new Map();
-    hydrated.games.forEach((game) => {
-      seriesWins.set(game.winner, (seriesWins.get(game.winner) || 0) + 1);
-      game.teams.forEach((row) => {
-        if (!teamAgg.has(row.team)) {
-          teamAgg.set(row.team, {
-            name: row.team,
-            rating: s6TeamRating(row.team),
-            games: 0,
-            score: 0,
-            goals: 0,
-            goalsConceded: 0,
-            assists: 0,
-            saves: 0,
-            shots: 0,
-            shotsConceded: 0,
-            amountStolen: 0,
-            demosInflicted: 0,
-            demosTaken: 0,
-            opponentSavesForced: 0,
-          });
-        }
-        const item = teamAgg.get(row.team);
-        const opponent = game.teams.find((candidate) => candidate.team !== row.team);
-        item.games += 1;
-        ["score", "goals", "goalsConceded", "assists", "saves", "shots", "shotsConceded", "amountStolen", "demosInflicted", "demosTaken"].forEach((field) => {
-          item[field] += Number(row[field]) || 0;
-        });
-        item.opponentSavesForced += Number(opponent?.saves || 0);
-      });
-
-      const winningPlayers = game.players.filter((row) => row.team === game.winner);
-      const gameMvp = winningPlayers.sort((a, b) => b.score - a.score || b.goals - a.goals || b.saves - a.saves)[0];
-      game.players.forEach((row) => {
-        const key = `${row.team}|${row.name}`;
-        if (!playerAgg.has(key)) {
-          playerAgg.set(key, {
-            team: row.team,
-            name: row.name,
-            games: 0,
-            score: 0,
-            goals: 0,
-            assists: 0,
-            saves: 0,
-            shots: 0,
-            demosInflicted: 0,
-            demosTaken: 0,
-            mvps: 0,
-            amountStolen: 0,
-          });
-        }
-        const item = playerAgg.get(key);
-        item.games += 1;
-        ["score", "goals", "assists", "saves", "shots", "demosInflicted", "demosTaken", "amountStolen"].forEach((field) => {
-          item[field] += Number(row[field]) || 0;
-        });
-        if (gameMvp && gameMvp.team === row.team && gameMvp.name === row.name) item.mvps += 1;
-      });
-    });
-
-    teamAgg.forEach((item, team) => {
-      const wins = seriesWins.get(team) || 0;
-      const opponent = [...teamAgg.keys()].find((name) => name !== team);
-      const losses = seriesWins.get(opponent) || 0;
-      item.wins = wins > losses ? 1 : 0;
-      item.losses = losses > wins ? 1 : 0;
-      item.gameWins = wins;
-      item.gameLosses = losses;
-      item.sweeps = wins === 3 && losses === 0 ? 1 : 0;
-      item.gameFiveLosses = losses === 3 && wins === 2 ? 1 : 0;
-      item.standingsPoints = swissLeagueScore(item);
-      item.per = Math.round(((0.1 * item.goals) + (0.05 * item.assists) + ((2 / 30) * item.saves) + (0.01 * item.shots) - (0.1 * item.games)) * 100) / 100;
-      item.perPerGame = Math.round((item.per / Math.max(1, item.games)) * 100) / 100;
-      s6SwissTeamRows.push(item);
-    });
-
-    playerAgg.forEach((item) => {
-      s6SwissPlayerRows.push([
-        item.team, item.name, item.games, item.score, item.goals, item.assists, item.saves, item.shots,
-        item.demosInflicted, item.demosTaken, item.mvps, item.amountStolen, s6PlayerRating(item.name),
-      ]);
-    });
-    s6SwissSeriesGameStats.push(hydrated);
-  });
-}
-
-addCompactS6SwissSeries([
-  {"season":"S6","stage":"Swiss","round":"Round 1","home":"Past Our Prime","away":"Spirit Airlines","games":[{"id":"2be7a549-6654-4536-aa05-cdf9fd376da2","game":"Game 1","date":"2026-07-24","winner":"Past Our Prime","teams":[["Past Our Prime","Spirit Airlines",1326,4,3,5,9,8,1,1260,1,5],["Spirit Airlines","Past Our Prime",834,1,1,4,8,9,4,1472,5,1]],"players":[["Past Our Prime","AtownSteelers",524,2,1,1,5,377,0,0],["Past Our Prime","MerkWTM",251,1,0,1,1,371,1,1],["Past Our Prime","RoyalxRenegade",551,1,2,3,3,512,0,4],["Spirit Airlines","JulietAlphaRomeo",266,0,1,2,3,452,1,1],["Spirit Airlines","dailcowgs94",374,1,0,0,2,548,0,0],["Spirit Airlines","MadJanitor88",194,0,0,2,3,472,4,0]]},{"id":"7685c99d-b9f7-4d5e-9b39-4385b1432ef1","game":"Game 2","date":"2026-07-24","winner":"Past Our Prime","teams":[["Spirit Airlines","Past Our Prime",560,1,0,2,6,9,2,912,1,2],["Past Our Prime","Spirit Airlines",868,2,2,3,9,6,1,1348,2,1]],"players":[["Past Our Prime","MerkWTM",118,0,0,0,3,632,2,1],["Past Our Prime","AtownSteelers",404,2,0,1,2,316,0,0],["Past Our Prime","RoyalxRenegade",346,0,2,2,4,400,0,0],["Spirit Airlines","MadJanitor88",72,0,0,0,1,166,1,0],["Spirit Airlines","dailcowgs94",236,1,0,0,1,159,0,1],["Spirit Airlines","JulietAlphaRomeo",252,0,0,2,4,587,0,1]]},{"id":"ede08820-facd-4687-be15-e27231626e6c","game":"Game 3","date":"2026-07-24","winner":"Past Our Prime","teams":[["Past Our Prime","Spirit Airlines",1185,3,3,5,9,7,2,1681,2,2],["Spirit Airlines","Past Our Prime",1065,2,1,5,7,9,3,1157,2,2]],"players":[["Past Our Prime","MerkWTM",280,2,0,0,3,442,1,0],["Past Our Prime","AtownSteelers",358,1,1,1,3,487,0,0],["Past Our Prime","RoyalxRenegade",547,0,2,4,3,752,1,2],["Spirit Airlines","MadJanitor88",288,2,0,0,2,285,0,0],["Spirit Airlines","dailcowgs94",408,0,0,3,2,423,2,2],["Spirit Airlines","JulietAlphaRomeo",369,0,1,2,3,449,0,0]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 1","home":"The Cox","away":"Best Friends Club","games":[{"id":"4feea621-143e-4593-bc99-d06c8aed3d34","game":"Game 1","date":"2026-07-22","winner":"The Cox","teams":[["The Cox","Best Friends Club",790,2,0,2,9,3,1,1144,2,3],["Best Friends Club","The Cox",955,1,0,7,3,9,2,1181,3,2]],"players":[["The Cox","CoalTrainLLC",185,0,0,1,2,455,0,0],["The Cox","Hyroshi",58,0,0,0,0,302,2,1],["The Cox","roo",547,2,0,1,7,387,0,2],["Best Friends Club","greenarrowspark2",257,0,0,3,1,518,1,0],["Best Friends Club","TheLakeEffekt",247,0,0,1,0,442,0,0],["Best Friends Club","I_have_a_bag",451,1,0,3,2,221,2,2]]},{"id":"48c026d4-3218-4ef7-83cd-ac0b8b51811a","game":"Game 2","date":"2026-07-22","winner":"The Cox","teams":[["The Cox","Best Friends Club",1595,6,5,2,14,3,1,1133,5,1],["Best Friends Club","The Cox",904,1,1,6,3,14,6,922,1,5]],"players":[["The Cox","CoalTrainLLC",432,2,1,0,7,260,1,0],["The Cox","Hyroshi",341,0,3,1,1,340,3,1],["The Cox","roo",822,4,1,1,6,533,1,0],["Best Friends Club","I_have_a_bag",192,0,1,0,1,428,0,1],["Best Friends Club","TheLakeEffekt",566,1,0,5,2,177,1,2],["Best Friends Club","greenarrowspark2",146,0,0,1,0,317,0,2]]},{"id":"b180d26f-ccb1-41e5-9d85-090edc4120d5","game":"Game 3","date":"2026-07-22","winner":"The Cox","teams":[["The Cox","Best Friends Club",1234,4,2,4,10,8,3,1100,2,2],["Best Friends Club","The Cox",1014,3,2,4,8,10,4,847,2,2]],"players":[["The Cox","CoalTrainLLC",332,1,0,1,3,409,1,0],["The Cox","Hyroshi",206,0,2,1,0,179,0,1],["The Cox","roo",696,3,0,2,7,512,1,1],["Best Friends Club","greenarrowspark2",230,1,0,0,4,495,2,1],["Best Friends Club","I_have_a_bag",500,2,1,2,3,67,0,0],["Best Friends Club","TheLakeEffekt",284,0,1,2,1,285,0,1]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 1","home":"Hook Line & Blinker","away":"Deceptitards","games":[{"id":"b7bc533c-9ffa-4425-8f28-9ab2201f9da3","game":"Game 1","date":"2026-07-21","winner":"Hook Line & Blinker","teams":[["Deceptitards","Hook Line & Blinker",1082,2,2,5,4,10,3,1362,6,3],["Hook Line & Blinker","Deceptitards",975,3,2,1,10,4,2,1594,3,6]],"players":[["Hook Line & Blinker","Bubbles3913",446,1,1,1,3,565,2,4],["Hook Line & Blinker","NeonLightning20",140,0,1,0,3,528,1,0],["Hook Line & Blinker","Ramen",389,2,0,0,4,501,0,2],["Deceptitards","Ravenglitch",308,1,0,2,1,100,0,2],["Deceptitards","DukeofDope7",306,0,2,1,1,486,4,0],["Deceptitards","MegatronMD",468,1,0,2,2,776,2,1]]},{"id":"7e689e32-551f-4fb5-a516-410df53b349c","game":"Game 2","date":"2026-07-21","winner":"Deceptitards","teams":[["Hook Line & Blinker","Deceptitards",938,2,2,5,6,7,3,1573,1,2],["Deceptitards","Hook Line & Blinker",999,3,1,4,7,6,2,838,2,1]],"players":[["Hook Line & Blinker","Bubbles3913",386,1,1,2,2,603,1,0],["Hook Line & Blinker","NeonLightning20",258,0,1,2,3,392,0,0],["Hook Line & Blinker","Ramen",294,1,0,1,1,578,0,2],["Deceptitards","Ravenglitch",395,1,1,2,2,98,0,0],["Deceptitards","DukeofDope7",70,0,0,0,2,286,0,0],["Deceptitards","MegatronMD",534,2,0,2,3,454,2,1]]},{"id":"6b8f8a47-d7fb-4f45-8130-8d063e2a63d6","game":"Game 3","date":"2026-07-21","winner":"Hook Line & Blinker","teams":[["Hook Line & Blinker","Deceptitards",1401,6,3,2,13,3,1,1164,2,5],["Deceptitards","Hook Line & Blinker",623,1,1,3,3,13,6,1532,5,2]],"players":[["Hook Line & Blinker","Bubbles3913",639,3,1,0,5,397,0,0],["Hook Line & Blinker","NeonLightning20",416,2,1,1,2,378,0,3],["Hook Line & Blinker","Ramen",346,1,1,1,6,389,2,2],["Deceptitards","Ravenglitch",146,0,1,0,2,281,0,1],["Deceptitards","MegatronMD",399,1,0,3,1,995,4,1],["Deceptitards","DukeofDope7",78,0,0,0,0,256,1,0]]},{"id":"2f656b69-c01a-441c-9381-0331c6575fe5","game":"Game 4","date":"2026-07-22","winner":"Hook Line & Blinker","teams":[["Hook Line & Blinker","Deceptitards",1109,3,3,2,7,4,2,1982,1,5],["Deceptitards","Hook Line & Blinker",954,2,1,4,4,7,3,1677,5,1]],"players":[["Hook Line & Blinker","Bubbles3913",484,2,1,1,2,918,1,2],["Hook Line & Blinker","Ramen",378,0,2,1,1,784,0,2],["Hook Line & Blinker","NeonLightning20",247,1,0,0,4,280,0,1],["Deceptitards","Ravenglitch",320,1,1,1,1,327,2,1],["Deceptitards","DukeofDope7",200,0,0,2,0,348,2,0],["Deceptitards","MegatronMD",434,1,0,1,3,1002,1,0]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 1","home":"Quack Wok","away":"Ball Chasin & Sauce Tastin","games":[{"id":"9c2356d2-e9d8-48d4-bc58-50f7ca86ed55","game":"Game 1","date":"2026-07-20","winner":"Ball Chasin & Sauce Tastin","teams":[["Ball Chasin & Sauce Tastin","Quack Wok",1278,5,4,2,10,5,2,856,4,4],["Quack Wok","Ball Chasin & Sauce Tastin",706,2,0,3,5,10,5,1167,4,4]],"players":[["Quack Wok","Original_6_Hawks",266,1,0,1,2,404,2,3],["Quack Wok","LIL HATED ONE",152,1,0,0,1,282,2,0],["Quack Wok","godfatherjones",288,0,0,2,2,481,0,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",296,1,0,1,1,232,2,3],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",468,2,2,1,3,238,1,0],["Ball Chasin & Sauce Tastin","CROCOKYLE",514,2,2,0,6,386,1,1]]},{"id":"044f3aaf-7c82-4beb-8f13-7378c9bd4c16","game":"Game 2","date":"2026-07-21","winner":"Ball Chasin & Sauce Tastin","teams":[["Ball Chasin & Sauce Tastin","Quack Wok",1177,3,2,4,11,5,1,1755,2,1],["Quack Wok","Ball Chasin & Sauce Tastin",793,1,0,5,5,11,3,973,1,2]],"players":[["Quack Wok","Original_6_Hawks",384,1,0,2,2,542,0,1],["Quack Wok","LIL HATED ONE",135,0,0,1,2,187,1,0],["Quack Wok","godfatherjones",274,0,0,2,1,244,0,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",454,0,2,2,2,465,2,0],["Ball Chasin & Sauce Tastin","CROCOKYLE",367,1,0,1,5,749,0,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",356,2,0,1,4,541,0,0]]},{"id":"c60e9120-2c95-4dd0-b8ae-c42c83a3576f","game":"Game 3","date":"2026-07-21","winner":"Ball Chasin & Sauce Tastin","teams":[["Quack Wok","Ball Chasin & Sauce Tastin",795,1,1,3,9,8,3,1607,2,5],["Ball Chasin & Sauce Tastin","Quack Wok",1077,3,2,5,8,9,1,1374,5,2]],"players":[["Quack Wok","Original_6_Hawks",312,0,1,0,7,423,0,3],["Quack Wok","LIL HATED ONE",220,1,0,1,1,555,1,0],["Quack Wok","godfatherjones",263,0,0,2,1,629,1,2],["Ball Chasin & Sauce Tastin","Pilot_SG1",312,1,0,2,1,361,3,1],["Ball Chasin & Sauce Tastin","CROCOKYLE",542,2,1,2,6,608,2,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",223,0,1,1,1,405,0,0]]}]},
-]);
-
-addCompactS6SwissSeries([
-  {"season":"S6","stage":"Swiss","round":"Round 2","home":"Hook Line & Blinker","away":"Ball Chasin & Sauce Tastin","games":[{"id":"f0a05158-abd9-4e59-8b4f-2ca9d2ba23d7","game":"Game 1","date":"2026-07-30","winner":"Hook Line & Blinker","teams":[["Ball Chasin & Sauce Tastin","Hook Line & Blinker",1289,4,2,6,9,12,5,1049,3,1],["Hook Line & Blinker","Ball Chasin & Sauce Tastin",1402,5,4,4,12,9,4,1388,1,3]],"players":[["Hook Line & Blinker","Bubbles3913",288,0,1,1,3,797,0,1],["Hook Line & Blinker","NeonLightning20",515,3,1,1,4,330,0,1],["Hook Line & Blinker","Ramen",599,2,2,2,5,261,1,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",450,2,1,1,3,424,2,0],["Ball Chasin & Sauce Tastin","CROCOKYLE",493,1,1,2,4,560,0,0],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",346,1,0,3,2,65,1,1]]},{"id":"95cbe2de-2242-4855-bcaa-962024098dc4","game":"Game 2","date":"2026-07-29","winner":"Ball Chasin & Sauce Tastin","teams":[["Hook Line & Blinker","Ball Chasin & Sauce Tastin",650,1,1,2,4,6,5,1682,2,6],["Ball Chasin & Sauce Tastin","Hook Line & Blinker",1191,5,2,2,6,4,1,1593,6,2]],"players":[["Hook Line & Blinker","Bubbles3913",186,0,1,1,1,593,1,0],["Hook Line & Blinker","NeonLightning20",100,0,0,0,0,575,1,1],["Hook Line & Blinker","Ramen",364,1,0,1,3,514,0,5],["Ball Chasin & Sauce Tastin","Pilot_SG1",322,1,2,0,3,492,2,0],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",406,1,0,2,1,550,2,1],["Ball Chasin & Sauce Tastin","CROCOKYLE",463,3,0,0,2,551,2,1]]},{"id":"3f90e24b-90df-4299-a9ff-46a4911685d6","game":"Game 3","date":"2026-07-30","winner":"Hook Line & Blinker","teams":[["Hook Line & Blinker","Ball Chasin & Sauce Tastin",1230,4,4,1,10,4,1,1801,5,2],["Ball Chasin & Sauce Tastin","Hook Line & Blinker",546,1,0,2,4,10,4,1002,2,5]],"players":[["Hook Line & Blinker","Bubbles3913",336,1,2,0,3,644,1,0],["Hook Line & Blinker","Ramen",682,3,1,1,5,806,3,1],["Hook Line & Blinker","NeonLightning20",212,0,1,0,2,351,1,1],["Ball Chasin & Sauce Tastin","CROCOKYLE",264,1,0,0,3,316,0,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",162,0,0,1,1,353,0,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",120,0,0,1,0,333,2,3]]},{"id":"fa05e4bc-e9c4-4a27-ab4b-46840c959ba7","game":"Game 4","date":"2026-07-30","winner":"Hook Line & Blinker","teams":[["Hook Line & Blinker","Ball Chasin & Sauce Tastin",983,3,2,4,5,7,1,1710,2,5],["Ball Chasin & Sauce Tastin","Hook Line & Blinker",728,1,1,2,7,5,3,857,5,2]],"players":[["Hook Line & Blinker","Bubbles3913",373,1,0,3,2,527,0,3],["Hook Line & Blinker","NeonLightning20",100,0,1,0,0,453,0,1],["Hook Line & Blinker","Ramen",510,2,1,1,3,730,2,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",228,0,0,1,4,172,1,0],["Ball Chasin & Sauce Tastin","CROCOKYLE",320,1,0,0,3,245,3,2],["Ball Chasin & Sauce Tastin","Pilot_SG1",180,0,1,1,0,440,1,0]]},{"id":"d25740a8-f148-4065-be09-ee6f5accfd7e","game":"Game 5","date":"2026-07-30","winner":"Ball Chasin & Sauce Tastin","teams":[["Hook Line & Blinker","Ball Chasin & Sauce Tastin",632,1,1,2,3,6,3,1034,5,2],["Ball Chasin & Sauce Tastin","Hook Line & Blinker",838,3,2,2,6,3,1,1057,2,5]],"players":[["Hook Line & Blinker","Bubbles3913",246,0,1,1,1,408,2,0],["Hook Line & Blinker","NeonLightning20",64,0,0,0,0,137,0,2],["Hook Line & Blinker","Ramen",322,1,0,1,2,489,3,0],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",158,0,1,0,0,536,1,3],["Ball Chasin & Sauce Tastin","CROCOKYLE",480,2,1,1,4,232,1,0],["Ball Chasin & Sauce Tastin","Pilot_SG1",200,1,0,1,2,289,0,2]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 2","home":"Past Our Prime","away":"ESC","games":[{"id":"0ef4388c-a9db-4722-b9cb-26505f7c314c","game":"Game 1","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",1082,3,2,4,8,5,1,1426,1,2],["Past Our Prime","ESC",842,1,1,4,5,8,3,1291,2,1]],"players":[["ESC","EPo -_-",537,2,1,2,3,393,0,0],["ESC","Clamp2much",335,0,1,2,2,364,0,0],["ESC","SirSkittleZ",210,1,0,0,3,669,1,2],["Past Our Prime","AtownSteelers",104,0,0,0,0,339,1,0],["Past Our Prime","MerkWTM",242,0,1,2,1,181,1,1],["Past Our Prime","RoyalxRenegade",496,1,0,2,4,771,0,0]]},{"id":"00537806-7d9c-4c65-9146-bf63fa2f2b67","game":"Game 2","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",886,2,2,4,4,6,1,1085,3,2],["Past Our Prime","ESC",598,1,1,0,6,4,2,1495,2,3]],"players":[["ESC","EPo -_-",348,1,1,2,1,310,1,1],["ESC","Clamp2much",240,0,1,1,2,250,0,1],["ESC","SirSkittleZ",298,1,0,1,1,525,2,0],["Past Our Prime","AtownSteelers",98,0,0,0,2,518,0,1],["Past Our Prime","MerkWTM",288,1,0,0,2,516,0,0],["Past Our Prime","RoyalxRenegade",212,0,1,0,2,461,2,2]]},{"id":"00ebf326-7e9b-44c9-b905-fcea584e864f","game":"Game 3","date":"2026-07-29","winner":"ESC","teams":[["ESC","Past Our Prime",968,2,2,4,9,6,1,1641,4,0],["Past Our Prime","ESC",1007,1,1,7,6,9,2,1511,0,4]],"players":[["ESC","EPo -_-",533,2,0,2,4,615,2,0],["ESC","Clamp2much",148,0,1,1,3,223,0,0],["ESC","SirSkittleZ",287,0,1,1,2,803,2,0],["Past Our Prime","AtownSteelers",400,1,0,3,2,655,0,0],["Past Our Prime","MerkWTM",211,0,1,1,0,335,0,2],["Past Our Prime","RoyalxRenegade",396,0,0,3,4,521,0,2]]},{"id":"b96b39ef-3448-4525-8552-5a5ad95a0bbd","game":"Game 4","date":"2026-07-29","winner":"Past Our Prime","teams":[["ESC","Past Our Prime",691,1,0,3,6,5,2,1010,3,1],["Past Our Prime","ESC",1014,2,1,5,5,6,1,1051,1,3]],"players":[["ESC","Clamp2much",130,0,0,1,1,137,0,0],["ESC","EPo -_-",417,1,0,2,3,301,2,1],["ESC","SirSkittleZ",144,0,0,0,2,572,1,0],["Past Our Prime","MerkWTM",176,0,0,1,1,383,1,2],["Past Our Prime","AtownSteelers",220,1,0,0,0,161,0,1],["Past Our Prime","RoyalxRenegade",618,1,1,4,4,507,0,0]]},{"id":"b6d5dc75-86a8-4efb-bc9e-bbfc178055ef","game":"Game 5","date":"2026-07-29","winner":"Past Our Prime","teams":[["ESC","Past Our Prime",548,0,0,2,3,5,1,1187,5,1],["Past Our Prime","ESC",831,1,0,3,5,3,0,1120,1,5]],"players":[["ESC","EPo -_-",236,0,0,0,1,550,1,0],["ESC","Clamp2much",144,0,0,1,1,133,1,1],["ESC","SirSkittleZ",168,0,0,1,1,504,3,0],["Past Our Prime","MerkWTM",76,0,0,0,1,171,0,2],["Past Our Prime","AtownSteelers",112,0,0,0,1,223,0,1],["Past Our Prime","RoyalxRenegade",643,1,0,3,3,726,1,2]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 2","home":"The Cox","away":"Giga's In Paris","games":[{"id":"53880050-61e4-4802-b69a-739241d9f134","game":"Game 1","date":"2026-07-29","winner":"The Cox","teams":[["The Cox","Giga's In Paris",880,2,0,3,11,4,1,1273,1,1],["Giga's In Paris","The Cox",941,1,1,7,4,11,2,759,1,1]],"players":[["Giga's In Paris","Ax1mov",621,1,0,6,3,195,1,0],["Giga's In Paris","Mastergiga9",156,0,1,0,0,293,0,0],["Giga's In Paris","selena.",164,0,0,1,1,271,0,1],["The Cox","CoalTrainLLC",222,0,0,1,3,290,0,1],["The Cox","Hyroshi",36,0,0,0,1,264,0,0],["The Cox","roo",622,2,0,2,7,719,1,0]]},{"id":"edf30f9b-c0db-436c-9307-b37e2e945c27","game":"Game 2","date":"2026-07-29","winner":"The Cox","teams":[["Giga's In Paris","The Cox",649,1,0,3,7,7,3,1179,4,3],["The Cox","Giga's In Paris",1050,3,0,5,7,7,1,1332,3,4]],"players":[["Giga's In Paris","Ax1mov",265,0,0,1,3,412,0,1],["Giga's In Paris","Mastergiga9",172,0,0,1,3,343,0,2],["Giga's In Paris","selena.",212,1,0,1,1,424,4,0],["The Cox","CoalTrainLLC",377,1,0,2,2,176,0,2],["The Cox","Hyroshi",30,0,0,0,0,538,3,1],["The Cox","roo",643,2,0,3,5,618,0,1]]},{"id":"12c5ebbd-374f-43c8-9897-a2cd719c42db","game":"Game 3","date":"2026-07-30","winner":"The Cox","teams":[["Giga's In Paris","The Cox",1080,3,2,3,8,11,4,1620,5,1],["The Cox","Giga's In Paris",1196,4,4,3,11,8,3,1211,1,5]],"players":[["Giga's In Paris","Ax1mov",655,3,0,2,7,672,3,0],["Giga's In Paris","selena.",275,0,1,1,1,732,2,0],["Giga's In Paris","Mastergiga9",150,0,1,0,0,216,0,1],["The Cox","CoalTrainLLC",463,1,2,2,5,213,0,3],["The Cox","Hyroshi",182,0,2,0,2,527,1,1],["The Cox","roo",551,3,0,1,4,471,0,1]]}]},
-  {"season":"S6","stage":"Swiss","round":"Round 2","home":"Supernova Abyss","away":"Spirit Airlines","games":[{"id":"1a3369ab-0c3d-4846-ae1a-7d0461acf220","game":"Game 1","date":"2026-07-28","winner":"Supernova Abyss","teams":[["Spirit Airlines","Supernova Abyss",455,1,0,1,6,6,4,1132,2,2],["Supernova Abyss","Spirit Airlines",1187,4,4,4,6,6,1,1301,2,2]],"players":[["Supernova Abyss","MrStratty",326,2,1,0,3,450,1,0],["Supernova Abyss","KWNSquid",442,0,2,3,1,424,1,1],["Supernova Abyss","ttv_starzyrl",419,2,1,1,2,427,0,1],["Spirit Airlines","JulietAlphaRomeo",101,0,0,0,0,488,0,0],["Spirit Airlines","dailcowgs94",300,1,0,1,4,176,0,1],["Spirit Airlines","MadJanitor88",54,0,0,0,2,468,2,1]]},{"id":"0d20be9c-4f58-4beb-84ab-95258acf6399","game":"Game 2","date":"2026-07-27","winner":"Supernova Abyss","teams":[["Supernova Abyss","Spirit Airlines",1481,5,5,3,15,7,4,1643,2,6],["Spirit Airlines","Supernova Abyss",1438,4,0,9,7,15,5,950,6,2]],"players":[["Supernova Abyss","ttv_starzyrl",396,2,0,1,6,475,0,3],["Supernova Abyss","MrStratty",514,2,2,1,3,448,1,2],["Supernova Abyss","KWNSquid",571,1,3,1,6,720,1,1],["Spirit Airlines","JulietAlphaRomeo",940,4,0,4,4,411,3,1],["Spirit Airlines","dailcowgs94",284,0,0,3,2,232,1,0],["Spirit Airlines","MadJanitor88",214,0,0,2,1,307,2,1]]},{"id":"758efc7d-e381-4341-995e-e8c55b55e816","game":"Game 3","date":"2026-07-27","winner":"Supernova Abyss","teams":[["Supernova Abyss","Spirit Airlines",1346,4,4,3,9,4,1,1100,3,5],["Spirit Airlines","Supernova Abyss",677,1,0,4,4,9,4,970,5,3]],"players":[["Supernova Abyss","KWNSquid",603,3,1,1,3,264,2,2],["Supernova Abyss","ttv_starzyrl",533,0,3,2,3,534,1,1],["Supernova Abyss","MrStratty",210,1,0,0,3,302,0,2],["Spirit Airlines","JulietAlphaRomeo",309,0,0,2,0,467,0,0],["Spirit Airlines","dailcowgs94",146,0,0,1,2,370,3,2],["Spirit Airlines","MadJanitor88",222,1,0,1,2,133,2,1]]}]},
-]);
 
 const s6GroupStandingsRows = [
   ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
@@ -2072,25 +1897,6 @@ function combineS6Rows(rows, type) {
   });
 }
 
-function s6TeamRowsWithPlayerPer(teamRows, playerRows) {
-  const perByTeam = new Map();
-  playerRows.forEach((row) => {
-    const team = canonicalTeamName(row.teams?.[0] || row.teamsText || "");
-    if (!team) return;
-    perByTeam.set(team, (perByTeam.get(team) || 0) + (Number(row.per) || 0));
-  });
-  return teamRows.map((row) => {
-    const team = canonicalTeamName(row.name);
-    if (!perByTeam.has(team)) return row;
-    const per = Math.round(perByTeam.get(team) * 100) / 100;
-    return {
-      ...row,
-      per,
-      perPerGame: Math.round((per / Math.max(1, Number(row.games) || 0)) * 100) / 100,
-    };
-  });
-}
-
 function numericDiff(overall, group, key) {
   return Math.round(((Number(overall[key]) || 0) - (Number(group?.[key]) || 0)) * 100) / 100;
 }
@@ -2162,13 +1968,9 @@ function s6DiffPlayerRows() {
 function s6StageTeamRows(stage = state.s6Stage, pool = state.s6Pool) {
   const groupRows = s6OverallTeamRows.map(makeS6TeamRow);
   const swissRows = s6SwissTeamRows.map(makeS6SwissTeamRow);
-  const groupPlayerRows = s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, groupRows));
-  const swissPlayerRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissRows));
   const rows = stage === "swiss"
-    ? s6TeamRowsWithPlayerPer(swissRows, swissPlayerRows)
-    : (stage === "overall"
-      ? s6TeamRowsWithPlayerPer(combineS6Rows([...groupRows, ...swissRows], "team"), combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player"))
-      : s6TeamRowsWithPlayerPer(groupRows, groupPlayerRows));
+    ? swissRows
+    : (stage === "overall" ? combineS6Rows([...groupRows, ...swissRows], "team") : groupRows);
   return s6FilterByPool(rows, pool);
 }
 

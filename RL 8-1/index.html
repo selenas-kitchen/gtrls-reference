@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=s6-team-per-player-sum-20260802">
+  <link rel="stylesheet" href="styles.css?v=s6-overall-standings-20260720">
 </head>
 <body>
   <header class="topbar">
@@ -41,11 +41,10 @@
         <button id="patchNotesClose" type="button" aria-label="Close patch notes">Close</button>
       </div>
       <div class="patch-notes-body">
-        <p>S6 team PER now recalculates from the sum of each player's PER on that team, so team totals match the player table.</p>
-        <p>PER/G for S6 teams now follows that summed team PER divided by team games across Group Stage, Swiss, and Overall views.</p>
-        <p>Loaded four S6 Swiss Round 2 stat files: HLB/BCST, Past/ESC, Cox/Giga's, and Supernova/Spirit.</p>
-        <p>S6 Swiss schedule shows Round 2 results, the BFC/Crossbar pending matchup, and Quack Wok vs Deceptitards as played with stats pending.</p>
-        <p>Round 3 Swiss matchups and bye notes are loaded, including the BFC/Crossbar winner and loser placeholders.</p>
+        <p>S6 now defaults to Overall for the main stats pages, while the Schedule opens on Swiss because that is the active stage.</p>
+        <p>Played Swiss series now have cleaner drill-down pages with Series MVP, home/away team summaries, home/away player totals, and clickable individual games.</p>
+        <p>Individual game pages now split player stats by home and away team, and advanced stats like stolen per game, demos per game, and pressure metrics only use games where that data exists.</p>
+        <p>Pre-match comparison is still available on matchup pages, but it now starts hidden behind a button so played-match pages stay cleaner.</p>
       </div>
     </article>
   </section>
@@ -196,7 +195,7 @@
   </main>
 
   <script src="dashboard-data.js"></script>
-  <script src="manual-history.js?v=s6-team-per-player-sum-20260802"></script>
-  <script src="app.js?v=s6-team-per-player-sum-20260802"></script>
+  <script src="manual-history.js?v=s6-overall-standings-20260720"></script>
+  <script src="app.js?v=s6-overall-standings-20260720"></script>
 </body>
 </html>

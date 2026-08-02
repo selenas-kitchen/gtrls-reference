@@ -1234,24 +1234,20 @@ Byes: Past Our Prime, Ball Chasin & Sauce Tastin
 `),
     ...parseScheduleBlock("S6", "swiss", `
 Round 1
-(15) Hook Line & Blinker	(14) 3-1 (8)	Deceptitards (3)	Locked: G1 vs T6
+(15) Hook Line & Blinker	(0) 0-0 (0)	Deceptitards (3)	Locked: G1 vs T6
 (9) Giga's In Paris	(10) 3-0 (4)	Crossbar Cartel (4)	Locked: G2 vs T5
-(9) Quack Wok	(4) 0-3 (11)	Ball Chasin & Sauce Tastin (9)	Locked: G3 vs T4
-(13) Past Our Prime	(9) 3-0 (4)	Spirit Airlines (4)	Locked: T1 vs G6
+(9) Quack Wok	(0) 0-0 (0)	Ball Chasin & Sauce Tastin (9)	Locked: G3 vs T4
+(13) Past Our Prime	(0) 0-0 (0)	Spirit Airlines (4)	Locked: T1 vs G6
 (11) Supernova Abyss	(3) 0-3 (7)	ESC (6)	Locked: T2 vs G5
-(11) The Cox	(12) 3-0 (5)	Best Friends Club (7)	Locked: T3 vs G4
+(11) The Cox	(0) 0-0 (0)	Best Friends Club (7)	Locked: T3 vs G4
 Round 2
-Hook Line & Blinker	(14) 3-2 (14)	Ball Chasin & Sauce Tastin
-Past Our Prime	(6) 2-3 (8)	ESC
-The Cox	(9) 3-0 (5)	Giga's In Paris
-Supernova Abyss	(13) 3-0 (6)	Spirit Airlines
-Best Friends Club	(0) 0-0 (0)	Crossbar Cartel
+(0) 0-0 (0)
+(0) 0-0 (0)
+(0) 0-0 (0)
 Round 3
-Past Our Prime	(0) 0-0 (0)	Winner of BFC/CC
-Supernova Abyss	(0) 0-0 (0)	Quack Wok
-Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Giga's In Paris
-Byes: Hook Line & Blinker, The Cox, ESC
-0-2 Teams: Loser of BFC/CC, Spirit Airlines, Deceptitards
+(0) 0-0 (0)
+(0) 0-0 (0)
+(0) 0-0 (0)
 Round 4
 (0) 0-0 (0)	Promoted Team
 (0) 0-0 (0)
@@ -1260,7 +1256,12 @@ Demoted Team	(0) 0-0 (0)
 (0) 0-0 (0)
 `),
     ...[
-      ["Round 2", "Quack Wok", "Played", "Deceptitards", "Played - stats pending"],
+      ["Round 2", "1-0 Match 1", "(0) 0 - 0 (0)", "1-0 Match 2", ""],
+      ["Round 2", "1-0 Match 3", "(0) 0 - 0 (0)", "1-0 Match 4", ""],
+      ["Round 2", "1-0 Match 5", "(0) 0 - 0 (0)", "1-0 Match 6", ""],
+      ["Round 2", "0-1 Match 1", "(0) 0 - 0 (0)", "0-1 Match 2", ""],
+      ["Round 2", "0-1 Match 3", "(0) 0 - 0 (0)", "0-1 Match 4", ""],
+      ["Round 2", "0-1 Match 5", "(0) 0 - 0 (0)", "0-1 Match 6", ""],
       ["Round 3", "2-0 Bye 1", "", "", "+2"],
       ["Round 3", "2-0 Bye 2", "", "", "+2"],
       ["Round 3", "2-0 Bye 3", "", "", "+2"],
