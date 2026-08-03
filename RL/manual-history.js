@@ -12,7 +12,9 @@
     ["IHAVEABAG", "I_have_a_bag"],
     ["ATOWNSTEELERS", "AtownSteelers"],
     ["BROCK", "AtownSteelers"],
-    ["DUKEOFDOPE7", "Dukeofdope7"],
+    ["DUKEOFDOPE", "DukeofDope7"],
+    ["DUKEOFDOPE7", "DukeofDope7"],
+    ["GARCIA", "DukeofDope7"],
     ["DIALCOWGS94", "dailcowgs94"],
     ["DAILCOWGS94", "dailcowgs94"],
     ["GTDAIL", "dailcowgs94"],
@@ -1245,13 +1247,14 @@ Hook Line & Blinker	(14) 3-2 (14)	Ball Chasin & Sauce Tastin
 Past Our Prime	(6) 2-3 (8)	ESC
 The Cox	(9) 3-0 (5)	Giga's In Paris
 Supernova Abyss	(13) 3-0 (6)	Spirit Airlines
+Quack Wok	(17) 3-2 (15)	Deceptitards
 Best Friends Club	(0) 0-0 (0)	Crossbar Cartel
 Round 3
 Past Our Prime	(0) 0-0 (0)	Winner of BFC/CC
 Supernova Abyss	(0) 0-0 (0)	Quack Wok
 Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Giga's In Paris
-Byes: Hook Line & Blinker, The Cox, ESC
-0-2 Teams: Loser of BFC/CC, Spirit Airlines, Deceptitards
+2-0 Byes: 1. Hook Line & Blinker, 2. The Cox, 3. ESC
+0-2 Byes: 1. Loser of BFC/CC, 2. Spirit Airlines, 3. Deceptitards
 Round 4
 (0) 0-0 (0)	Promoted Team
 (0) 0-0 (0)
@@ -1260,16 +1263,12 @@ Demoted Team	(0) 0-0 (0)
 (0) 0-0 (0)
 `),
     ...[
-      ["Round 2", "Quack Wok", "Played", "Deceptitards", "Played"],
-      ["Round 3", "2-0 Bye 1", "", "", "+2"],
-      ["Round 3", "2-0 Bye 2", "", "", "+2"],
-      ["Round 3", "2-0 Bye 3", "", "", "+2"],
-      ["Round 3", "1-1 Match 1", "(0) 0 - 0 (0)", "1-1 Match 2", ""],
-      ["Round 3", "1-1 Match 3", "(0) 0 - 0 (0)", "1-1 Match 4", ""],
-      ["Round 3", "1-1 Match 5", "(0) 0 - 0 (0)", "1-1 Match 6", ""],
-      ["Round 3", "0-2 Bye 1", "", "", "+0"],
-      ["Round 3", "0-2 Bye 2", "", "", "+0"],
-      ["Round 3", "0-2 Bye 3", "", "", "+0"],
+      ["Round 3", "Hook Line & Blinker", "Bye", "", "+2 | 2-0 Bye 1"],
+      ["Round 3", "The Cox", "Bye", "", "+2 | 2-0 Bye 2"],
+      ["Round 3", "ESC", "Bye", "", "+2 | 2-0 Bye 3"],
+      ["Round 3", "Loser of BFC/CC", "Bye", "", "+0 | 0-2 Bye 1"],
+      ["Round 3", "Spirit Airlines", "Bye", "", "+0 | 0-2 Bye 2"],
+      ["Round 3", "Deceptitards", "Bye", "", "+0 | 0-2 Bye 3"],
       ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "Promoted Team", "Highest 2-1 team by points is promoted to play highest 2-0 team by points."],
       ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],
       ["Round 4", "2-1 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],

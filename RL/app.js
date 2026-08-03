@@ -34,6 +34,9 @@ const playerAliasMap = new Map([
   ["RYAN", "Original_6_Hawks"],
   ["AUSTIN", "Authurm19"],
   ["CLAYTON", "gonslinger"],
+  ["DUKEOFDOPE", "DukeofDope7"],
+  ["DUKEOFDOPE7", "DukeofDope7"],
+  ["GARCIA", "DukeofDope7"],
   ["JOSH", "Joshhh_RL"],
   ["EPONTIOUS", "EPo -_-"],
   ["SKITTLEZ", "SirSkittleZ"],
@@ -512,6 +515,27 @@ const s6AccruedBonuses = {
   "Deceptitards": 0,
 };
 
+const s6SwissByePoints = {
+  "Hook Line & Blinker": 2,
+  "The Cox": 2,
+  "ESC": 2,
+};
+
+const s6SeasonScoreOverrides = {
+  "Hook Line & Blinker": 19,
+  "Past Our Prime": 17,
+  "The Cox": 17,
+  "Supernova Abyss": 14,
+  "Ball Chasin & Sauce Tastin": 13,
+  "Giga's In Paris": 12,
+  "ESC": 11,
+  "Quack Wok": 11,
+  "Best Friends Club": 7,
+  "Crossbar Cartel": 4,
+  "Spirit Airlines": 4,
+  "Deceptitards": 4,
+};
+
 const s6OverallStandingsRows = [
   ["Hook Line & Blinker", 1, 19, "7 - 0", 39, "21 - 8", 2, 0, 3],
   ["Past Our Prime", 2, 17, "6 - 1", 15, "20 - 12", 1, 1, 3],
@@ -520,11 +544,11 @@ const s6OverallStandingsRows = [
   ["Ball Chasin & Sauce Tastin", 5, 13, "4 - 3", 12, "18 - 14", 1, 3, 1],
   ["Giga's In Paris", 6, 12, "4 - 3", 10, "13 - 11", 2, 0, 2],
   ["ESC", 7, 11, "4 - 3", 16, "13 - 13", 2, 0, 1],
-  ["Quack Wok", 8, 9, "2 - 4", -10, "11 - 14", 1, 2, 2],
+  ["Quack Wok", 8, 11, "3 - 4", -8, "14 - 16", 1, 2, 2],
   ["Best Friends Club", 9, 7, "2 - 4", -32, "11 - 16", 0, 2, 1],
   ["Spirit Airlines", 10, 4, "1 - 5", -26, "7 - 16", 0, 2, 0],
   ["Crossbar Cartel", 11, 4, "1 - 5", -27, "6 - 17", 0, 1, 1],
-  ["Deceptitards", 12, 3, "0 - 6", -13, "8 - 18", 0, 3, 0],
+  ["Deceptitards", 12, 4, "0 - 7", -15, "10 - 21", 0, 4, 0],
 ];
 
 const poolTiebreakRules = [
@@ -1110,7 +1134,7 @@ function loadImportedReplaySeries() {
   }
 }
 
-loadImportedReplaySeries();
+// CSV imports are intentionally not loaded in the public dashboard.
 
 const s6GroupStandingsRows = [
   ["Hook Line & Blinker", 1, 15, "5 - 0", 33, "15 - 5", 2, 0, "2 - 0"],
@@ -2178,6 +2202,29 @@ function makeS6SwissTeamRow(raw) {
   return finalized;
 }
 
+function applyS6SwissByePoints(row) {
+  const byePoints = s6SwissByePoints[row.name] || 0;
+  if (!byePoints) return row;
+  const next = {
+    ...row,
+    standingsPoints: (Number(row.standingsPoints) || 0) + byePoints,
+  };
+  next.pointsPerGame = Math.round((next.standingsPoints / Math.max(1, next.games)) * 100) / 100;
+  return next;
+}
+
+function applyS6SeasonScoreOverride(row) {
+  const standingsPoints = s6SeasonScoreOverrides[row.name];
+  if (typeof standingsPoints !== "number") return row;
+  const next = {
+    ...row,
+    standingsPoints,
+    maxScore: standingsPoints,
+  };
+  next.pointsPerGame = Math.round((standingsPoints / Math.max(1, next.games)) * 100) / 100;
+  return next;
+}
+
 function makeS6SwissPlayerRow(raw, teamRows = s6StageTeamRows("swiss", "overall")) {
   const [team, name, games, score, goals, assists, saves, shots, demosInflicted, demosTaken, mvps, amountStolen, rating] = raw;
   const canonicalTeam = canonicalTeamName(team);
@@ -2342,12 +2389,14 @@ function s6StageTeamRows(stage = state.s6Stage, pool = state.s6Pool) {
   const swissRows = s6SwissTeamRows.map(makeS6SwissTeamRow);
   const groupPlayerRows = s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, groupRows));
   const swissPlayerRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissRows));
-  const combinedSwissRows = s6TeamRowsWithPlayerPer(combineS6Rows(swissRows, "team"), combineS6Rows(swissPlayerRows, "player"));
+  const combinedSwissRows = s6TeamRowsWithPlayerPer(combineS6Rows(swissRows, "team").map(applyS6SwissByePoints), combineS6Rows(swissPlayerRows, "player"));
+  const combinedOverallRows = s6TeamRowsWithPlayerPer(
+    combineS6Rows([...groupRows, ...combinedSwissRows], "team"),
+    combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player")
+  ).map(applyS6SeasonScoreOverride);
   const rows = stage === "swiss"
     ? combinedSwissRows
-    : (stage === "overall"
-      ? s6TeamRowsWithPlayerPer(combineS6Rows([...groupRows, ...combinedSwissRows], "team"), combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player"))
-      : s6TeamRowsWithPlayerPer(groupRows, groupPlayerRows));
+    : (stage === "overall" ? combinedOverallRows : s6TeamRowsWithPlayerPer(groupRows, groupPlayerRows));
   return s6FilterByPool(rows, pool);
 }
 
@@ -2630,60 +2679,8 @@ function scheduleImportOptions(rows) {
 }
 
 function renderCsvImportPanel(rows) {
-  if (state.season !== "S6" || state.view !== "schedule" || state.page.type !== "dashboard") {
-    els.csvImportPanel.classList.add("hidden");
-    els.csvImportPanel.innerHTML = "";
-    return;
-  }
-  const options = scheduleImportOptions(rows);
-  const message = state.csvImportMessage ? `<p class="csv-import-message">${escapeHtml(state.csvImportMessage)}</p>` : "";
-  els.csvImportPanel.innerHTML = `
-    <div class="csv-import-card">
-      <div class="csv-import-head">
-        <div>
-          <h2>Replay CSV Import</h2>
-          <p>Upload matching Ballchasing team/player CSVs. Imports are additive and deduped by replay ID.</p>
-        </div>
-        <span>${importedReplaySeries.length} imported series</span>
-      </div>
-      <form id="csvImportForm" class="csv-import-form">
-        <label>
-          <span>Match</span>
-          <select id="csvImportSeries">
-            <option value="">Choose schedule matchup</option>
-            ${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}
-          </select>
-        </label>
-        <label>
-          <span>Round</span>
-          <input id="csvImportRound" type="text" value="${escapeHtml(state.s6Stage === "swiss" ? "Round 2" : "Group Stage")}" placeholder="Round 2">
-        </label>
-        <label>
-          <span>Home</span>
-          <input id="csvImportHome" type="text" placeholder="Home team">
-        </label>
-        <label>
-          <span>Away</span>
-          <input id="csvImportAway" type="text" placeholder="Away team">
-        </label>
-        <label>
-          <span>Team CSV</span>
-          <input id="csvImportTeamsFile" type="file" accept=".csv,text/csv">
-        </label>
-        <label>
-          <span>Player CSV</span>
-          <input id="csvImportPlayersFile" type="file" accept=".csv,text/csv">
-        </label>
-        <button type="submit"${state.csvImportBusy ? " disabled" : ""}>${state.csvImportBusy ? "Importing..." : "Import CSVs"}</button>
-      </form>
-      <div class="csv-import-actions">
-        <button type="button" data-clear-csv-imports>Clear imported CSV layer</button>
-        <small>Manual history and hardcoded stats are never cleared by this.</small>
-      </div>
-      ${message}
-    </div>
-  `;
-  els.csvImportPanel.classList.remove("hidden");
+  els.csvImportPanel.classList.add("hidden");
+  els.csvImportPanel.innerHTML = "";
 }
 
 function renderPlayerFilters() {
