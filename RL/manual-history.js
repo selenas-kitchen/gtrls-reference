@@ -1251,7 +1251,7 @@ Quack Wok	(17) 3-2 (15)	Deceptitards
 Best Friends Club	(0) 0-0 (0)	Crossbar Cartel
 Round 3
 Past Our Prime	(0) 0-0 (0)	Winner of BFC/CC
-Supernova Abyss	(0) 0-0 (0)	Quack Wok
+Supernova Abyss	(11) 1-3 (9)	Quack Wok
 Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Giga's In Paris
 2-0 Byes: 1. Hook Line & Blinker, 2. The Cox, 3. ESC
 0-2 Byes: 1. Loser of BFC/CC, 2. Spirit Airlines, 3. Deceptitards
