@@ -1248,13 +1248,13 @@ Past Our Prime	(6) 2-3 (8)	ESC
 The Cox	(9) 3-0 (5)	Giga's In Paris
 Supernova Abyss	(13) 3-0 (6)	Spirit Airlines
 Quack Wok	(17) 3-2 (15)	Deceptitards
-Best Friends Club	(0) 0-0 (0)	Crossbar Cartel
+Best Friends Club	(12) 3-0 (3)	Crossbar Cartel
 Round 3
-Past Our Prime	(0) 0-0 (0)	Winner of BFC/CC
+Past Our Prime	(0) 0-0 (0)	Best Friends Club
 Supernova Abyss	(11) 1-3 (9)	Quack Wok
-Ball Chasin & Sauce Tastin	(0) 0-0 (0)	Giga's In Paris
+Ball Chasin & Sauce Tastin	(12) 3-2 (13)	Giga's In Paris
 2-0 Byes: 1. Hook Line & Blinker, 2. The Cox, 3. ESC
-0-2 Byes: 1. Loser of BFC/CC, 2. Spirit Airlines, 3. Deceptitards
+0-2 Byes: 1. Crossbar Cartel, 2. Spirit Airlines, 3. Deceptitards
 Round 4
 (0) 0-0 (0)	Promoted Team
 (0) 0-0 (0)
@@ -1266,7 +1266,7 @@ Demoted Team	(0) 0-0 (0)
       ["Round 3", "Hook Line & Blinker", "Bye", "", "+2 | 2-0 Bye 1"],
       ["Round 3", "The Cox", "Bye", "", "+2 | 2-0 Bye 2"],
       ["Round 3", "ESC", "Bye", "", "+2 | 2-0 Bye 3"],
-      ["Round 3", "Loser of BFC/CC", "Bye", "", "+0 | 0-2 Bye 1"],
+      ["Round 3", "Crossbar Cartel", "Bye", "", "+0 | 0-2 Bye 1"],
       ["Round 3", "Spirit Airlines", "Bye", "", "+0 | 0-2 Bye 2"],
       ["Round 3", "Deceptitards", "Bye", "", "+0 | 0-2 Bye 3"],
       ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "Promoted Team", "Highest 2-1 team by points is promoted to play highest 2-0 team by points."],
