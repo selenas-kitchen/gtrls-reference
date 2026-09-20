@@ -1250,18 +1250,17 @@ Supernova Abyss	(13) 3-0 (6)	Spirit Airlines
 Quack Wok	(17) 3-2 (15)	Deceptitards
 Best Friends Club	(12) 3-0 (3)	Crossbar Cartel
 Round 3
-Past Our Prime	(12) 3-0 (4)	Best Friends Club
+Past Our Prime	(0) 0-0 (0)	Best Friends Club
 Supernova Abyss	(11) 1-3 (9)	Quack Wok
 Ball Chasin & Sauce Tastin	(12) 3-2 (13)	Giga's In Paris
 2-0 Byes: 1. Hook Line & Blinker, 2. The Cox, 3. ESC
 0-2 Byes: 1. Crossbar Cartel, 2. Spirit Airlines, 3. Deceptitards
 Round 4
-(21) Hook Line & Blinker	(17) 3-1 (9)	Past Our Prime (20)
-(19) The Cox	(11) 3-1 (9)	ESC (13)
-(15) Ball Chasin & Sauce Tastin	(15) 3-1 (9)	Quack Wok (13)
-(14) Supernova Abyss	(4) 0-3 (16)	Giga's In Paris (13)
-(10) Best Friends Club	(13) 3-2 (7)	Deceptitards (4)
-(4) Crossbar Cartel	(8) 0-3 (11)	Spirit Airlines (4)
+(0) 0-0 (0)	Promoted Team
+(0) 0-0 (0)
+(0) 0-0 (0)
+Demoted Team	(0) 0-0 (0)
+(0) 0-0 (0)
 `),
     ...[
       ["Round 3", "Hook Line & Blinker", "Bye", "", "+2 | 2-0 Bye 1"],
@@ -1270,6 +1269,12 @@ Round 4
       ["Round 3", "Crossbar Cartel", "Bye", "", "+0 | 0-2 Bye 1"],
       ["Round 3", "Spirit Airlines", "Bye", "", "+0 | 0-2 Bye 2"],
       ["Round 3", "Deceptitards", "Bye", "", "+0 | 0-2 Bye 3"],
+      ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "Promoted Team", "Highest 2-1 team by points is promoted to play highest 2-0 team by points."],
+      ["Round 4", "2-0 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],
+      ["Round 4", "2-1 Team", "(0) 0 - 0 (0)", "2-1 Team", ""],
+      ["Round 4", "1-2 Team", "(0) 0 - 0 (0)", "1-2 Team", ""],
+      ["Round 4", "Demoted Team", "(0) 0 - 0 (0)", "0-2 Team", "Lowest 1-2 team by points is demoted to play lowest 0-2 team by points."],
+      ["Round 4", "0-2 Team", "(0) 0 - 0 (0)", "0-2 Team", "Winners/losers feed U, Q, L, E slots after Round 4."],
     ].map(([round, home, result, away, note]) => ({
       season: "S6",
       stage: "swiss",
@@ -1281,26 +1286,6 @@ Round 4
       winner: "",
       note,
       pool: "",
-      source: "manual",
-    })),
-    ...[
-      ["Play-In Qualification R1", "Past Our Prime", "20", "(10) 1-3 (14)", "ESC", "13", "ESC"],
-      ["Play-In Qualification R2", "Past Our Prime", "20", "(4) 0-3 (7)", "Ball Chasin & Sauce Tastin", "17", "Ball Chasin & Sauce Tastin"],
-      ["Play-In Elimination R1", "Best Friends Club", "12", "(7) 3-0 (4)", "Spirit Airlines", "7", "Best Friends Club"],
-      ["Play-In Elimination R2", "Supernova Abyss", "14", "(10) 3-0 (5)", "Best Friends Club", "15", "Supernova Abyss"],
-    ].map(([round, home, homePoints, result, away, awayPoints, winner]) => ({
-      season: "S6",
-      stage: "swiss",
-      round,
-      dateRange: "",
-      home: team(home),
-      homePoints,
-      result,
-      away: team(away),
-      awayPoints,
-      winner: team(winner),
-      note: "",
-      pool: schedulePool("S6", "swiss", home, away),
       source: "manual",
     })),
   ];
@@ -1346,22 +1331,6 @@ Round 4
     ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "0 - 3", "Big Musty Milkers", "4", "3 - 1", "Aximov"],
     ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "1 - 7", "Big Musty Milkers", "5", "3 - 2", "Aximov"],
     ["S5 Playoffs", "Championship Game", "Weenie Hut Jrs", "1 - 0", "Big Musty Milkers", "6", "4 - 2", "Ramen"],
-    ["S6 Playoffs", "Prequarters P1", "Hook Line & Blinker", "(15) 4 - 2 (13)", "Ball Chasin & Sauce Tastin"],
-    ["S6 Playoffs", "Prequarters P2", "Giga's In Paris", "(13) 4 - 0 (3)", "Quack Wok"],
-    ["S6 Playoffs", "Prequarters P3", "The Cox", "(13) 1 - 4 (21)", "ESC"],
-    ["S6 Playoffs", "Prequarters P4", "Past Our Prime", "(12) 1 - 4 (17)", "Supernova Abyss"],
-    ["S6 Playoffs", "Quarterfinals Q1", "The Cox", "(15) 4 - 3 (13)", "Giga's In Paris"],
-    ["S6 Playoffs", "Quarterfinals Q2", "Ball Chasin & Sauce Tastin", "(12) 2 - 4 (13)", "Supernova Abyss"],
-    ["S6 Playoffs", "Semifinals S1", "Hook Line & Blinker", "(0) 0 - 0 (0)", "The Cox"],
-    ["S6 Playoffs", "Semifinals S2", "ESC", "(0) 0 - 0 (0)", "Supernova Abyss"],
-    ["S6 Playoffs", "Grand Finals", "TBD", "(0) 0 - 0 (0)", "TBD"],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "1", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "2", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "3", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "4", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "5", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "6", "0 - 0", ""],
-    ["S6 Playoffs", "Grand Final Game", "TBD", "(0) 0 - 0 (0)", "TBD", "7", "0 - 0", ""],
   ].map(([season, round, teamA, result, teamB, game = "", series = "", mvp = ""]) => ({
     season,
     round,

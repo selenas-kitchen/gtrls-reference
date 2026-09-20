@@ -59,13 +59,10 @@ const playerAliasMap = new Map([
   ["NEMHYROSHI", "Hyroshi"],
   ["TGSLOSTMOSS", "TGS_Lostmoss"],
   ["PILOTSG1", "Pilot_SG1"],
-  ["PANAKINSKYWIFFER", "Pilot_SG1"],
-  ["TACTLESSBIRCH8", "Clamp2much"],
 ]);
 
 const teamAliasMap = new Map([
   ["GIGASINPARIS", "Giga's In Paris"],
-  ["GIGAS", "Giga's In Paris"],
   ["BESTFRIENDCLUB", "Best Friends Club"],
   ["BESTFRIENDSCLUB", "Best Friends Club"],
   ["HOOKLINEBLINKER", "Hook Line & Blinker"],
@@ -78,7 +75,6 @@ const teamAliasMap = new Map([
   ["BCANDST", "Ball Chasin & Sauce Tastin"],
   ["SPIRITAIRLINES", "Spirit Airlines"],
   ["THECOX", "The Cox"],
-  ["COX", "The Cox"],
   ["PASTOURPRIME", "Past Our Prime"],
   ["POP", "Past Our Prime"],
   ["QUACKWOK", "Quack Wok"],
@@ -88,7 +84,6 @@ const teamAliasMap = new Map([
   ["DECEPTITARDS", "Deceptitards"],
   ["DEC", "Deceptitards"],
   ["SUPERNOVAABYSS", "Supernova Abyss"],
-  ["SUP", "Supernova Abyss"],
   ["BIRDBATHBOMBERS", "BBB"],
   ["BIGMUSTYMILKERS", "BMM"],
   ["BIGMUSTYMILKERSZ", "BMM"],
@@ -527,18 +522,18 @@ const s6SwissByePoints = {
 };
 
 const s6SeasonScoreOverrides = {
-  "Hook Line & Blinker": 23,
-  "Past Our Prime": 20,
-  "The Cox": 21,
-  "Ball Chasin & Sauce Tastin": 20,
-  "Supernova Abyss": 17,
-  "Giga's In Paris": 16,
-  "ESC": 15,
+  "Hook Line & Blinker": 19,
+  "Past Our Prime": 17,
+  "The Cox": 17,
+  "Ball Chasin & Sauce Tastin": 15,
+  "Supernova Abyss": 14,
+  "Giga's In Paris": 13,
+  "ESC": 11,
   "Quack Wok": 13,
-  "Best Friends Club": 15,
+  "Best Friends Club": 10,
   "Crossbar Cartel": 4,
-  "Spirit Airlines": 7,
-  "Deceptitards": 5,
+  "Spirit Airlines": 4,
+  "Deceptitards": 4,
 };
 
 const s6OverallStandingsRows = [
@@ -859,7 +854,7 @@ function compactSwissPlayer(row) {
   };
 }
 
-function addCompactS6SwissSeries(seriesList, { includeTotals = true } = {}) {
+function addCompactS6SwissSeries(seriesList) {
   seriesList.forEach((series) => {
     const hydrated = {
       season: series.season,
@@ -874,11 +869,6 @@ function addCompactS6SwissSeries(seriesList, { includeTotals = true } = {}) {
         players: game.players.map(compactSwissPlayer),
       })),
     };
-
-    if (!includeTotals) {
-      s6SwissSeriesGameStats.push(hydrated);
-      return;
-    }
 
     const teamAgg = new Map();
     const playerAgg = new Map();
@@ -991,14 +981,6 @@ addCompactS6SwissSeries([
   {"season":"S6","stage":"Swiss","round":"Round 2","home":"Best Friends Club","away":"Crossbar Cartel","games":[{"id":"d68b0dfb-8ad3-4e5c-92f7-f6d7ae9d0858","game":"Game 1","date":"2026-08-04","winner":"Best Friends Club","teams":[["Best Friends Club","Crossbar Cartel",946,4,0,1,9,3,1,1016,2,3],["Crossbar Cartel","Best Friends Club",738,1,1,1,3,9,4,1268,3,2]],"players":[["Best Friends Club","greenarrowspark2",50,0,0,0,1,107,1,0],["Best Friends Club","I_have_a_bag",460,2,0,1,5,663,1,1],["Best Friends Club","TheLakeEffekt",436,2,0,0,3,246,0,2],["Crossbar Cartel","Sir_vantzzz",146,0,1,0,1,365,1,1],["Crossbar Cartel","Vizpick",368,1,0,0,2,633,2,1],["Crossbar Cartel","MJD22-_-",224,0,0,1,0,270,0,0]]},{"id":"f7bafff8-67d2-4d83-9709-506030c8bd41","game":"Game 2","date":"2026-08-04","winner":"Best Friends Club","teams":[["Best Friends Club","Crossbar Cartel",1347,5,4,2,12,4,1,1030,2,2],["Crossbar Cartel","Best Friends Club",874,1,1,4,4,12,5,896,2,2]],"players":[["Best Friends Club","I_have_a_bag",805,5,0,1,8,604,2,1],["Best Friends Club","greenarrowspark2",318,0,3,0,4,288,0,1],["Best Friends Club","TheLakeEffekt",224,0,1,1,0,138,0,0],["Crossbar Cartel","Vizpick",532,0,0,4,1,245,1,0],["Crossbar Cartel","Sir_vantzzz",144,0,1,0,1,129,1,0],["Crossbar Cartel","MJD22-_-",198,1,0,0,2,522,0,2]]},{"id":"f73c6415-b66b-479d-be0d-e2cf9b97afce","game":"Game 3","date":"2026-08-05","winner":"Best Friends Club","teams":[["Best Friends Club","Crossbar Cartel",918,3,1,3,9,4,1,862,2,1],["Crossbar Cartel","Best Friends Club",776,1,1,5,4,9,3,1410,1,2]],"players":[["Best Friends Club","I_have_a_bag",434,2,0,2,3,225,2,1],["Best Friends Club","TheLakeEffekt",284,1,1,0,4,514,0,0],["Best Friends Club","greenarrowspark2",200,0,0,1,2,123,0,0],["Crossbar Cartel","Sir_vantzzz",292,1,0,2,2,673,1,1],["Crossbar Cartel","Vizpick",328,0,0,3,1,212,0,0],["Crossbar Cartel","MJD22-_-",156,0,1,0,1,525,0,1]]}]},
   {"season":"S6","stage":"Swiss","round":"Round 3","home":"Ball Chasin & Sauce Tastin","away":"Giga's In Paris","games":[{"id":"81584a9d-19c5-460c-8b0e-a03692dbd3bc","game":"Game 1","date":"2026-08-04","winner":"Ball Chasin & Sauce Tastin","teams":[["Giga's In Paris","Ball Chasin & Sauce Tastin",1336,3,3,6,8,17,4,1540,9,3],["Ball Chasin & Sauce Tastin","Giga's In Paris",1319,4,1,3,17,8,3,2329,3,9]],"players":[["Ball Chasin & Sauce Tastin","Pilot_SG1",447,2,0,1,3,478,1,4],["Ball Chasin & Sauce Tastin","CROCOKYLE",684,2,1,2,9,1271,0,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",188,0,0,0,5,580,2,4],["Giga's In Paris","Ax1mov",695,1,1,4,3,673,4,1],["Giga's In Paris","Mastergiga9",150,0,2,0,1,309,1,1],["Giga's In Paris","selena.",491,2,0,2,4,558,4,1]]},{"id":"b32155d3-d81e-4a43-8e66-afdf4d2e2b43","game":"Game 2","date":"2026-08-04","winner":"Giga's In Paris","teams":[["Giga's In Paris","Ball Chasin & Sauce Tastin",1324,2,1,8,4,11,1,1220,4,4],["Ball Chasin & Sauce Tastin","Giga's In Paris",791,1,1,2,11,4,2,1949,4,4]],"players":[["Ball Chasin & Sauce Tastin","CROCOKYLE",278,0,0,1,5,803,1,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",196,0,1,0,3,485,1,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",317,1,0,1,3,661,2,2],["Giga's In Paris","Ax1mov",890,2,0,6,3,706,3,3],["Giga's In Paris","selena.",192,0,0,1,1,447,1,0],["Giga's In Paris","Mastergiga9",242,0,1,1,0,67,0,1]]},{"id":"e3a1d2da-be8f-44c9-bbb5-8552cc006629","game":"Game 3","date":"2026-08-05","winner":"Giga's In Paris","teams":[["Ball Chasin & Sauce Tastin","Giga's In Paris",819,0,0,5,4,9,3,1254,2,1],["Giga's In Paris","Ball Chasin & Sauce Tastin",1060,3,2,2,9,4,0,1386,1,2]],"players":[["Ball Chasin & Sauce Tastin","TGS_Lostmoss",354,0,0,2,1,261,0,0],["Ball Chasin & Sauce Tastin","CROCOKYLE",188,0,0,1,1,408,0,1],["Ball Chasin & Sauce Tastin","Pilot_SG1",277,0,0,2,2,585,2,0],["Giga's In Paris","Ax1mov",586,2,0,0,7,792,1,0],["Giga's In Paris","selena.",196,0,2,0,0,402,0,2],["Giga's In Paris","Mastergiga9",278,1,0,2,2,192,0,0]]},{"id":"edfe7b4e-a8e0-4a8d-8ff3-c1c39e3f6109","game":"Game 4","date":"2026-08-05","winner":"Ball Chasin & Sauce Tastin","teams":[["Ball Chasin & Sauce Tastin","Giga's In Paris",1280,5,2,3,12,8,4,1353,6,4],["Giga's In Paris","Ball Chasin & Sauce Tastin",1278,4,2,5,8,12,5,1103,4,6]],"players":[["Ball Chasin & Sauce Tastin","Pilot_SG1",488,2,0,3,2,720,2,1],["Ball Chasin & Sauce Tastin","CROCOKYLE",480,2,1,0,8,309,0,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",312,1,1,0,2,324,4,2],["Giga's In Paris","Ax1mov",606,2,0,3,4,409,2,3],["Giga's In Paris","selena.",476,2,0,2,3,472,1,0],["Giga's In Paris","Mastergiga9",196,0,2,0,1,222,1,3]]},{"id":"f076b683-7efe-42d2-a76d-ca3758c0f9c1","game":"Game 5","date":"2026-08-05","winner":"Ball Chasin & Sauce Tastin","teams":[["Ball Chasin & Sauce Tastin","Giga's In Paris",1052,2,2,4,11,6,1,1739,4,4],["Giga's In Paris","Ball Chasin & Sauce Tastin",1068,1,1,5,6,11,2,1169,4,4]],"players":[["Ball Chasin & Sauce Tastin","Pilot_SG1",410,1,0,2,3,648,2,1],["Ball Chasin & Sauce Tastin","CROCOKYLE",414,1,1,1,7,524,2,1],["Ball Chasin & Sauce Tastin","TGS_Lostmoss",228,0,1,1,1,567,0,2],["Giga's In Paris","Ax1mov",434,0,1,2,3,483,3,1],["Giga's In Paris","selena.",462,1,0,3,2,550,1,2],["Giga's In Paris","Mastergiga9",172,0,0,0,1,136,0,1]]}]}
 ]);
-
-addCompactS6SwissSeries([
-  {"season":"S6","stage":"Swiss","round":"Round 3","home":"Past Our Prime","away":"Best Friends Club","games":[{"id":"05ddbc82-8752-4771-b188-824bbaff9dc5","game":"Game 1","date":"2026-08-09","winner":"POP","teams":[["POP","BFC",978,3,3,0,9,2,1,1433,3,1],["BFC","POP",626,1,0,3,2,9,3,728,1,3]],"players":[["POP","MerkWTM",230,1,1,0,2,239,2,0],["POP","AtownSteelers",220,0,2,0,2,528,0,1],["POP","RoyalxRenegade",528,2,0,0,5,666,1,0],["BFC","greenarrowspark2",70,0,0,0,0,283,0,1],["BFC","TheLakeEffekt",208,0,0,2,0,218,0,1],["BFC","i_have_a_bag",348,1,0,1,2,227,1,1]]},{"id":"c0a20678-5372-4db9-8072-4302be244aa8","game":"Game 2","date":"2026-08-09","winner":"POP","teams":[["POP","BFC",1382,5,4,4,5,8,2,1072,2,3],["BFC","POP",638,2,0,0,8,5,5,1086,3,2]],"players":[["POP","AtownSteelers",413,1,2,2,1,414,0,1],["POP","MerkWTM",457,2,1,1,2,277,0,2],["POP","RoyalxRenegade",512,2,1,1,2,381,2,0],["BFC","i_have_a_bag",284,1,0,0,3,300,0,0],["BFC","TheLakeEffekt",136,0,0,0,2,456,0,1],["BFC","greenarrowspark2",218,1,0,0,3,330,3,1]]},{"id":"7f366c5f-6216-41d6-bce2-6f3154dda921","game":"Game 3","date":"2026-08-09","winner":"POP","teams":[["POP","BFC",1277,4,4,2,8,5,1,1312,2,0],["BFC","POP",626,1,1,1,5,8,4,1032,0,2]],"players":[["POP","MerkWTM",397,1,3,1,1,231,1,0],["POP","AtownSteelers",478,2,0,1,4,450,0,0],["POP","RoyalxRenegade",402,1,1,0,3,631,1,0],["BFC","i_have_a_bag",300,1,0,1,3,311,0,1],["BFC","greenarrowspark2",166,0,1,0,0,477,0,0],["BFC","TheLakeEffekt",160,0,0,0,2,244,0,1]]}]}
-]);
-
-addCompactS6SwissSeries(window.S6_ROUND4_SERIES || []);
-addCompactS6SwissSeries(window.S6_PLAYIN_SERIES || []);
-addCompactS6SwissSeries(window.S6_PLAYOFF_SERIES || [], { includeTotals: false });
 
 const importedReplayStorageKey = "gtrls.importedReplaySeries.v1";
 const importedReplaySeries = [];
@@ -1370,7 +1352,7 @@ function seasonChampionDefinitions() {
     .map((champion) => championDefinition(champion.season, champion.team, champion.amount))
     .filter(Boolean);
   const playoffDefinitions = (data.manualHistory?.playoffs || [])
-    .filter(isChampionshipRound)
+    .filter((row) => isChampionshipRound(row) && row.round !== "Championship Game")
     .flatMap((row) => {
       const winnerKey = playoffWinnerKey(row);
       const championTeam = winnerKey ? row[winnerKey] : "";
@@ -1911,11 +1893,7 @@ function playoffWinnerKey(row) {
 }
 
 function isChampionshipRound(row) {
-  return /^(championship|grand finals?)$/i.test(String(row.round || "").trim());
-}
-
-function isChampionshipGameRound(row) {
-  return /^(championship game|grand final game)$/i.test(String(row.round || "").trim());
+  return /^championship$/i.test(String(row.round || "").trim());
 }
 
 function playoffTeamMarkup(row, key) {
@@ -2244,68 +2222,6 @@ function applyS6SwissByePoints(row) {
   return next;
 }
 
-function s6SeriesHasDetailedStats(round, team, opponent) {
-  const matchup = [canonicalTeamName(team), canonicalTeamName(opponent)].sort().join("|");
-  return s6SwissSeriesGameStats.some((series) => (
-    String(series.round || "") === String(round || "")
-    && [canonicalTeamName(series.home), canonicalTeamName(series.away)].sort().join("|") === matchup
-  ));
-}
-
-function s6PendingSwissScheduleResults() {
-  return (manualHistory.schedules || []).filter((row) => {
-    if (row.season !== "S6" || String(row.stage || "").toLowerCase() !== "swiss") return false;
-    if (!row.home || !row.away || !row.winner) return false;
-    const score = String(row.result || "").match(/(?:\((\d+)\)\s*)?(\d+)\s*-\s*(\d+)(?:\s*\((\d+)\))?/);
-    if (!score || Number(score[2]) === Number(score[3])) return false;
-    return !s6SeriesHasDetailedStats(row.round, row.home, row.away);
-  });
-}
-
-function applyS6PendingSwissResults(rows) {
-  const byTeam = new Map(rows.map((row) => [canonicalTeamName(row.name), { ...row }]));
-  s6PendingSwissScheduleResults().forEach((series) => {
-    const score = String(series.result || "").match(/(?:\((\d+)\)\s*)?(\d+)\s*-\s*(\d+)(?:\s*\((\d+)\))?/);
-    if (!score) return;
-    const home = canonicalTeamName(series.home);
-    const away = canonicalTeamName(series.away);
-    const homeWins = Number(score[2]);
-    const awayWins = Number(score[3]);
-    const homeGoals = Number(score[1] || 0);
-    const awayGoals = Number(score[4] || 0);
-    const winner = homeWins > awayWins ? home : away;
-
-    [[home, homeWins, awayWins, homeGoals - awayGoals], [away, awayWins, homeWins, awayGoals - homeGoals]].forEach(([team, gameWins, gameLosses, goalDiff]) => {
-      const row = byTeam.get(team);
-      if (!row) return;
-      const won = team === winner;
-      row.wins = (Number(row.wins) || 0) + (won ? 1 : 0);
-      row.losses = (Number(row.losses) || 0) + (won ? 0 : 1);
-      row.gameWins = (Number(row.gameWins) || 0) + gameWins;
-      row.gameLosses = (Number(row.gameLosses) || 0) + gameLosses;
-      row.sweeps = (Number(row.sweeps) || 0) + (won && gameWins === 3 && gameLosses === 0 ? 1 : 0);
-      row.gameFiveLosses = (Number(row.gameFiveLosses) || 0) + (!won && gameWins === 2 && gameLosses === 3 ? 1 : 0);
-      row.standingsPoints = (Number(row.standingsPoints) || 0)
-        + (won ? (gameLosses === 0 ? 3 : 2) : (gameWins === 2 && gameLosses === 3 ? 1 : 0));
-      row.standingsGoalDiffAdjustment = (Number(row.standingsGoalDiffAdjustment) || 0) + goalDiff;
-    });
-  });
-
-  return [...byTeam.values()].map((row) => {
-    const carriedPer = Number(row.per) || 0;
-    const goalDiffAdjustment = Number(row.standingsGoalDiffAdjustment) || 0;
-    row.matchRecord = `${row.wins || 0} - ${row.losses || 0}`;
-    delete row.matchWinPct;
-    delete row.gameWinPct;
-    delete row.winPct;
-    const finalized = finalizeCommon(row);
-    finalized.per = Math.round(carriedPer * 100) / 100;
-    finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 100) / 100;
-    finalized.goalDiff += goalDiffAdjustment;
-    return finalized;
-  });
-}
-
 function applyS6SeasonScoreOverride(row) {
   const standingsPoints = s6SeasonScoreOverrides[row.name];
   if (typeof standingsPoints !== "number") return row;
@@ -2371,7 +2287,6 @@ function combineS6Rows(rows, type) {
       "games", "wins", "losses", "gameWins", "gameLosses", "standingsPoints", "accruedBonuses", "score", "goals",
       "goalsConceded", "assists", "saves", "shots", "shotsConceded", "sweeps", "gameFiveLosses",
       "amountStolen", "demosInflicted", "demosTaken", "opponentSavesForced", "pressureShots", "pressureOpponentSaves", "advancedGames", "mvps", "per",
-      "standingsGoalDiffAdjustment",
     ].forEach((field) => {
       item[field] = (Number(item[field]) || 0) + (Number(row[field]) || 0);
     });
@@ -2386,7 +2301,6 @@ function combineS6Rows(rows, type) {
     const finalized = finalizeCommon(row);
     finalized.per = Math.round(carriedPer * 100) / 100;
     finalized.perPerGame = Math.round((finalized.per / Math.max(1, finalized.games)) * 100) / 100;
-    finalized.goalDiff += Number(row.standingsGoalDiffAdjustment) || 0;
     finalized.stage = "overall";
     return finalized;
   });
@@ -2484,9 +2398,7 @@ function s6StageTeamRows(stage = state.s6Stage, pool = state.s6Pool) {
   const swissRows = s6SwissTeamRows.map(makeS6SwissTeamRow);
   const groupPlayerRows = s6OverallPlayerRows.map((row) => makeS6PlayerRow(row, groupRows));
   const swissPlayerRows = s6SwissPlayerRows.map((row) => makeS6SwissPlayerRow(row, swissRows));
-  const combinedSwissRows = applyS6PendingSwissResults(
-    s6TeamRowsWithPlayerPer(combineS6Rows(swissRows, "team").map(applyS6SwissByePoints), combineS6Rows(swissPlayerRows, "player"))
-  );
+  const combinedSwissRows = s6TeamRowsWithPlayerPer(combineS6Rows(swissRows, "team").map(applyS6SwissByePoints), combineS6Rows(swissPlayerRows, "player"));
   const combinedOverallRows = s6TeamRowsWithPlayerPer(
     combineS6Rows([...groupRows, ...combinedSwissRows], "team"),
     combineS6Rows([...groupPlayerRows, ...swissPlayerRows], "player")
@@ -2811,10 +2723,7 @@ function scheduleSeriesKey(season, stage, home, away) {
 
 function scheduleSeriesData(series) {
   const key = scheduleSeriesKey(series.season, series.stage, series.team, series.opponent);
-  let matches = s6SwissSeriesGameStats.filter((item) => scheduleSeriesKey(item.season, item.stage, item.home, item.away) === key);
-  if (series.round) {
-    matches = matches.filter((item) => String(item.round || "").toLowerCase() === String(series.round).toLowerCase());
-  }
+  const matches = s6SwissSeriesGameStats.filter((item) => scheduleSeriesKey(item.season, item.stage, item.home, item.away) === key);
   if (!matches.length) return null;
   const gameMap = new Map();
   matches.flatMap((item) => item.games || []).forEach((game) => {
@@ -3357,7 +3266,7 @@ function captainHeadToHead(playerA, playerB) {
     addSeries(row.season, row.home, row.away, row.winner, row.round || row.stage || "Series");
   });
   (data.manualHistory?.playoffs || [])
-    .filter((row) => !isChampionshipGameRound(row))
+    .filter((row) => row.round !== "Championship Game")
     .forEach((row) => {
       const winnerKey = playoffWinnerKey(row);
       addSeries(row.season, row.teamA, row.teamB, winnerKey ? row[winnerKey] : "", row.round || "Playoffs");
@@ -3560,7 +3469,6 @@ function scheduleUploadedSummary(row) {
   const series = scheduleSeriesData({
     season: row.season,
     stage: row.stage || row.round || "",
-    round: row.round || "",
     team: row.home,
     opponent: row.away,
   });
@@ -3615,11 +3523,26 @@ function actionAttr(action) {
 }
 
 function homeSwissRows() {
+  const round3Teams = new Set([
+    "Past Our Prime",
+    "Winner of BFC/CC",
+    "Supernova Abyss",
+    "Quack Wok",
+    "Ball Chasin & Sauce Tastin",
+    "Giga's In Paris",
+    "Best Friends Club",
+    "Crossbar Cartel",
+  ].map(canonicalTeamName));
   return (data.manualHistory?.schedules || [])
     .filter((row) => row.season === "S6" && String(row.stage || "").toLowerCase() === "swiss")
-    .filter((row) => /^Play-In\b/.test(String(row.round || "")))
+    .filter((row) => String(row.round || "") === "Round 2" || String(row.round || "") === "Round 3")
     .map(scheduleManualRow)
-    .filter((row) => row.team && row.opponent && !/match|team|bye/i.test(`${row.team} ${row.opponent}`));
+    .filter((row) => row.team && row.opponent && !/match|team|bye/i.test(`${row.team} ${row.opponent}`))
+    .filter((row) => String(row.round || "") === "Round 3"
+      || [canonicalTeamName(row.team), canonicalTeamName(row.opponent)].some((team) => round3Teams.has(team)))
+    .filter((row) => String(row.round || "") === "Round 3"
+      || [canonicalTeamName(row.team), canonicalTeamName(row.opponent)].includes("Best Friends Club")
+      || [canonicalTeamName(row.team), canonicalTeamName(row.opponent)].includes("Crossbar Cartel"));
 }
 
 function homeByeRows(kind) {
@@ -3743,6 +3666,8 @@ function homeByeCard(row) {
 
 function renderHomePage() {
   const swissRows = homeSwissRows();
+  const upperByeRows = homeByeRows("upper");
+  const lowerByeRows = homeByeRows("lower");
   const teamRows = homeTeamSnapshotRows();
   const watchRows = homePlayerWatchList();
   const s6OverallTeams = s6StageTeamRows("overall", "overall");
@@ -3771,13 +3696,23 @@ function renderHomePage() {
       <div class="home-module home-module-wide">
         <div class="home-module-head">
           <div>
-            <span>S6 Play-In Tournament</span>
-            <h2>Play-In Results</h2>
+            <span>S6 Swiss</span>
+            <h2>Round 3 Matchups</h2>
           </div>
           <button type="button" data-action="${actionAttr({ type: "schedule", season: "S6", team: "All" })}">Full Schedule</button>
         </div>
         <div class="home-match-grid">
           ${swissRows.length ? swissRows.map(homeSeriesCard).join("") : `<p class="empty-note">Swiss schedule is not loaded yet.</p>`}
+        </div>
+        <div class="home-bye-section">
+          <div>
+            <h3>2-0 Byes</h3>
+            <div class="home-bye-grid">${upperByeRows.map(homeByeCard).join("")}</div>
+          </div>
+          <div>
+            <h3>0-2 Byes</h3>
+            <div class="home-bye-grid">${lowerByeRows.map(homeByeCard).join("")}</div>
+          </div>
         </div>
       </div>
 
@@ -4348,36 +4283,18 @@ function compareHeadToHeadPlaceholder(a, b) {
 
 function playoffBracketRows(season) {
   return (data.manualHistory?.playoffs || [])
-    .filter((row) => row.season === season && !isChampionshipGameRound(row))
+    .filter((row) => row.season === season && row.round !== "Championship Game")
     .map((row) => row.result ? { ...row } : { ...row, round: "", teamA: "", result: row.teamA, teamB: "" });
 }
 
 function playoffSeriesGames(season) {
-  return (data.manualHistory?.playoffs || []).filter((row) => row.season === season && isChampionshipGameRound(row));
+  return (data.manualHistory?.playoffs || []).filter((row) => row.season === season && row.round === "Championship Game");
 }
 
 function playoffSeriesAction(row) {
-  if (isChampionshipRound(row) && playoffSeriesGames(row.season).length) {
-    return { type: "playoffSeries", season: row.season };
-  }
-  const detailed = s6SwissSeriesGameStats.some((series) => (
-    scheduleSeriesKey(series.season, series.stage, series.home, series.away)
-      === scheduleSeriesKey(row.season, "Playoffs", row.teamA, row.teamB)
-    && String(series.round || "").toLowerCase() === String(row.round || "").toLowerCase()
-  ));
-  if (!detailed) return null;
-  const winnerKey = playoffWinnerKey(row);
-  return {
-    type: "scheduleSeries",
-    season: baseSeasonName(row.season),
-    stage: "Playoffs",
-    pool: "",
-    round: row.round,
-    team: row.teamA,
-    result: row.result,
-    opponent: row.teamB,
-    winner: winnerKey ? row[winnerKey] : "",
-  };
+  return isChampionshipRound(row) && playoffSeriesGames(row.season).length
+    ? { type: "playoffSeries", season: row.season }
+    : null;
 }
 
 function rowsForView() {
@@ -5588,13 +5505,12 @@ function detailContext() {
   if (state.page.type === "playoffSeries") {
     const games = playoffSeriesGames(state.page.season);
     const summary = (data.manualHistory?.playoffs || []).find((row) => row.season === state.page.season && isChampionshipRound(row));
-    const roundLabel = summary?.round || "Championship";
     return {
-      eyebrow: `${roundLabel} series`,
-      title: summary ? `${summary.teamA} ${summary.result} ${summary.teamB}` : `${state.page.season} ${roundLabel}`,
+      eyebrow: "Championship series",
+      title: summary ? `${summary.teamA} ${summary.result} ${summary.teamB}` : `${state.page.season} Championship`,
       columns: championshipGameColumns,
       rows: games,
-      tableTitle: `${state.page.season} ${roundLabel} Games`,
+      tableTitle: `${state.page.season} Championship Games`,
       action: null,
     };
   }
@@ -6568,7 +6484,7 @@ function renderPlayoffStats() {
     return;
   }
   const selectedPlayoffSeason = state.season === "All" ? "" : `${state.season} Playoffs`;
-  const manualPlayoffs = (data.manualHistory?.playoffs || []).filter((row) => (!selectedPlayoffSeason || row.season === selectedPlayoffSeason) && !isChampionshipGameRound(row));
+  const manualPlayoffs = (data.manualHistory?.playoffs || []).filter((row) => (!selectedPlayoffSeason || row.season === selectedPlayoffSeason) && row.round !== "Championship Game");
   if (!manualPlayoffs.length) {
     els.playoffStats.classList.add("hidden");
     els.playoffStats.innerHTML = "";
@@ -6677,7 +6593,7 @@ function renderTable(rows, columns, title, rowAction = null) {
   table.classList.toggle("award-history-table", title === "Awards Archive" || title === "Milestones Archive");
   table.classList.toggle("records-archive-table", title === "Records Archive");
   table.classList.toggle("world-cup-table", title === "World Cup Archive");
-  table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games") || title.includes("Grand Finals Games"));
+  table.classList.toggle("playoff-bracket-table", title.includes("Bracket") || title.includes("Championship Games"));
   table.classList.toggle("award-race-table", title === "Contenders");
   table.classList.toggle("schedule-table", state.view === "schedule" && state.page.type === "dashboard");
   table.classList.toggle("series-games-table", state.view === "schedule" && state.page.type === "scheduleSeries");
