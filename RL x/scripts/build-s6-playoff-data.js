@@ -3,7 +3,6 @@ const path = require("path");
 
 const downloads = "C:/Users/thoma/Downloads";
 const output = path.resolve(__dirname, "..", "s6-playoffs-data.js");
-const extraOutput = path.resolve(__dirname, "..", "s6-playoffs-extra-fields.json");
 const series = [
   {
     round: "Prequarters P1",
@@ -47,20 +46,6 @@ const series = [
     teams: "bcst-sup-quarterfinals-co9hby9vkn-teams-games.csv",
     players: "bcst-sup-quarterfinals-co9hby9vkn-players-games.csv",
   },
-  {
-    round: "Semifinals S1",
-    home: "Hook Line & Blinker",
-    away: "The Cox",
-    teams: "hlb-cox-semi-lkdw2bj4uv-teams-games.csv",
-    players: "hlb-cox-semi-lkdw2bj4uv-players-games.csv",
-  },
-  {
-    round: "Semifinals S2",
-    home: "ESC",
-    away: "Supernova Abyss",
-    teams: "esc-sa-semi-jxruq0nzx1-teams-games.csv",
-    players: "esc-sa-semi-jxruq0nzx1-players-games.csv",
-  },
 ];
 
 function splitLine(line) {
@@ -92,14 +77,6 @@ function readCsv(file) {
     const cells = splitLine(line);
     return Object.fromEntries(headers.map((header, index) => [header, cells[index] || ""]));
   });
-}
-
-function readCsvRaw(file) {
-  const lines = fs.readFileSync(path.join(downloads, file), "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
-  return {
-    headers: splitLine(lines.shift()),
-    rows: lines.filter(Boolean).map(splitLine),
-  };
 }
 
 function num(row, field) {
@@ -136,15 +113,11 @@ function buildSeries(config) {
           row["team name"], row["opposing team name"], num(row, "score"), num(row, "goals"),
           num(row, "assists"), num(row, "saves"), num(row, "shots"), num(row, "shots conceded"),
           num(row, "goals conceded"), num(row, "amount stolen"), num(row, "demos inflicted"), num(row, "demos taken"),
-          num(row, "epic saves"), num(row, "clears"), num(row, "centers"), num(row, "aerial hits"),
-          num(row, "first touches"), num(row, "flip resets"),
         ]),
         players: players.map((row) => [
           row["team name"], row["player name"], num(row, "score"), num(row, "goals"),
           num(row, "assists"), num(row, "saves"), num(row, "shots"), num(row, "amount stolen"),
           num(row, "demos inflicted"), num(row, "demos taken"),
-          num(row, "epic saves"), num(row, "clears"), num(row, "centers"), num(row, "aerial hits"),
-          num(row, "first touches"), num(row, "flip resets"),
         ]),
       };
     }),
@@ -153,15 +126,4 @@ function buildSeries(config) {
 
 const payload = series.map(buildSeries);
 fs.writeFileSync(output, `window.S6_PLAYOFF_SERIES = ${JSON.stringify(payload, null, 2)};\n`);
-const extraPayload = series.map((config) => ({
-  round: config.round,
-  home: config.home,
-  away: config.away,
-  teamSource: config.teams,
-  playerSource: config.players,
-  teams: readCsvRaw(config.teams),
-  players: readCsvRaw(config.players),
-}));
-fs.writeFileSync(extraOutput, `${JSON.stringify(extraPayload, null, 2)}\n`);
 console.log(`Wrote ${payload.length} playoff series to ${output}`);
-console.log(`Preserved complete CSV fields in ${extraOutput}`);

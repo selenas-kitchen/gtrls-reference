@@ -19,8 +19,6 @@
 }
 
 body {
-  position: relative;
-  min-height: 100vh;
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -301,7 +299,7 @@ h2 {
 }
 
 .meta {
-  position: absolute;
+  position: fixed;
   right: clamp(14px, 3vw, 34px);
   bottom: 14px;
   z-index: 40;
@@ -360,211 +358,6 @@ main {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.home-hero-finale {
-  position: relative;
-  overflow: hidden;
-  grid-template-columns: 1fr;
-  padding: 18px;
-  border: 1px solid rgba(32, 223, 245, 0.28);
-  border-radius: 8px;
-  background:
-    linear-gradient(110deg, rgba(32, 223, 245, 0.12), transparent 44%),
-    linear-gradient(290deg, rgba(255, 60, 172, 0.14), transparent 42%),
-    rgba(3, 6, 11, 0.78);
-}
-
-.home-finale-intro {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-}
-
-.home-championship-label {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.home-championship-label i {
-  width: min(110px, 12vw);
-  height: 1px;
-  background: var(--accent-2);
-  box-shadow: 0 0 10px rgba(255, 60, 172, 0.8);
-}
-
-.home-hero-finale h1 {
-  margin: 8px 0 4px;
-  font-size: clamp(2.8rem, 7vw, 6.8rem);
-  line-height: 0.88;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 24px rgba(32, 223, 245, 0.28),
-    0 0 48px rgba(255, 60, 172, 0.16);
-}
-
-.home-hero-finale p {
-  max-width: none;
-  font-size: clamp(0.92rem, 1.8vw, 1.14rem);
-}
-
-.home-finale-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr);
-  gap: 16px;
-  align-items: center;
-  max-width: 1050px;
-  margin: 24px auto 16px;
-}
-
-.home-finalist {
-  position: relative;
-  min-width: 0;
-  min-height: 190px;
-  padding: 18px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--finalist-color) 58%, #fff 12%);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--finalist-color) 17%, rgba(3, 6, 11, 0.94));
-  box-shadow:
-    inset 0 0 32px color-mix(in srgb, var(--finalist-color) 10%, transparent),
-    0 0 22px color-mix(in srgb, var(--finalist-color) 18%, transparent);
-}
-
-.home-finalist::before {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 4px;
-  background: var(--finalist-color);
-  box-shadow: 0 0 14px var(--finalist-color);
-  content: "";
-}
-
-.home-finalist img {
-  width: 92px;
-  height: 92px;
-  margin-bottom: 8px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--finalist-color) 70%, transparent));
-}
-
-.home-finalist span,
-.home-finalist small {
-  display: block;
-  color: #c8d4db;
-  overflow-wrap: anywhere;
-}
-
-.home-finalist span {
-  color: color-mix(in srgb, var(--finalist-color) 55%, #fff 45%);
-  font-size: 0.7rem;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.home-finalist strong {
-  display: block;
-  margin: 3px 0 7px;
-  color: #fff;
-  font-size: clamp(1.25rem, 2.5vw, 2rem);
-  line-height: 1.05;
-  overflow-wrap: anywhere;
-}
-
-.home-finalist small {
-  font-size: 0.78rem;
-  line-height: 1.35;
-}
-
-.home-finals-emblem {
-  display: flex;
-  width: 118px;
-  height: 118px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 50%;
-  background: #060a10;
-  box-shadow:
-    0 0 0 5px rgba(32, 223, 245, 0.08),
-    0 0 0 9px rgba(255, 60, 172, 0.06),
-    0 0 26px rgba(32, 223, 245, 0.24);
-}
-
-.home-finals-emblem span,
-.home-finals-emblem small {
-  color: var(--muted);
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.home-finals-emblem strong {
-  color: #fff;
-  font-size: 2.2rem;
-  line-height: 0.9;
-}
-
-.home-finals-emblem b {
-  margin: 3px 0;
-  color: var(--accent-2);
-  font-size: 0.8rem;
-}
-
-.home-finals-emblem.home-finals-format strong {
-  max-width: 86px;
-  font-size: 1.25rem;
-  line-height: 1.05;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.home-finals-cta {
-  min-height: 42px !important;
-  padding: 0 18px;
-  border-color: rgba(255, 60, 172, 0.62) !important;
-  background: rgba(255, 60, 172, 0.13) !important;
-  color: #fff !important;
-  font-size: 0.8rem;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  box-shadow: 0 0 18px rgba(255, 60, 172, 0.12);
-}
-
-.home-hero-finale .home-summary-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  position: relative;
-  z-index: 1;
-}
-
-.home-hero-finale::before,
-.home-hero-finale::after {
-  position: absolute;
-  width: 160px;
-  height: 3px;
-  content: "";
-}
-
-.home-hero-finale::before {
-  top: 0;
-  left: 0;
-  background: var(--accent);
-  box-shadow: 0 0 18px rgba(32, 223, 245, 0.75);
-}
-
-.home-hero-finale::after {
-  right: 0;
-  bottom: 0;
-  background: var(--accent-2);
-  box-shadow: 0 0 18px rgba(255, 60, 172, 0.75);
-}
-
 .home-kicker,
 .home-module-head span {
   color: var(--accent);
@@ -588,37 +381,6 @@ main {
   color: #dbe8ef;
   font-size: 1rem;
   line-height: 1.55;
-}
-
-.home-finale-banner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  max-width: 720px;
-  margin-top: 16px;
-  padding: 10px 12px;
-  border-left: 3px solid var(--accent-2);
-  background: rgba(0, 0, 0, 0.42);
-}
-
-.home-finale-banner span {
-  color: var(--accent);
-  font-size: 0.7rem;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.home-finale-banner strong {
-  min-width: 0;
-  color: #fff;
-  overflow-wrap: anywhere;
-}
-
-.home-finale-banner b {
-  color: var(--accent-2);
-  font-size: 0.72rem;
-  text-transform: uppercase;
 }
 
 .home-summary-grid {
@@ -671,14 +433,6 @@ main {
   grid-row: span 2;
 }
 
-.home-grid.home-finals-only {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.home-finals-only .home-module-wide {
-  grid-row: auto;
-}
-
 .home-module-head {
   display: flex;
   align-items: start;
@@ -723,49 +477,6 @@ main {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-}
-
-.home-match-grid > :only-child {
-  grid-column: 1 / -1;
-}
-
-.home-finals-storylines {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.home-finals-storylines article {
-  min-width: 0;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-left: 4px solid var(--accent-2);
-  border-radius: 8px;
-  background: rgba(9, 14, 20, 0.76);
-}
-
-.home-finals-storylines span {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--accent);
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.home-finals-storylines strong {
-  display: block;
-  color: #fff;
-  overflow-wrap: anywhere;
-}
-
-.home-finals-storylines p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
 }
 
 .home-match-card {
@@ -903,77 +614,6 @@ main {
   grid-template-columns: 1fr;
   gap: 8px;
   padding-left: 6px;
-}
-
-.home-finals-rosters {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  padding-left: 6px;
-}
-
-.home-finals-roster {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--team-color) 52%, rgba(255, 255, 255, 0.14));
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--team-color) 10%, rgba(5, 9, 14, 0.9));
-}
-
-.home-finals-roster-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
-  box-shadow: inset 4px 0 0 var(--team-color);
-}
-
-.home-finals-roster-head span,
-.home-finals-roster-head small {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 0.72rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.home-finals-roster-head small {
-  color: var(--muted);
-  text-align: right;
-}
-
-.home-finals-player-list {
-  display: grid;
-  gap: 7px;
-  padding: 8px;
-}
-
-.home-finals-player {
-  display: grid;
-  min-width: 0;
-  padding: 9px 10px;
-  text-align: left;
-}
-
-.home-finals-player > span {
-  color: var(--team-color);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-}
-
-.home-finals-player > strong {
-  margin: 2px 0 4px;
-  overflow-wrap: anywhere;
-  font-size: 0.94rem;
-}
-
-.home-finals-player > small {
-  color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
 }
 
 .home-bye-section {
@@ -5097,33 +4737,8 @@ tbody tr.clickable td:first-child {
   .home-hero,
   .home-grid,
   .home-match-grid,
-  .home-finals-storylines,
-  .home-finals-rosters,
   .home-watch-row {
     grid-template-columns: 1fr;
-  }
-
-  .home-finale-banner {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-
-  .home-finale-stage {
-    grid-template-columns: 1fr;
-  }
-
-  .home-finals-emblem {
-    width: 92px;
-    height: 92px;
-    margin: 0 auto;
-  }
-
-  .home-finalist {
-    min-height: 0;
-  }
-
-  .home-hero-finale .home-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .home-module-wide {
