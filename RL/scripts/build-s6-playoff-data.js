@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const downloads = "C:/Users/thoma/Downloads";
+const localSources = path.resolve(__dirname, "..", "Replays s6", "playoffs");
 const output = path.resolve(__dirname, "..", "s6-playoffs-data.js");
 const extraOutput = path.resolve(__dirname, "..", "s6-playoffs-extra-fields.json");
 const series = [
@@ -61,7 +62,19 @@ const series = [
     teams: "esc-sa-semi-jxruq0nzx1-teams-games.csv",
     players: "esc-sa-semi-jxruq0nzx1-players-games.csv",
   },
+  {
+    round: "Grand Finals",
+    home: "Hook Line & Blinker",
+    away: "ESC",
+    teams: "gtrls-s6-finals-k74t43uzse-teams-games.csv",
+    players: "gtrls-s6-finals-k74t43uzse-players-games.csv",
+  },
 ];
+
+function sourcePath(file) {
+  const local = path.join(localSources, file);
+  return fs.existsSync(local) ? local : path.join(downloads, file);
+}
 
 function splitLine(line) {
   const cells = [];
@@ -86,7 +99,7 @@ function splitLine(line) {
 }
 
 function readCsv(file) {
-  const lines = fs.readFileSync(path.join(downloads, file), "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+  const lines = fs.readFileSync(sourcePath(file), "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
   const headers = splitLine(lines.shift());
   return lines.filter(Boolean).map((line) => {
     const cells = splitLine(line);
@@ -95,7 +108,7 @@ function readCsv(file) {
 }
 
 function readCsvRaw(file) {
-  const lines = fs.readFileSync(path.join(downloads, file), "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+  const lines = fs.readFileSync(sourcePath(file), "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/);
   return {
     headers: splitLine(lines.shift()),
     rows: lines.filter(Boolean).map(splitLine),

@@ -1451,9 +1451,9 @@ const els = {
   playoffStats: document.querySelector("#playoffStats"),
 };
 
-const trophyTeams = new Set(["TWO INCHES DEEP", "WEENIE HUT JRS", "SWEATY SWEEPERS", "GRAVY STAIN BOYS", "RED ROCKETS SC"]);
+const trophyTeams = new Set(["TWO INCHES DEEP", "WEENIE HUT JRS", "SWEATY SWEEPERS", "GRAVY STAIN BOYS", "RED ROCKETS SC", "ESC"]);
 const disputedChampionTeams = new Set(["TWO INCHES DEEP"]);
-const silverTrophyTeams = new Set(["BMM", "THREE INCH FURY", "EPSTEIN'S WAITLIST", "COOL"]);
+const silverTrophyTeams = new Set(["BMM", "THREE INCH FURY", "EPSTEIN'S WAITLIST", "COOL", "HOOK LINE & BLINKER"]);
 const shootingEligibilityShots = 15;
 const awardDefinitions = [
   { award: "Ballon d'Car", season: "S1", stat: "score", avgStat: "avgScore", sortStat: "avgScore", totalLabel: "Total points", avgLabel: "Avg", winners: ["AtownSteelers"], team: "Coming, Melissa!", amount: "25286", perGameAmount: "665.4" },
@@ -1486,11 +1486,12 @@ const awardDefinitions = [
   { award: "Goalie of the Year", season: "S5", stat: "saves", avgStat: "savesPerGame", totalLabel: "Total saves", avgLabel: "Avg", winners: ["MegatronMD"], team: "The Hornets", amount: "49", perGameAmount: "1.69" },
   { award: "Silver Striker", season: "S5", stat: "shots", avgStat: "shootingPct", totalLabel: "Shots", avgLabel: "Shot %", winners: ["Bubbles3913"], team: "Bird Bath Bombers", amount: "101/3.16", perGameAmount: "46.53%", extraStat: "shotsPerGame" },
   { award: "Finals MVP", season: "S5", stat: "score", avgStat: "avgScore", totalLabel: "Winner", avgLabel: "", winners: ["Ramen"], team: "Weenie Hut Jrs", amount: "Finals MVP", perGameAmount: "" },
+  { award: "Finals MVP", season: "S6", stat: "score", avgStat: "avgScore", totalLabel: "Winner", avgLabel: "", winners: ["EPo -_-"], team: "ESC", amount: "Finals MVP", perGameAmount: "" },
   { award: "World Cup Champions", season: "2026", stat: "score", avgStat: "avgScore", totalLabel: "Champion", avgLabel: "", winners: ["Ax1mov", "selena.", "Bubbles3913", "KWNSquid"], team: "World Cup 2026", amount: "Champion", perGameAmount: "" },
 ];
 
 const nonRaceAwardNames = new Set(["Finals MVP", "World Cup Champions", "Season Champion"]);
-const ongoingAwardSeasons = new Set(["S6"]);
+const ongoingAwardSeasons = new Set();
 const manualSeasonChampions = [
   { season: "S1", team: "Two Inches Deep", amount: "Champion*" },
 ];
@@ -1536,9 +1537,9 @@ function seasonChampionDefinitions() {
 }
 
 function allStarDefinitions() {
-  return ["S1", "S2", "S3", "S4", "S5"].flatMap((season) => {
+  return ["S1", "S2", "S3", "S4", "S5", "S6"].flatMap((season) => {
     const limit = season === "S1" ? 6 : 8;
-    const rows = seasonPlayerRows(season)
+    const rows = (season === "S6" ? s6StagePlayerRows("overall", "overall") : seasonPlayerRows(season))
       .filter((row) => Number.isFinite(row.avgScore) && row.games > 0)
       .sort((a, b) => b.avgScore - a.avgScore || b.score - a.score || a.name.localeCompare(b.name))
       .slice(0, limit);
@@ -3800,6 +3801,7 @@ function homeSwissRows() {
 function homeFinalsRows() {
   const row = (data.manualHistory?.playoffs || []).find((item) => item.season === "S6 Playoffs" && item.round === "Grand Finals");
   if (!row?.teamA || !row?.teamB) return [];
+  const winnerKey = playoffWinnerKey(row);
   return [{
     season: "S6",
     stage: "Playoffs",
@@ -3807,17 +3809,17 @@ function homeFinalsRows() {
     team: row.teamA,
     opponent: row.teamB,
     result: row.result || "(0) 0 - 0 (0)",
-    winner: "",
-    note: "Championship preview",
+    winner: winnerKey ? row[winnerKey] : "",
+    note: winnerKey ? "Season 6 Championship" : "Championship preview",
   }];
 }
 
 function homeFinalsStorylinesMarkup() {
   const stories = [
-    ["Perfect season at stake", "Hook Line & Blinker enter the final without a series loss all season."],
-    ["Ramen's repeat bid", "Ramen is one series away from back-to-back GTRLS championships, while Bubbles is also chasing title number two."],
-    ["Which rookie takes home the GTRLS crown?", "NeonLightning20 represents Hook Line & Blinker, while ESC counters with two rookies of its own in SirSkittleZ and Clamp2much."],
-    ["ESC's first-title charge", "An ESC win would crown two rookies. Clamp2much and SirSkittleZ have improved dramatically, while EPo -_- is chasing his coveted first title."],
+    ["ESC lift the crown", "The final reads Hook Line & Blinker 2-4 ESC, with the champions holding a 21-7 aggregate goal advantage."],
+    ["EPo owns the moment", "EPo -_- delivered 2,972 points and 13 goals in the Grand Final to earn Finals MVP."],
+    ["The rookies are champions", "SirSkittleZ and Clamp2much completed the rookie title run after a season of rapid improvement."],
+    ["A perfect run finally breaks", "Hook Line & Blinker reached the final unbeaten, but ESC became the first team all season to hand them a series loss."],
   ];
   return `
     <div class="home-finals-storylines">
@@ -3858,26 +3860,45 @@ function topPlayerForTeam(teamName, metric = "perPerGame") {
 
 function homeFinalsPlayerRows(teamName) {
   const team = canonicalTeamName(teamName);
-  return playerRoleRows(s6StagePlayerRows("overall", "overall")
-    .filter((row) => (row.teams || []).map(canonicalTeamName).includes(team)))
+  const seasonRows = playerRoleRows(s6StagePlayerRows("overall", "overall")
+    .filter((row) => (row.teams || []).map(canonicalTeamName).includes(team)));
+  const finals = s6PlayoffSeries().find((series) => String(series.round || "").toLowerCase() === "grand finals");
+  const totals = new Map();
+  (finals?.games || []).forEach((game) => {
+    (game.players || [])
+      .filter((row) => canonicalTeamName(row.team) === team)
+      .forEach((row) => {
+        const name = canonicalPlayerName(row.name);
+        if (!totals.has(name)) totals.set(name, { games: 0, score: 0, goals: 0, assists: 0, saves: 0, shots: 0 });
+        const item = totals.get(name);
+        item.games += 1;
+        ["score", "goals", "assists", "saves", "shots"].forEach((key) => { item[key] += Number(row[key]) || 0; });
+      });
+  });
+  return seasonRows
+    .map((row) => ({ ...row, finals: totals.get(row.name) || null }))
     .sort((a, b) => Number(a.role || 99) - Number(b.role || 99) || b.rating - a.rating);
 }
 
 function homeFinalsPlayerPreview(teamName) {
   const players = homeFinalsPlayerRows(teamName);
+  const champion = canonicalTeamName(homeFinalsRows()[0]?.winner || "");
+  const isChampion = canonicalTeamName(teamName) === champion;
   return `
-    <section class="home-finals-roster" style="--team-color:${escapeHtml(teamColor(teamName, "S6"))}">
+    <section class="home-finals-roster${isChampion ? " is-champion" : ""}" style="--team-color:${escapeHtml(teamColor(teamName, "S6"))}">
       <div class="home-finals-roster-head">
         <span>${escapeHtml(displayName(teamName, "team"))}</span>
-        <small>Player Preview</small>
+        <small>${isChampion ? "Champions" : "Finals Performance"}</small>
       </div>
       <div class="home-finals-player-list">
         ${players.map((row) => `
           <button type="button" class="home-finals-player" data-action="${actionAttr({ type: "player", player: row.name })}">
             <span>Role ${escapeHtml(row.role || "-")} · ${fmt(row.rating)} Rating</span>
             <strong>${escapeHtml(displayName(row.name, "name"))}</strong>
-            <small>${fmtGameAvg(row.avgScore)} Score/G · ${fmtGameAvg(row.goalsPerGame)} GL/G · ${fmtGameAvg(row.assistsPerGame)} A/G</small>
-            <small>${fmtGameAvg(row.savesPerGame)} SV/G · ${fmtGameAvg(row.perPerGame)} PER/G</small>
+            ${row.finals ? `
+              <small>${fmt(row.finals.score)} Points · ${fmt(row.finals.goals)} GL · ${fmt(row.finals.assists)} A · ${fmt(row.finals.saves)} SV</small>
+              <small>${fmtGameAvg(row.finals.score / Math.max(1, row.finals.games))} Score/G · ${fmtGameAvg(row.finals.goals / Math.max(1, row.finals.games))} GL/G</small>
+            ` : `<small>Finals statistics unavailable</small>`}
           </button>
         `).join("")}
       </div>
@@ -3918,7 +3939,7 @@ function homeSeriesCard(row) {
   const awayPlayer = topPlayerForTeam(row.opponent);
   const played = !scheduleRowUnplayed(row);
   const isFinals = row.season === "S6" && row.stage === "Playoffs" && row.round === "Grand Finals";
-  const roundPoints = scheduleRoundPoints(row);
+  const roundPoints = isFinals ? null : scheduleRoundPoints(row);
   const action = {
     type: "scheduleSeries",
     season: row.season,
@@ -3984,31 +4005,39 @@ function homeByeCard(row) {
 
 function renderHomePage() {
   const finalsRows = homeFinalsRows();
+  const final = finalsRows[0] || {};
+  const champion = canonicalTeamName(final.winner || "ESC");
+  const runnerUp = champion === canonicalTeamName(final.team) ? canonicalTeamName(final.opponent) : canonicalTeamName(final.team);
+  const championRoster = homeFinalsPlayerRows(champion).map((row) => displayName(row.name, "name")).join(" · ");
+  const runnerRoster = homeFinalsPlayerRows(runnerUp).map((row) => displayName(row.name, "name")).join(" · ");
   els.homePanel.innerHTML = `
-    <section class="home-hero home-hero-finale">
+    <section class="home-hero home-hero-finale home-hero-champions">
       <div class="home-finale-intro">
         <span class="home-kicker">Gravy Train Rocket League Series</span>
-        <div class="home-championship-label"><i></i>Season 6 Championship<i></i></div>
-        <h1>The Grand Final</h1>
-        <p>One best-of-seven remains. One team leaves with the GTRLS crown.</p>
+        <div class="home-championship-label"><i></i>Season 6 Champions<i></i></div>
+        <h1>${escapeHtml(displayName(champion, "team"))} Reign Supreme</h1>
+        <p>${escapeHtml(displayName(runnerUp, "team"))} fell to ${escapeHtml(displayName(champion, "team"))}, 2-4, as ESC captured the GTRLS crown.</p>
         <div class="home-finale-stage">
-          <article class="home-finalist home-finalist-left" style="--finalist-color:${escapeHtml(teamColor("Hook Line & Blinker", "S6"))}">
-            ${teamLogoFor("Hook Line & Blinker", "S6") ? `<img src="${escapeHtml(teamLogoFor("Hook Line & Blinker", "S6"))}" alt="Hook Line & Blinker logo">` : ""}
-            <span>Undefeated Finalist</span>
-            <strong>Hook Line & Blinker</strong>
-            <small>Ramen · Bubbles3913 · NeonLightning20</small>
+          <article class="home-finalist home-finalist-left is-runner-up" style="--finalist-color:${escapeHtml(teamColor(runnerUp, "S6"))}">
+            ${teamLogoFor(runnerUp, "S6") ? `<img src="${escapeHtml(teamLogoFor(runnerUp, "S6"))}" alt="${escapeHtml(displayName(runnerUp, "team"))} logo">` : ""}
+            <span>Season 6 Runner-Up</span>
+            <strong>${escapeHtml(displayName(runnerUp, "team"))}</strong>
+            <small>${escapeHtml(runnerRoster)}</small>
           </article>
-          <div class="home-finals-emblem home-finals-format" aria-label="Best of seven">
-            <strong>Best of 7</strong>
+          <div class="home-finals-emblem home-finals-result" aria-label="ESC won the best-of-seven series four games to two">
+            <span>Final</span>
+            <strong>2-4</strong>
+            <small>Best of 7</small>
           </div>
-          <article class="home-finalist home-finalist-right" style="--finalist-color:${escapeHtml(teamColor("ESC", "S6"))}">
-            ${teamLogoFor("ESC", "S6") ? `<img src="${escapeHtml(teamLogoFor("ESC", "S6"))}" alt="ESC logo">` : ""}
-            <span>Championship Challenger</span>
-            <strong>ESC</strong>
-            <small>EPo -_- · SirSkittleZ · Clamp2much</small>
+          <article class="home-finalist home-finalist-right is-champion" style="--finalist-color:${escapeHtml(teamColor(champion, "S6"))}">
+            <b class="home-champion-badge">GTRLS Champions</b>
+            ${teamLogoFor(champion, "S6") ? `<img src="${escapeHtml(teamLogoFor(champion, "S6"))}" alt="${escapeHtml(displayName(champion, "team"))} logo">` : ""}
+            <span>Season 6 Champions</span>
+            <strong>${escapeHtml(displayName(champion, "team"))}</strong>
+            <small>${escapeHtml(championRoster)}</small>
           </article>
         </div>
-        <button type="button" class="home-finals-cta" data-action="${actionAttr({ type: "scheduleSeries", season: "S6", stage: "Playoffs", round: "Grand Finals", team: "Hook Line & Blinker", result: "(0) 0 - 0 (0)", opponent: "ESC", winner: "", preMatchOnly: true })}">Pre-Match</button>
+        <button type="button" class="home-finals-cta" data-action="${actionAttr({ type: "scheduleSeries", season: "S6", stage: "Playoffs", round: "Grand Finals", team: final.team, result: final.result, opponent: final.opponent, winner: final.winner })}">View Championship</button>
       </div>
     </section>
 
@@ -4017,7 +4046,7 @@ function renderHomePage() {
         <div class="home-module-head">
           <div>
             <span>S6 Championship</span>
-            <h2>Grand Finals Preview</h2>
+            <h2>Championship Recap</h2>
           </div>
           <button type="button" data-action="${actionAttr({ type: "schedule", season: "S6", team: "All" })}">Full Schedule</button>
         </div>
@@ -4237,6 +4266,8 @@ function playerRoleRows(rows) {
     ["Crossbar Cartel|Vizpick", "1"],
     ["Spirit Airlines|dailcowgs94", "2"],
     ["Spirit Airlines|MadJanitor88", "3"],
+    ["ESC|Clamp2much", "2"],
+    ["ESC|SirSkittleZ", "3"],
   ]);
   rows.forEach((row) => {
     const team = canonicalTeamName(row.teams?.[0] || row.teamsText || "");
@@ -4728,7 +4759,9 @@ function awardRaceRows(definition, sourceRows = null) {
   if (!definition || definition.season === "2026" || isNonRaceAwardName(definition.award)) {
     return (definition?.winners || []).map((name, index) => ({ rank: index + 1, name, teamsText: definition.team, games: "", total: definition.amount, average: definition.perGameAmount, extra: "" }));
   }
-  const playerRows = sourceRows || seasonPlayerRows(definition.season);
+  const playerRows = sourceRows || (definition.season === "S6"
+    ? s6StagePlayerRows("overall", "overall")
+    : seasonPlayerRows(definition.season));
   const isPlayoffSource = !!sourceRows?.some((row) => isPlayoffSeason(row.season));
   const contenders = playerRows
     .filter((row) => sourceRows ? true : (!row.season || row.season === definition.season))
@@ -4850,6 +4883,10 @@ function kitchenTeamColor(row, season) {
 
 function withKitchenRoles(players) {
   const roleByPlayerTeam = new Map();
+  const roleOverrides = new Map([
+    ["ESC|Clamp2much", "2"],
+    ["ESC|SirSkittleZ", "3"],
+  ]);
   const byTeam = new Map();
   players.forEach((row) => {
     const team = kitchenTeamForPlayer(row);
@@ -4861,7 +4898,10 @@ function withKitchenRoles(players) {
     rows
       .filter((row) => typeof row.rating === "number")
       .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name))
-      .forEach((row, index) => roleByPlayerTeam.set(`${team}|${row.name}`, `${index + 1}`));
+      .forEach((row, index) => {
+        const overrideKey = `${canonicalTeamName(team)}|${canonicalPlayerName(row.name)}`;
+        roleByPlayerTeam.set(`${team}|${row.name}`, roleOverrides.get(overrideKey) || `${index + 1}`);
+      });
   });
   return players.map((row) => {
     const team = kitchenTeamForPlayer(row);
@@ -5064,11 +5104,12 @@ function renderKitchen() {
     xMin: Math.floor((observedMin - observedPadding) / 50) * 50,
     xMax: Math.ceil((observedMax + observedPadding) / 50) * 50,
   };
+  const isS6Season = baseSeasonName(season) === "S6";
   const ratingWindow = season === "S5"
     ? { xMin: 250, xMax: 1000 }
     : (["S3", "S4"].includes(season) ? fittedRatingWindow : { xMin: 700, xMax: 1500 });
   const graphHtml = ratedPlayers.length ? `
-    ${renderKitchenScatter(ratedPlayers, { id: "per", title: `${season} PER/G vs Rating`, season, fitPlayers: fullRatedPlayers, yKey: "perPerGame", yLabel: "PER/G", yMin: -0.1, yMax: season === "S6" ? 0.3 : 0.4, yDecimals: 2, showLinearFit: season !== "S6", showLogisticFit: season === "S6", ...ratingWindow })}
+    ${renderKitchenScatter(ratedPlayers, { id: "per", title: `${season} PER/G vs Rating`, season, fitPlayers: fullRatedPlayers, yKey: "perPerGame", yLabel: "PER/G", yMin: -0.1, yMax: isS6Season ? 0.3 : 0.4, yDecimals: 2, showLinearFit: !isS6Season, showLogisticFit: isS6Season, ...ratingWindow })}
     ${renderKitchenScatter(ratedPlayers, { id: "delta", title: `${season} PER/G- vs Rating`, season, fitPlayers: fullRatedPlayers, yKey: "perDelta", yLabel: "PER/G-", yMin: -0.1, yMax: 0.15, yDecimals: 3, baselineY: 0, ...ratingWindow })}
   ` : `<div class="kitchen-rating-empty"><strong>Rating graphs unavailable for ${escapeHtml(season)}</strong><span>No manual or estimated player ratings are available.</span></div>`;
   const estimateFootnote = ["S1", "S2"].includes(season) ? `<div class="kitchen-estimate-footnote"><strong>* Estimated ratings</strong><span>${escapeHtml(season)} ratings are backfilled from each player's nearest future manual rating; a future-season median is used when no player-specific value exists.</span></div>` : "";
@@ -5226,8 +5267,9 @@ function latestRegularSeason() {
 function awardRaceDefinitionsForSeason(season) {
   const explicit = awardDefinitions.filter((award) => award.season !== "2026" && award.season === season && !nonRaceAwardNames.has(award.award));
   if (explicit.length) return explicit;
-  const templateSeason = [...new Set(awardDefinitions.map((award) => award.season))]
-    .filter((item) => item !== "2026")
+  const templateSeason = [...new Set(awardDefinitions
+    .filter((award) => award.season !== "2026" && !nonRaceAwardNames.has(award.award))
+    .map((award) => award.season))]
     .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))[0];
   return awardDefinitions
     .filter((award) => award.season === templateSeason && !nonRaceAwardNames.has(award.award))
