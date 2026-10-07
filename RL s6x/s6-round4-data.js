@@ -552,7 +552,7 @@ window.S6_ROUND4_SERIES = [
             1
           ],
           [
-            "CROSSBAR CARTEL",
+            "SPIRIT AIRLINES",
             "VizPick",
             291,
             0,

@@ -138,10 +138,7 @@ function buildSeries(config) {
     away: config.away,
     games: ids.map((id, index) => {
       const teams = teamRows.filter((row) => row["replay id"] === id);
-      const players = playerRows.filter((row) => (
-        row["replay id"] === id
-        && !(config.round === "Quarterfinals Q2" && row["player name"] === "SirSkittleZ")
-      ));
+      const players = playerRows.filter((row) => row["replay id"] === id);
       const winner = teams.find((row) => String(row.result).toLowerCase() === "win")?.["team name"] || "";
       return {
         id,

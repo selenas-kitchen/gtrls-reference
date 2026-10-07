@@ -4612,29 +4612,27 @@ function playoffSeriesGames(season) {
 }
 
 function playoffSeriesAction(row) {
+  if (isChampionshipRound(row) && playoffSeriesGames(row.season).length) {
+    return { type: "playoffSeries", season: row.season };
+  }
   const detailed = s6SwissSeriesGameStats.some((series) => (
     scheduleSeriesKey(series.season, series.stage, series.home, series.away)
       === scheduleSeriesKey(row.season, "Playoffs", row.teamA, row.teamB)
     && String(series.round || "").toLowerCase() === String(row.round || "").toLowerCase()
   ));
-  if (detailed) {
-    const winnerKey = playoffWinnerKey(row);
-    return {
-      type: "scheduleSeries",
-      season: baseSeasonName(row.season),
-      stage: "Playoffs",
-      pool: "",
-      round: row.round,
-      team: row.teamA,
-      result: row.result,
-      opponent: row.teamB,
-      winner: winnerKey ? row[winnerKey] : "",
-    };
-  }
-  if (isChampionshipRound(row) && playoffSeriesGames(row.season).length) {
-    return { type: "playoffSeries", season: row.season };
-  }
-  return null;
+  if (!detailed) return null;
+  const winnerKey = playoffWinnerKey(row);
+  return {
+    type: "scheduleSeries",
+    season: baseSeasonName(row.season),
+    stage: "Playoffs",
+    pool: "",
+    round: row.round,
+    team: row.teamA,
+    result: row.result,
+    opponent: row.teamB,
+    winner: winnerKey ? row[winnerKey] : "",
+  };
 }
 
 function rowsForView() {
