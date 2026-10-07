@@ -621,6 +621,17 @@ main {
   text-shadow: 0 0 20px rgba(32, 223, 245, 0.32);
 }
 
+.home-hero.home-hero-finale h1 {
+  margin-inline: auto;
+  text-align: center;
+  text-transform: none;
+}
+
+.home-hero.home-hero-finale .home-finale-intro > p {
+  margin-inline: auto;
+  text-align: center;
+}
+
 .home-hero p {
   max-width: 760px;
   margin: 0;

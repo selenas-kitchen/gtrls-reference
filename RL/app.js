@@ -4015,7 +4015,7 @@ function renderHomePage() {
       <div class="home-finale-intro">
         <span class="home-kicker">Gravy Train Rocket League Series</span>
         <div class="home-championship-label"><i></i>Season 6 Champions<i></i></div>
-        <h1>${escapeHtml(displayName(champion, "team"))} Reign Supreme</h1>
+        <h1>ESC Sends Hook, Line, and Blinker to Brazil!</h1>
         <p>${escapeHtml(displayName(runnerUp, "team"))} fell to ${escapeHtml(displayName(champion, "team"))}, 2-4, as ESC captured the GTRLS crown.</p>
         <div class="home-finale-stage">
           <article class="home-finalist home-finalist-left is-runner-up" style="--finalist-color:${escapeHtml(teamColor(runnerUp, "S6"))}">
@@ -4266,8 +4266,8 @@ function playerRoleRows(rows) {
     ["Crossbar Cartel|Vizpick", "1"],
     ["Spirit Airlines|dailcowgs94", "2"],
     ["Spirit Airlines|MadJanitor88", "3"],
-    ["ESC|Clamp2much", "2"],
-    ["ESC|SirSkittleZ", "3"],
+    ["ESC|Clamp2much", "3"],
+    ["ESC|SirSkittleZ", "2"],
   ]);
   rows.forEach((row) => {
     const team = canonicalTeamName(row.teams?.[0] || row.teamsText || "");
@@ -4886,8 +4886,8 @@ function kitchenTeamColor(row, season) {
 function withKitchenRoles(players) {
   const roleByPlayerTeam = new Map();
   const roleOverrides = new Map([
-    ["ESC|Clamp2much", "2"],
-    ["ESC|SirSkittleZ", "3"],
+    ["ESC|Clamp2much", "3"],
+    ["ESC|SirSkittleZ", "2"],
   ]);
   const byTeam = new Map();
   players.forEach((row) => {
