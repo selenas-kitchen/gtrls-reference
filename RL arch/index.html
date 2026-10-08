@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gravy Train Rocket League Series</title>
+  <link rel="stylesheet" href="styles.css?v=finals-heading-box-centered-20261007">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <button id="homeLogoButton" class="home-logo-button" type="button" aria-label="Return to main landing page">
+        <img class="brand-logo" src="assets/main-mini-logo.png?v=20260629" alt="Gravy Train Rocket League Series logo">
+      </button>
+      <button id="patchNotesButton" class="patch-notes-button" type="button">Patch Notes</button>
+    </div>
+    <nav class="social-links" aria-label="GTRLS social links">
+      <a href="https://www.twitch.tv/gravytrainrls" target="_blank" rel="noopener noreferrer" aria-label="Open Gravy Train RLS on Twitch">
+        <img src="assets/social/twitch.jpg?v=20260629" alt="Twitch">
+      </a>
+      <a href="https://www.youtube.com/@GravyTrainRLS" target="_blank" rel="noopener noreferrer" aria-label="Open Gravy Train RLS on YouTube">
+        <img src="assets/social/youtube.png?v=20260629" alt="YouTube">
+      </a>
+      <a href="https://discord.gg/YGecYABtu" target="_blank" rel="noopener noreferrer" aria-label="Join the GTRLS Discord">
+        <img src="assets/social/discord.jpg?v=20260629" alt="Discord">
+      </a>
+    </nav>
+    <div class="meta">
+      <span id="generatedAt">Last Update: loading...</span>
+    </div>
+  </header>
+
+  <section id="patchNotesOverlay" class="patch-notes-overlay hidden" aria-label="Latest patch notes" aria-modal="true" role="dialog">
+    <button class="patch-notes-backdrop" type="button" aria-label="Close patch notes"></button>
+    <article class="patch-notes-card">
+      <div class="patch-notes-head">
+        <div>
+          <span>Latest Update</span>
+          <h2>Patch Notes</h2>
+        </div>
+        <button id="patchNotesClose" type="button" aria-label="Close patch notes">Close</button>
+      </div>
+      <div class="patch-notes-body">
+        <p>S6 team PER now recalculates from the sum of each player's PER on that team, so team totals match the player table.</p>
+        <p>S6 Overall and Swiss standings now recalculate from the same combined team-stat rows, including uploaded Swiss Round 2 results.</p>
+        <p>PER/G for S6 teams now follows that summed team PER divided by team games across Group Stage, Swiss, and Overall views.</p>
+        <p>Loaded four S6 Swiss Round 2 stat files: HLB/BCST, Past/ESC, Cox/Giga's, and Supernova/Spirit.</p>
+        <p>S6 Swiss schedule now includes Quack Wok vs Deceptitards game stats, with Quack Wok taking the series 3-2 and Deceptitards receiving the game-five loss point.</p>
+        <p>S6 Swiss Round 3 now shows ranked 2-0 and 0-2 byes, plus Past Our Prime vs BFC/Crossbar winner, Supernova Abyss vs Quack Wok, and Ball Chasin & Sauce Tastin vs Giga's In Paris.</p>
+        <p>Removed the public CSV import panel from the schedule. Replay CSV updates now stay behind the curtain.</p>
+      </div>
+    </article>
+  </section>
+
+  <main>
+    <section class="controls" aria-label="Dashboard controls">
+      <label>
+        <span>Season</span>
+        <select id="seasonSelect"></select>
+      </label>
+      <label>
+        <span>Search</span>
+        <input id="searchInput" type="search" placeholder="Team or player">
+        <div id="searchSuggestions" class="search-suggestions hidden"></div>
+      </label>
+      <label class="check-control">
+        <input id="includeScrims" type="checkbox">
+        <span>Include scrims</span>
+      </label>
+      <div id="seasonPhaseControl" class="phase-control" role="group" aria-label="Season phase">
+        <button type="button" data-season-phase="regular" class="active">Regular Season</button>
+        <button type="button" data-season-phase="playoffs">Playoffs</button>
+      </div>
+      <div id="s5StageControl" class="phase-control hidden" role="group" aria-label="Season 5 split">
+        <button type="button" data-s5-stage="split1" class="active">Split 1</button>
+        <button type="button" data-s5-stage="split2">Split 2</button>
+        <button type="button" data-s5-stage="swiss">Swiss</button>
+        <button type="button" data-s5-stage="overall">Overall</button>
+      </div>
+      <label id="excludeTwosControl" class="check-control hidden">
+        <input id="excludeTwosEra" type="checkbox">
+        <span>Exclude 2's Era</span>
+      </label>
+      <label id="excludeThreesControl" class="check-control hidden">
+        <input id="excludeThreesEra" type="checkbox">
+        <span>Exclude 3's Era</span>
+      </label>
+      <div class="segmented" role="tablist" aria-label="Stats view">
+        <button type="button" data-view="teams">Teams</button>
+        <button type="button" data-view="players">Players</button>
+        <button type="button" data-view="standings">Standings</button>
+        <button type="button" data-view="schedule">Schedule</button>
+        <button type="button" data-view="teamInfo">Team Info</button>
+        <button type="button" data-view="awards">Archives</button>
+        <button type="button" data-view="analytics">Analytics</button>
+      </div>
+    </section>
+
+    <section id="detailBar" class="detail-bar hidden" aria-label="Detail navigation">
+      <button id="backButton" type="button">Back</button>
+      <img id="detailTeamLogo" class="detail-team-logo hidden" alt="">
+      <div>
+        <span id="detailEyebrow">Detail</span>
+        <strong id="detailTitle">-</strong>
+      </div>
+      <div id="detailActions" class="detail-actions"></div>
+    </section>
+
+    <section id="homePanel" class="home-panel hidden" aria-label="Dashboard home"></section>
+
+    <section class="kpis" aria-label="Season summary">
+      <div id="teamLeaderPanel">
+        <h2>Team League Leaders</h2>
+        <div id="teamLeaderGrid" class="mini-leader-grid"></div>
+      </div>
+      <div id="awardRacePanel">
+        <h2>Award Races</h2>
+        <div id="awardRaceGrid" class="mini-leader-grid"></div>
+      </div>
+    </section>
+
+    <section class="figures hidden" aria-label="Key figures">
+      <article>
+        <span id="figureOneLabel">Top Scorer</span>
+        <strong id="figureOneValue">-</strong>
+        <small id="figureOneMeta"></small>
+      </article>
+      <article>
+        <span id="figureTwoLabel">Pressure Leader</span>
+        <strong id="figureTwoValue">-</strong>
+        <small id="figureTwoMeta"></small>
+      </article>
+      <article>
+        <span id="figureThreeLabel">Most Efficient</span>
+        <strong id="figureThreeValue">-</strong>
+        <small id="figureThreeMeta"></small>
+      </article>
+      <article>
+        <span id="figureFourLabel">Boost Thief</span>
+        <strong id="figureFourValue">-</strong>
+        <small id="figureFourMeta"></small>
+      </article>
+    </section>
+
+    <section class="leaderboards hidden" aria-label="Leaders">
+      <div>
+        <h2 id="leaderOneTitle">Team Goal Leaders</h2>
+        <div id="leaderOne" class="bars"></div>
+      </div>
+      <div>
+        <h2 id="leaderTwoTitle">Best Win Rate</h2>
+        <div id="leaderTwo" class="bars"></div>
+      </div>
+    </section>
+
+    <section id="awardFilters" class="award-filters hidden" aria-label="Award filters"></section>
+    <section id="scheduleFilters" class="award-filters hidden" aria-label="Schedule filters"></section>
+    <section id="playerFilters" class="award-filters hidden" aria-label="Player filters"></section>
+    <section id="csvImportPanel" class="csv-import-panel hidden" aria-label="CSV import panel"></section>
+    <section id="analyticsModeControl" class="analytics-mode-control hidden" aria-label="Analytics view">
+      <button type="button" data-analytics-mode="selena" class="active">Selena's Kitchen</button>
+      <button type="button" data-analytics-mode="your">Your Kitchen</button>
+    </section>
+    <section id="kitchenPanel" class="kitchen-panel hidden" aria-label="Selena's Kitchen"></section>
+    <section id="teamInfoPanel" class="team-info-panel hidden" aria-label="Team information"></section>
+    <section id="yourKitchenPanel" class="your-kitchen-panel hidden" aria-label="Your Kitchen"></section>
+
+    <section class="table-shell">
+      <div class="table-head">
+        <h2 id="tableTitle">Team Stats</h2>
+        <div class="table-meta">
+          <div id="tableLegend" class="table-legend hidden" aria-label="Table key"></div>
+          <span id="rowCount">0 rows</span>
+        </div>
+      </div>
+      <section class="stage-filter-row" aria-label="Stage and pool filters">
+        <div id="s6StageControl" class="phase-control hidden" role="group" aria-label="Season 6 stage">
+          <button type="button" data-s6-stage="group">Group Stage</button>
+          <button type="button" data-s6-stage="swiss">Swiss</button>
+          <button type="button" data-s6-stage="overall" class="active">Overall</button>
+        </div>
+        <div id="s6PoolControl" class="s6-pool-strip hidden" role="group" aria-label="Season 6 pool">
+          <span>Group Stage Filter</span>
+          <button type="button" data-s6-pool="overall" class="active">Overall</button>
+          <button type="button" data-s6-pool="gravy">Gravy Pool</button>
+          <button type="button" data-s6-pool="train">Train Pool</button>
+        </div>
+      </section>
+      <section id="standingsRules" class="standings-rules hidden" aria-label="Standings tiebreak rules"></section>
+      <div class="table-wrap">
+        <table>
+          <thead id="statsHead"></thead>
+          <tbody id="statsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="detailExtras" class="detail-extras hidden" aria-label="Player awards and leaderboard appearances"></section>
+    <section id="playoffStats" class="detail-extras hidden" aria-label="Playoff stats"></section>
+  </main>
+
+  <script src="dashboard-data.js"></script>
+  <script src="manual-history.js?v=s6-finals-preview-20261003"></script>
+  <script src="s6-round4-data.js?v=vizpick-team-fix-20261007"></script>
+  <script src="s6-playin-data.js?v=s6-play-in-stats-20260920"></script>
+  <script src="s6-playoffs-data.js?v=supernova-roster-fix-20261007"></script>
+  <script src="app.js?v=finals-headline-roles-20261007"></script>
+</body>
+</html>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gravy Train Rocket League Series</title>
-  <link rel="stylesheet" href="styles.css?v=finals-heading-box-centered-20261007">
+  <link rel="stylesheet" href="styles.css?v=dual-detail-stats-20261008">
 </head>
 <body>
   <header class="topbar">
@@ -62,10 +62,6 @@
         <span>Search</span>
         <input id="searchInput" type="search" placeholder="Team or player">
         <div id="searchSuggestions" class="search-suggestions hidden"></div>
-      </label>
-      <label class="check-control">
-        <input id="includeScrims" type="checkbox">
-        <span>Include scrims</span>
       </label>
       <div id="seasonPhaseControl" class="phase-control" role="group" aria-label="Season phase">
         <button type="button" data-season-phase="regular" class="active">Regular Season</button>
@@ -164,6 +160,7 @@
     <section id="kitchenPanel" class="kitchen-panel hidden" aria-label="Selena's Kitchen"></section>
     <section id="teamInfoPanel" class="team-info-panel hidden" aria-label="Team information"></section>
     <section id="yourKitchenPanel" class="your-kitchen-panel hidden" aria-label="Your Kitchen"></section>
+    <section id="season7Panel" class="season7-panel hidden" aria-label="Season 7 signup and draft board"></section>
 
     <section class="table-shell">
       <div class="table-head">
@@ -199,11 +196,12 @@
     <section id="playoffStats" class="detail-extras hidden" aria-label="Playoff stats"></section>
   </main>
 
-  <script src="dashboard-data.js"></script>
+  <script src="dashboard-data.js?v=regular-season-data-20261008"></script>
   <script src="manual-history.js?v=s6-finals-preview-20261003"></script>
   <script src="s6-round4-data.js?v=vizpick-team-fix-20261007"></script>
   <script src="s6-playin-data.js?v=s6-play-in-stats-20260920"></script>
   <script src="s6-playoffs-data.js?v=supernova-roster-fix-20261007"></script>
-  <script src="app.js?v=finals-headline-roles-20261007"></script>
+  <script src="app.js?v=dual-detail-stats-20261008"></script>
+  <script src="season7.js?v=s7-effective-season-profile-20261007"></script>
 </body>
 </html>

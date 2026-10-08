@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-07T21:26:24.370Z",
+  "settings": {
+    "status": "signups",
+    "title": "Season 7 Draft",
+    "currentTeamId": "c884c2a6-5ab5-4358-88fc-44c820f5df9f",
+    "currentPick": 2,
+    "round": 2
+  },
+  "signups": [
+    {
+      "id": "2a2a5a48-1ae6-42a9-a0ae-dba8b326b67f",
+      "displayName": "Ax1mov",
+      "trackerName": "Ax1mov",
+      "platform": "epic",
+      "trackerUrl": "https://tracker.gg/rocket-league/profile/epic/Ax1mov/overview",
+      "mmr": 1315,
+      "mmrStatus": "submitted",
+      "preferredRole": "1",
+      "availability": "Test",
+      "discord": "",
+      "notes": "",
+      "status": "drafted",
+      "createdAt": "2026-10-07T21:26:24.348Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": "c884c2a6-5ab5-4358-88fc-44c820f5df9f",
+      "name": "Test Team",
+      "color": "#20dff5",
+      "picks": [
+        "2a2a5a48-1ae6-42a9-a0ae-dba8b326b67f"
+      ]
+    }
+  ],
+  "draftLog": [
+    {
+      "signupId": "2a2a5a48-1ae6-42a9-a0ae-dba8b326b67f",
+      "teamId": "c884c2a6-5ab5-4358-88fc-44c820f5df9f",
+      "pick": 1,
+      "round": 1,
+      "at": "2026-10-07T21:26:24.370Z"
+    }
+  ]
+}

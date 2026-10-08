@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-07T22:02:01.038Z",
+  "settings": {
+    "status": "signups",
+    "title": "Season 7 Draft",
+    "currentTeamId": "",
+    "currentPick": 1,
+    "round": 1
+  },
+  "signups": [
+    {
+      "id": "d1662169-3337-48c7-aac8-f1bc88320989",
+      "displayName": "test",
+      "trackerName": "test1",
+      "platform": "epic",
+      "trackerUrl": "",
+      "mmr": 1500,
+      "mmrStatus": "submitted",
+      "preferredRole": "flex",
+      "availability": "",
+      "discord": "",
+      "notes": "",
+      "status": "available",
+      "createdAt": "2026-10-07T21:55:31.835Z"
+    },
+    {
+      "id": "e18a4839-d42b-42ef-b9cc-bd4220901561",
+      "displayName": "selena.",
+      "trackerName": "selenagomez415",
+      "platform": "epic",
+      "trackerUrl": "",
+      "mmr": 1100,
+      "mmrStatus": "submitted",
+      "preferredRole": "flex",
+      "availability": "",
+      "discord": "",
+      "notes": "",
+      "status": "available",
+      "createdAt": "2026-10-07T21:55:59.233Z"
+    }
+  ],
+  "teams": [],
+  "draftLog": []
+}

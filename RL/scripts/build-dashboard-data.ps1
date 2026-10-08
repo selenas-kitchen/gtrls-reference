@@ -2,8 +2,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$teamFiles = Get-ChildItem -Path $root -Recurse -File -Filter "*-teams-games*.csv"
-$playerFiles = Get-ChildItem -Path $root -Recurse -File -Filter "*-players-games*.csv"
+$teamFiles = Get-ChildItem -Path $root -Recurse -File -Filter "*-teams-games*.csv" | Where-Object { $_.FullName -notmatch "\\scrims\\" }
+$playerFiles = Get-ChildItem -Path $root -Recurse -File -Filter "*-players-games*.csv" | Where-Object { $_.FullName -notmatch "\\scrims\\" }
 
 function Get-SeasonFromPath($path) {
     if ($path -match "\\scrims\\") { return "Scrims" }

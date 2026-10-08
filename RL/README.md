@@ -21,7 +21,7 @@ The builder also normalizes known team aliases:
 
 - `GIGA'S IN PARIS` and `GIGAS IN PARIS` are combined as `GIGAS IN PARIS`.
 - `MUSTY M1LKERS` and `BMM` are combined as `BMM`.
-- Files under `Replays s6\scrims` are combined into a `Scrims` season.
+- Files under `Replays s6\scrims` are excluded from dashboard builds.
 - Files under playoff folders such as `quarterfinals` and `semis` are combined into a separate `S5 Playoffs` season.
 
 Known player aliases are normalized too:
@@ -35,7 +35,7 @@ Player rows stay scoped by season and show `Team(s) This Season`, so a player ca
 
 The dashboard also has lifetime team and lifetime player tabs. Lifetime rows aggregate the normalized season rows by team or player, while preserving all teams a player has represented.
 
-Scrims are hidden from the default dashboard views. Turn on `Include scrims` to add the `Scrims` season back into all-season summaries, lifetime tabs, leaderboards, and key figures.
+Scrim data is excluded from the dashboard and its aggregates.
 
 `S5 Playoffs` is separate from regular-season and lifetime totals. Select it from the season dropdown to view playoff team, player, roster, leader, and game-log stats.
 
@@ -91,3 +91,18 @@ http://127.0.0.1:8765/
 ```
 
 You can also open `index.html` directly, but the local server is more reliable in modern browsers.
+
+## Season 7 Signup And Draft Room
+
+The `Season 7` tab is temporarily hidden. Its signup/draft state remains in `data/season7.json`. The draft room is backed by the Node server and includes signup, latest-season stat matching, playstyle summaries, a live draft board, host-managed teams and picks, MMR verification, and five-second live refreshes.
+
+Host controls use `S7_ADMIN_PASSWORD` when it is set. Otherwise the local server reads the private fallback in `data/season7-admin-key.txt`. Change that file before publishing the site, or set a deployment secret:
+
+```powershell
+$env:S7_ADMIN_PASSWORD = "choose-a-long-private-password"
+node .\scripts\server.mjs
+```
+
+For deployment, use a host that runs this Node server and provides persistent disk storage. A static-file host cannot share signups between visitors or retain draft picks. Set `HOST=0.0.0.0` when the deployment platform requires the server to listen beyond localhost.
+
+Tracker Network does not provide public Rocket League API access. Signups therefore include a Tracker profile link and submitted MMR; the host can open the profile and mark the rating verified. The website does not scrape Tracker Network pages.

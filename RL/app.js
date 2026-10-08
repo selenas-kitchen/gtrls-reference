@@ -290,7 +290,6 @@ const state = {
   searchText: "",
   sortKey: "wins",
   sortDir: "desc",
-  includeScrims: false,
   excludeTwosEra: false,
   excludeThreesEra: false,
   seasonPhase: "regular",
@@ -825,9 +824,11 @@ function s6PlayerRating(playerName) {
   return s6OverallPlayerRows.find((row) => canonicalPlayerName(row[1]) === canonical)?.[11] || 0;
 }
 
+const optionalGameStats = ["epicSaves", "clears", "centers", "aerialHits", "firstTouches", "flipResets"];
+
 function compactSwissTeam(row, winner) {
   const [team, opponent, score, goals, assists, saves, shots, shotsConceded, goalsConceded, amountStolen, demosInflicted, demosTaken,
-    epicSaves = 0, clears = 0, centers = 0, aerialHits = 0, firstTouches = 0, flipResets = 0] = row;
+    epicSaves = null, clears = null, centers = null, aerialHits = null, firstTouches = null, flipResets = null] = row;
   return {
     team: canonicalTeamName(team),
     opponent: canonicalTeamName(opponent),
@@ -853,7 +854,7 @@ function compactSwissTeam(row, winner) {
 
 function compactSwissPlayer(row) {
   const [team, name, score, goals, assists, saves, shots, amountStolen, demosInflicted, demosTaken,
-    epicSaves = 0, clears = 0, centers = 0, aerialHits = 0, firstTouches = 0, flipResets = 0] = row;
+    epicSaves = null, clears = null, centers = null, aerialHits = null, firstTouches = null, flipResets = null] = row;
   return {
     team: canonicalTeamName(team),
     name: canonicalPlayerName(name),
@@ -889,6 +890,14 @@ function addCompactS6SwissSeries(seriesList, { includeTotals = true } = {}) {
         players: game.players.map(compactSwissPlayer),
       })),
     };
+
+    if (series.season === "S6" && !/Semifinals|Grand Finals/i.test(series.round || "")) {
+      hydrated.games.forEach((game) => {
+        [...game.teams, ...game.players].forEach((row) => {
+          optionalGameStats.forEach((field) => { row[field] = null; });
+        });
+      });
+    }
 
     if (!includeTotals) {
       s6SwissSeriesGameStats.push(hydrated);
@@ -1397,7 +1406,6 @@ const els = {
   seasonSelect: document.querySelector("#seasonSelect"),
   searchInput: document.querySelector("#searchInput"),
   searchSuggestions: document.querySelector("#searchSuggestions"),
-  includeScrims: document.querySelector("#includeScrims"),
   excludeTwosControl: document.querySelector("#excludeTwosControl"),
   excludeTwosEra: document.querySelector("#excludeTwosEra"),
   excludeThreesControl: document.querySelector("#excludeThreesControl"),
@@ -1448,6 +1456,7 @@ const els = {
   kitchenPanel: document.querySelector("#kitchenPanel"),
   teamInfoPanel: document.querySelector("#teamInfoPanel"),
   yourKitchenPanel: document.querySelector("#yourKitchenPanel"),
+  season7Panel: document.querySelector("#season7Panel"),
   playoffStats: document.querySelector("#playoffStats"),
 };
 
@@ -1665,7 +1674,11 @@ const rosterColumns = [
   ["role", "Role"],
   ["teamsText", "Team(s)"],
   ["games", "GP"],
+  ["score", "Total Score"],
   ["goals", "Goals"],
+  ["assists", "Assists"],
+  ["saves", "Saves"],
+  ["shots", "Shots"],
   ["goalsPerGame", "Gl/G"],
   ["assistsPerGame", "A/G"],
   ["savesPerGame", "Sv/G"],
@@ -1707,6 +1720,8 @@ const playerSeasonColumns = [
 
 const gameColumns = [
   ["date", "Date"],
+  ["stage", "Stage"],
+  ["round", "Round"],
   ["replayTitle", "Game"],
   ["team", "Team"],
   ["opponent", "Opponent"],
@@ -1972,11 +1987,11 @@ function excludedFromLifetime(rowOrSeason) {
 }
 
 function visibleSeasons() {
-  return data.seasons.filter((season) => !isPlayoffSeason(season) && (state.includeScrims || !isScrimSeason(season)));
+  return data.seasons.filter((season) => !isPlayoffSeason(season) && !isScrimSeason(season));
 }
 
 function seasonIncluded(row) {
-  if (isScrimSeason(row.season)) return state.includeScrims || state.season === row.season;
+  if (isScrimSeason(row.season)) return false;
   if (isPlayoffSeason(row.season)) return state.season === row.season && !isLifetimeView();
   return true;
 }
@@ -2666,9 +2681,7 @@ function s6StagePlayerRows(stage = state.s6Stage, pool = state.s6Pool) {
 
 function s6ComputedStandingsRows(stage) {
   const rows = s6StageTeamRows(stage, "overall")
-    .sort((a, b) => b.standingsPoints - a.standingsPoints
-      || b.wins - a.wins
-      || a.losses - b.losses
+    .sort((a, b) => compareMatchRecordThenScore(a, b)
       || b.gameWinPct - a.gameWinPct
       || b.goalDiff - a.goalDiff
       || a.name.localeCompare(b.name));
@@ -3004,6 +3017,20 @@ function gameScoreText(game, home, away) {
   return `${fmt(homeRow.goals)} - ${fmt(awayRow.goals)}`;
 }
 
+function sumAvailableSeriesStats(total, source) {
+  // Missing fields are not zeroes, and incomplete series totals stay unavailable.
+  total.__unavailableStats ||= new Set();
+  for (const field of optionalGameStats) {
+    if (!source.length || source.some((row) => typeof row[field] !== "number" || !Number.isFinite(row[field]))) {
+      total[field] = null;
+      total.__unavailableStats.add(field);
+    } else {
+      total[field] = source.reduce((sum, row) => sum + row[field], 0);
+    }
+  }
+  return total;
+}
+
 function aggregateSeriesPlayers(seriesData) {
   const map = new Map();
   (seriesData?.games || []).forEach((game) => {
@@ -3037,6 +3064,8 @@ function aggregateSeriesPlayers(seriesData) {
     });
   });
   return [...map.values()].map((row) => {
+    sumAvailableSeriesStats(row, seriesData.games.flatMap((game) => game.players || [])
+      .filter((player) => canonicalTeamName(player.team) === row.team && canonicalPlayerName(player.name) === row.name));
     row.shootingPct = row.shots ? Math.round((row.goals / row.shots) * 10000) / 100 : 0;
     row.avgScore = Math.round((row.score / Math.max(1, row.games)) * 10) / 10;
     return row;
@@ -3081,6 +3110,8 @@ function aggregateSeriesTeams(seriesData) {
     });
   });
   return [...map.values()].map((row) => {
+    sumAvailableSeriesStats(row, seriesData.games.flatMap((game) => game.teams || [])
+      .filter((team) => canonicalTeamName(team.team) === row.team));
     row.shootingPct = row.shots ? Math.round((row.goals / row.shots) * 10000) / 100 : 0;
     row.avgScore = Math.round((row.score / Math.max(1, row.games)) * 10) / 10;
     row.goalsPerGame = Math.round((row.goals / Math.max(1, row.games)) * 100) / 100;
@@ -3134,7 +3165,7 @@ function seriesPlayerSectionsMarkup(seriesData) {
     ["assists", "A"],
     ["saves", "Sv"],
     ["shots", "Sh"],
-    ["shootingPct", "Shot %", "%"],
+    ["shootingPct", "S%", "%"],
     ["amountStolen", "Stolen"],
     ["demosInflicted", "Demo"],
     ["clears", "Clr"],
@@ -3153,6 +3184,7 @@ function seriesPlayerSectionsMarkup(seriesData) {
               <span>${escapeHtml(label)} / Series Totals</span>
               <h3>${escapeHtml(displayName(teamName, "team"))}</h3>
             </div>
+            <div class="game-player-table-wrap">
             <table>
               <thead><tr>${statColumns.map(([, labelText]) => `<th>${escapeHtml(labelText)}</th>`).join("")}</tr></thead>
               <tbody>
@@ -3163,12 +3195,13 @@ function seriesPlayerSectionsMarkup(seriesData) {
                         const action = encodeURIComponent(JSON.stringify({ type: "player", player: row.name }));
                         return `<td><button type="button" class="inline-player-link" data-action="${action}">${escapeHtml(displayName(row.name, "name"))}</button></td>`;
                       }
-                      return `<td>${escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
+                      return `<td>${row[key] == null || isUnavailableValue(row, key) ? "n/a" : escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
                     }).join("")}
                   </tr>
                 `).join("")}
               </tbody>
             </table>
+            </div>
           </article>
         `;
       }).join("")}
@@ -3343,7 +3376,7 @@ function scheduleGamePlayerSectionsMarkup(page) {
     ["assists", "A"],
     ["saves", "Sv"],
     ["shots", "Sh"],
-    ["shootingPct", "Shot %", "%"],
+    ["shootingPct", "S%", "%"],
     ["amountStolen", "Stolen"],
     ["demosInflicted", "Demo"],
     ["clears", "Clr"],
@@ -3362,6 +3395,7 @@ function scheduleGamePlayerSectionsMarkup(page) {
               <span>${escapeHtml(label)}</span>
               <h3>${escapeHtml(displayName(teamName, "team"))}</h3>
             </div>
+            <div class="game-player-table-wrap">
             <table>
               <thead>
                 <tr>${statColumns.map(([, labelText]) => `<th>${escapeHtml(labelText)}</th>`).join("")}</tr>
@@ -3374,12 +3408,13 @@ function scheduleGamePlayerSectionsMarkup(page) {
                         const action = encodeURIComponent(JSON.stringify({ type: "player", player: row.name }));
                         return `<td><button type="button" class="inline-player-link" data-action="${action}">${escapeHtml(displayName(row.name, "name"))}</button></td>`;
                       }
-                      return `<td>${escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
+                      return `<td>${row[key] == null || isUnavailableValue(row, key) ? "n/a" : escapeHtml(fmtStat(row[key], key, suffix || ""))}</td>`;
                     }).join("")}
                   </tr>
                 `).join("")}
               </tbody>
             </table>
+            </div>
           </article>
         `;
       }).join("")}
@@ -4241,7 +4276,7 @@ function finalizePlayerAggregate(item) {
 
 function playerGames() {
   return data.playerGames.filter((game) => {
-    if (isScrimSeason(game.season)) return state.includeScrims || state.season === game.season;
+    if (isScrimSeason(game.season)) return false;
     if (isPlayoffSeason(game.season)) return state.season === game.season && !isLifetimeView();
     return true;
   });
@@ -4316,10 +4351,10 @@ function playerCareer(player) {
   const bySeason = new Map();
   [...data.players.filter((row) => row.season !== "S6"), ...s6StagePlayerRows(state.s6Stage, "overall")]
     .filter((row) => (row.source === "manual" || row.source === "mixed") && row.name === player)
-    .filter((row) => !excludedFromLifetime(row))
+    .filter((row) => !excludedFromLifetime(row) && !isPlayoffSeason(row.season))
     .forEach((row) => bySeason.set(row.season, { ...row, teams: new Set(row.teams || []) }));
   playerGames()
-    .filter((game) => game.player === player)
+    .filter((game) => game.player === player && !isPlayoffSeason(game.season))
     .filter((game) => !excludedFromLifetime(game))
     .filter((game) => !hasManualPlayerSeason(player, game.season))
     .forEach((game) => {
@@ -4327,6 +4362,45 @@ function playerCareer(player) {
       addGameToPlayerAggregate(bySeason.get(game.season), game);
     });
   return [...bySeason.values()].map(finalizePlayerAggregate).sort((a, b) => a.season.localeCompare(b.season));
+}
+
+function playerPlayoffCareer(player) {
+  return [...data.players.filter((row) => isPlayoffSeason(row.season) && row.season !== "S6 Playoffs"), ...s6PlayoffPlayerRows()]
+    .filter((row) => canonicalPlayerName(row.name) === canonicalPlayerName(player))
+    .sort((a, b) => a.season.localeCompare(b.season));
+}
+
+function teamPlayoffRoster(team, season) {
+  const rows = season === "S6" ? s6PlayoffPlayerRows() : season === "Lifetime"
+    ? [...data.players.filter((row) => isPlayoffSeason(row.season) && row.season !== "S6 Playoffs"), ...s6PlayoffPlayerRows()]
+    : data.players.filter((row) => row.season === playoffSeasonName(season));
+  return playerRoleRows(rows.filter((row) => (row.teams || []).some((name) => canonicalTeamName(name) === canonicalTeamName(team))));
+}
+
+function detailTotalCardsMarkup(row, title) {
+  if (!row) return "";
+  return `<section class="detail-stat-totals"><h2>${escapeHtml(title)}</h2><div class="player-total-grid">${[
+    ["score", "Total Score"], ["goals", "Total Goals"], ["assists", "Total Assists"], ["saves", "Total Saves"], ["shots", "Total Shots"],
+  ].map(([key, label]) => `<article><span>${label}</span><strong>${row[key] == null || isUnavailableValue(row, key) ? "n/a" : escapeHtml(fmt(row[key]))}</strong></article>`).join("")}</div></section>`;
+}
+
+let playoffDetailSort = { key: "games", dir: "desc" };
+
+function playoffDetailTableMarkup(rows, columns, actionForRow) {
+  const visible = pageColumns(rows, columns);
+  const sorted = [...rows].sort((a, b) => {
+    const left = a[playoffDetailSort.key], right = b[playoffDetailSort.key];
+    const result = typeof left === "number" && typeof right === "number" ? left - right : String(left ?? "").localeCompare(String(right ?? ""));
+    return playoffDetailSort.dir === "asc" ? result : -result;
+  });
+  return `<section class="detail-playoff-stats"><h2>Playoff Stats</h2>${rows.length ? `<div class="table-wrap"><table><thead><tr>${visible.map(([key, label]) => `<th data-playoff-sort="${key}" class="col-${key}${playoffDetailSort.key === key ? " sorted-column" : ""}">${label}</th>`).join("")}</tr></thead><tbody>${sorted.map((row) => {
+    const action = actionForRow(row);
+    return `<tr class="clickable" data-action="${encodeURIComponent(JSON.stringify(action))}">${visible.map(([key]) => {
+      let value = row[key] == null || isUnavailableValue(row, key) ? "n/a" : escapeHtml(fmtStat(key === "name" ? displayName(row.name, "name") : row[key], key, /Pct$/.test(key) ? "%" : ""));
+      if (key === "teamsText") value = teamTextLinks(row);
+      return `<td class="col-${key}${playoffDetailSort.key === key ? " sorted-column" : ""}">${value}</td>`;
+    }).join("")}</tr>`;
+  }).join("")}</tbody></table></div>` : `<p class="empty-note">Playoff stats are unavailable for this ${state.page.type === "team" ? "team and season" : "player"}.</p>`}</section>`;
 }
 
 function playerLifetimeRow(player) {
@@ -4471,16 +4545,59 @@ function leaderboardAppearances(player) {
 }
 
 function playerSeasonGames(player, season) {
-  return playerGames()
-    .filter((game) => game.player === player && game.season === season)
-    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const name = canonicalPlayerName(player);
+  const games = new Map();
+  for (const row of data.playerGames) {
+    if (isScrimSeason(row.season) || row.season !== season || canonicalPlayerName(row.player) !== name) continue;
+    games.set(row.replayId, { ...row, stage: season === "S6" ? "Group Stage" : "", round: "" });
+  }
+  for (const series of s6SwissSeriesGameStats) {
+    const importedSeason = series.stage === "Playoffs" ? playoffSeasonName(series.season) : series.season;
+    if (importedSeason !== season) continue;
+    for (const game of series.games) {
+      const row = game.players.find((item) => canonicalPlayerName(item.name) === name);
+      if (!row) continue;
+      const team = canonicalTeamName(row.team);
+      const opponent = canonicalTeamName(series.home) === team ? series.away : series.home;
+      const item = {
+        ...games.get(game.id), ...row,
+        season, player: name, replayId: game.id, replayTitle: game.game,
+        date: game.date, sortDate: game.date, team, opponent: canonicalTeamName(opponent),
+        stage: scheduleStageLabel(series.stage), round: series.round,
+        result: canonicalTeamName(game.winner) === team ? "win" : "loss",
+        boostStolen: row.amountStolen,
+        shootingPct: row.shots > 0 ? Math.round(row.goals / row.shots * 10000) / 100 : 0,
+        __gameAction: {
+          type: "scheduleGame", season: importedSeason, stage: series.stage, round: series.round,
+          team: series.home, opponent: series.away, game: game.game, gameId: game.id,
+          playerLog: { player: name, season },
+        },
+      };
+      const rawPer = 0.1 * row.goals + 0.05 * row.assists + (2 / 30) * row.saves + 0.01 * row.shots;
+      item.per = Math.round((rawPer - 0.1) * 100) / 100;
+      item.perPerGame = item.per;
+      games.set(game.id, item);
+    }
+  }
+  return [...games.values()].map((row) => ({
+    ...row,
+    __unavailableStats: new Set([
+      ...(row.__unavailableStats || []),
+      ...gameColumns.filter(([key]) => !["date", "stage", "round", "replayTitle", "team", "opponent", "result"].includes(key)
+        && (row[key] === null || row[key] === undefined)).map(([key]) => key),
+    ]),
+  }))
+    .filter((row) => season !== "S6" || state.s6Stage === "overall"
+      || (state.s6Stage === "group" ? row.stage === "Group Stage" : row.stage === "Swiss"))
+    .sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))
+      || String(a.replayTitle || "").localeCompare(String(b.replayTitle || ""), undefined, { numeric: true }));
 }
 
 function activeSummary() {
   if (state.season !== "All" && !isLifetimeView()) {
     return data.summary.find((row) => row.season === state.season) ?? { games: 0, teams: 0, players: 0 };
   }
-  const summaries = data.summary.filter((row) => (state.includeScrims || !isScrimSeason(row.season)) && !isPlayoffSeason(row.season) && (!isLifetimeView() || !excludedFromLifetime(row)));
+  const summaries = data.summary.filter((row) => !isScrimSeason(row.season) && !isPlayoffSeason(row.season) && (!isLifetimeView() || !excludedFromLifetime(row)));
   if (isLifetimeView()) {
     const games = summaries.reduce((total, row) => total + row.games, 0);
     return { games, teams: lifetimeTeams().length, players: lifetimePlayers().length };
@@ -4547,7 +4664,7 @@ function standingsRows() {
     if (state.s5Stage === "swiss") return [];
     if (["split1", "split2"].includes(state.s5Stage)) {
       return s5FilterByPool(s5SplitStandingsRows[state.s5Stage].map(s5SplitStandingRow))
-        .sort((a, b) => b.wins - a.wins || b.standingsPoints - a.standingsPoints || a.losses - b.losses || a.poolRank - b.poolRank || a.name.localeCompare(b.name))
+        .sort((a, b) => compareMatchRecordThenScore(a, b) || a.poolRank - b.poolRank || a.name.localeCompare(b.name))
         .map((row, index) => ({ ...row, standingsRank: index + 1 }));
     }
   }
@@ -4562,9 +4679,9 @@ function standingsRows() {
     return s6FilterByPool(s6GroupStandingsRows.map(s6StandingRow))
       .sort((a, b) => {
         if (isPoolView) return comparePoolStandings(a, b);
-        return a.standingsRank - b.standingsRank;
+        return compareMatchRecordThenScore(a, b) || a.standingsRank - b.standingsRank;
       })
-      .map((row, index) => ({ ...row, standingsRank: isPoolView ? index + 1 : row.standingsRank, poolRank: isPoolView ? index + 1 : row.poolRank }));
+      .map((row, index) => ({ ...row, standingsRank: index + 1, poolRank: isPoolView ? index + 1 : row.poolRank }));
   }
   const seasons = state.season === "All"
     ? data.seasons.filter((season) => !isScrimSeason(season) && !isPlayoffSeason(season))
@@ -4582,15 +4699,19 @@ function standingsRows() {
       maxScore: row.maxScore || row.standingsPoints || 0,
     }))
     .sort((a, b) => {
-      if (state.season !== "All" && a.standingsRank && b.standingsRank) return a.standingsRank - b.standingsRank;
-      return b.standingsPoints - a.standingsPoints || b.goalDiff - a.goalDiff;
-    });
+      return compareMatchRecordThenScore(a, b) || b.goalDiff - a.goalDiff || a.name.localeCompare(b.name);
+    })
+    .map((row, index) => ({ ...row, standingsRank: index + 1 }));
+}
+
+function compareMatchRecordThenScore(a, b) {
+  return (Number(b.wins) || 0) - (Number(a.wins) || 0)
+    || (Number(a.losses) || 0) - (Number(b.losses) || 0)
+    || (Number(b.standingsPoints) || 0) - (Number(a.standingsPoints) || 0);
 }
 
 function comparePoolStandings(a, b) {
-  return b.wins - a.wins
-    || a.losses - b.losses
-    || b.standingsPoints - a.standingsPoints
+  return compareMatchRecordThenScore(a, b)
     || compareHeadToHeadPlaceholder(a, b)
     || b.gameWinPct - a.gameWinPct
     || b.goalDiff - a.goalDiff
@@ -5464,11 +5585,135 @@ function worldCupArchiveRows() {
 }
 
 function recordArchiveRows() {
-  return recordsArchiveEntries
-    .filter((row) => row.era === state.recordEra)
-    .filter((row) => row.scope === state.recordScope)
-    .filter((row) => row.entity === state.recordEntity)
-    .map(recordDisplayRow);
+  return currentArchiveRecords(state.recordEra, state.recordScope, state.recordEntity);
+}
+
+function archiveRecordMetric(record) {
+  const label = recordDisplayName(record);
+  const keys = {
+    Points: "score", PPG: "avgScore", "Points (PPG)": "avgScore",
+    Goals: "goals", GPG: "goalsPerGame", "Goals (PPG)": "goalsPerGame",
+    Assists: "assists", APG: "assistsPerGame", "Assists (PPG)": "assistsPerGame",
+    Saves: "saves", SvPG: "savesPerGame", "Saves (PPG)": "savesPerGame",
+    Shots: "shots", ShPG: "shotsPerGame", "Shots (PPG)": "shotsPerGame",
+    "Shooting Percentage": "shootingPct", "Shoot%": "shootingPct",
+    PER: "per", PERPG: "perPerGame", "MVP's": "mvps", Score: "standingsPoints",
+    Rating: "rating", "Match Record": "wins", "Game Record (Win%)": "gameWinPct",
+    "Most Wins": "gameWins", "Fewest Losses": "gameLosses",
+    "Goal Differential": "goalDiff", Sweeps: "sweeps",
+  };
+  return { key: keys[label], minimum: label === "Fewest Losses", label };
+}
+
+function archiveRecordValue(row, key) {
+  const rateTotals = { avgScore: "score", goalsPerGame: "goals", assistsPerGame: "assists", savesPerGame: "saves", shotsPerGame: "shots" };
+  if (rateTotals[key]) return row[rateTotals[key]] / row.games;
+  if (key === "shootingPct") return row.goals / row.shots * 100;
+  if (key === "gameWinPct") return row.gameWins / (row.gameWins + row.gameLosses) * 100;
+  return row[key];
+}
+
+function archiveRecordFormattedValue(row, metric) {
+  if (metric.label === "Match Record") return `${row.wins} - ${row.losses}`;
+  if (metric.label === "Game Record (Win%)") return `${row.gameWins} - ${row.gameLosses} (${archiveRecordValue(row, metric.key).toFixed(2)}%)`;
+  const value = archiveRecordValue(row, metric.key);
+  if (metric.key === "shootingPct") return `${value.toFixed(2)}%`;
+  if (["avgScore", "goalsPerGame", "assistsPerGame", "savesPerGame", "shotsPerGame", "per", "perPerGame", "rating"].includes(metric.key)) return value.toFixed(2);
+  return String(value);
+}
+
+function archiveGameRecordSources() {
+  const players = new Map();
+  const teams = new Map();
+  const seasonFor = (season) => baseSeasonName(season);
+  // Detailed imports replace matching generated replay rows, rather than adding them twice.
+  for (const row of data.playerGames || []) {
+    const season = seasonFor(row.season);
+    if (isScrimSeason(row.season) || !seasonOrdinal(season) || !row.replayId) continue;
+    const name = canonicalPlayerName(row.player || row.name);
+    const team = canonicalTeamName(row.team);
+    players.set(`${row.replayId}|${team}|${name}`, { ...row, season, name, team, gameId: row.replayId });
+  }
+  for (const series of s6SwissSeriesGameStats) {
+    for (const game of series.games) {
+      for (const row of game.players) {
+        const name = canonicalPlayerName(row.name);
+        const team = canonicalTeamName(row.team);
+        players.set(`${game.id}|${team}|${name}`, { ...row, season: series.season, name, team, gameId: game.id });
+      }
+      for (const row of game.teams) {
+        const team = canonicalTeamName(row.team);
+        const roster = game.players.filter((player) => canonicalTeamName(player.team) === team).map((player) => canonicalPlayerName(player.name));
+        teams.set(`${game.id}|${team}`, { ...row, season: series.season, name: team, roster, gameId: game.id });
+      }
+    }
+  }
+  const grouped = new Map();
+  for (const row of players.values()) {
+    const key = `${row.gameId}|${row.team}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(row);
+  }
+  for (const [key, roster] of grouped) {
+    const expectedPlayers = seasonOrdinal(roster[0].season) === 1 ? 2 : 3;
+    if (teams.has(key) || roster.length !== expectedPlayers) continue;
+    const row = { season: roster[0].season, name: roster[0].team, roster: roster.map((player) => player.name), gameId: roster[0].gameId };
+    for (const stat of ["score", "goals", "assists", "saves", "shots"]) {
+      if (roster.every((player) => typeof player[stat] === "number")) row[stat] = roster.reduce((sum, player) => sum + player[stat], 0);
+    }
+    teams.set(key, row);
+  }
+  return { players: [...players.values()], teams: [...teams.values()] };
+}
+
+function currentArchiveRecords(era, scope, entity) {
+  const benchmarks = recordsArchiveEntries.filter((row) => row.era === era && row.scope === scope && row.entity === entity);
+  const source = scope === "season"
+    ? (entity === "players" ? regularPlayerSeasonRows() : regularTeamSeasonRows())
+    : archiveGameRecordSources()[entity];
+  const rows = source.filter((row) => {
+    const season = seasonOrdinal(row.season);
+    return era === "2s" ? season === 1 : season >= 2;
+  });
+  return benchmarks.flatMap((benchmark) => {
+    const metric = archiveRecordMetric(benchmark.record);
+    const candidates = rows.filter((row) => {
+      if (!metric.key || isUnavailableValue(row, metric.key)) return false;
+      if (scope === "season" && !(row.games > 0)) return false;
+      if (metric.key === "shootingPct" && !(row.shots >= shootingEligibilityShots)) return false;
+      if (metric.key === "rating" && row.ratingEstimated) return false;
+      return typeof row[metric.key] === "number" && Number.isFinite(archiveRecordValue(row, metric.key));
+    });
+    if (!candidates.length) return [recordDisplayRow(benchmark)];
+    const compare = (a, b) => {
+      const difference = archiveRecordValue(a, metric.key) - archiveRecordValue(b, metric.key);
+      if (Math.abs(difference) > 1e-9) return metric.minimum ? difference : -difference;
+      return metric.label === "Match Record" ? a.losses - b.losses : 0;
+    };
+    candidates.sort(compare);
+    const best = candidates[0];
+    const legacyValue = Number(String(benchmark.value).replace(/[^\d.-]/g, ""));
+    // Old game benchmarks remain valid even when their original replay is unavailable.
+    if (scope === "game" && legacyValue > archiveRecordValue(best, metric.key)) return [recordDisplayRow(benchmark)];
+    const winners = candidates.filter((row) => compare(row, best) === 0);
+    const seen = new Set();
+    const result = winners.flatMap((row) => {
+      const team = entity === "teams" ? row.name : (row.team || row.teams?.join("; ") || row.teamsText || "-");
+      const identity = `${row.season}|${row.name}|${team}`;
+      if (seen.has(identity)) return [];
+      seen.add(identity);
+      const roster = row.roster || recordTeamRoster(team, row.season).map((player) => player.name);
+      return [{ ...benchmark, record: metric.label, value: archiveRecordFormattedValue(row, metric),
+        holder: displayName(row.name, entity === "teams" ? "team" : "name"),
+        team: entity === "teams" ? roster.map((name) => displayName(name, "name")).join(", ") : formatDisplayName(team, "team"),
+        season: String(seasonOrdinal(row.season)) }];
+    });
+    if (scope === "game" && legacyValue === archiveRecordValue(best, metric.key)) {
+      const legacy = recordDisplayRow(benchmark);
+      if (!result.some((row) => row.holder === legacy.holder && row.team === legacy.team && row.season === legacy.season)) result.unshift(legacy);
+    }
+    return result;
+  });
 }
 
 function recordDisplayRow(row) {
@@ -5700,6 +5945,7 @@ function renderAwardFilters() {
         `).join("")}
       </div>
       <p class="record-era-note">${state.recordEra === "2s" ? "*** 2's Era discontinued after Season I" : "3's Era records include seasons II and later."}</p>
+      <p class="record-era-note">${state.recordScope === "season" ? "Season records use regular-season and Swiss totals, excluding playoffs. Shooting percentage requires at least 15 shots." : "Game records include uploaded playoff games. Historical manual benchmarks are retained where their original games are unavailable."}</p>
       ` : `
       <h3>World Cup(s)</h3>
       <p>World Cup champions are tracked separately from season awards.</p>
@@ -5718,6 +5964,7 @@ function renderAwardFilters() {
 }
 
 function teamSeasonRow(team, season) {
+  if (season === "Lifetime") return lifetimeTeams().find((row) => row.name === team);
   if (season === "S6") return s6StageTeamRows(state.s6Stage, "overall").find((row) => row.name === team);
   if (season === "S5" && state.s5Stage === "swiss") return null;
   return data.teams.find((row) => row.name === team && row.season === season);
@@ -5744,9 +5991,10 @@ function decorateRosterCareerHighs(rows) {
 
 function detailContext() {
   if (state.page.type === "team") {
-    const stageLabel = activeStageLabel(state.page.season);
-    const seasonLabel = state.page.season === "Lifetime" ? "All seasons" : `${state.page.season}${stageLabel ? ` ${stageLabel}` : ""}`;
-    const teamRow = teamSeasonRow(state.page.team, state.page.season);
+    const season = baseSeasonName(state.page.season);
+    const stageLabel = activeStageLabel(season);
+    const seasonLabel = season === "Lifetime" ? "All seasons" : `${season}${stageLabel ? ` ${stageLabel}` : ""}`;
+    const teamRow = teamSeasonRow(state.page.team, season);
     const pageTheme = activeTeamPageTheme();
     if (pageTheme) {
       const matchRecord = teamRow ? `${teamRow.wins}-${teamRow.losses} Match Record` : "Match Record n/a";
@@ -5754,8 +6002,8 @@ function detailContext() {
         eyebrow: `${matchRecord} / ${seasonLabel}`,
         title: state.page.team,
         columns: rosterColumns,
-        rows: decorateRosterCareerHighs(sortRows(teamRoster(state.page.team, state.page.season))),
-        tableTitle: "Players",
+        rows: decorateRosterCareerHighs(sortRows(teamRoster(state.page.team, season))),
+        tableTitle: "Regular Season Players",
         action: (row) => ({ type: "player", player: row.name }),
       };
     }
@@ -5768,8 +6016,8 @@ function detailContext() {
       eyebrow: "Team roster",
       title: `${state.page.team} - ${seasonLabel}${record ? ` (${record})` : ""}`,
       columns: rosterColumns,
-      rows: decorateRosterCareerHighs(sortRows(teamRoster(state.page.team, state.page.season))),
-      tableTitle: "Players",
+      rows: decorateRosterCareerHighs(sortRows(teamRoster(state.page.team, season))),
+      tableTitle: "Regular Season Players",
       action: (row) => ({ type: "player", player: row.name }),
     };
   }
@@ -5781,7 +6029,7 @@ function detailContext() {
       title: state.page.player,
       columns: playerSeasonColumns,
       rows: decoratePlayerCareerRows(state.page.player),
-      tableTitle: "Seasons",
+      tableTitle: "Regular Season Stats",
       action: (row) => row.__isCareer ? null : ({ type: "playerSeason", player: state.page.player, season: row.season }),
     };
   }
@@ -5789,11 +6037,11 @@ function detailContext() {
   if (state.page.type === "playerSeason") {
     return {
       eyebrow: "Player game log",
-      title: `${state.page.player} - ${state.page.season}`,
+      title: `${state.page.player} - ${state.page.season}${state.page.season === "S6" ? ` ${activeStageLabel("S6")}` : ""}`,
       columns: gameColumns,
       rows: sortRows(playerSeasonGames(state.page.player, state.page.season)),
       tableTitle: "Games",
-      action: null,
+      action: (row) => row.__gameAction || null,
     };
   }
 
@@ -5890,7 +6138,7 @@ function dashboardAction(row) {
 }
 
 function renderSeasonOptions() {
-  if (!state.includeScrims && isScrimSeason(state.season)) state.season = latestRegularSeason();
+  if (isScrimSeason(state.season)) state.season = latestRegularSeason();
   if (state.season === "All") state.season = latestRegularSeason();
   const seasons = visibleSeasons();
   let selected = isLifetimeView() ? "Lifetime" : baseSeasonName(state.season);
@@ -6536,9 +6784,10 @@ function createYourKitchenVariable() {
 
 function activeTeamPageTheme() {
   if (state.page.type !== "team") return null;
-  const logo = teamThemeAssetFor(state.page.team, state.page.season);
+  const season = baseSeasonName(state.page.season);
+  const logo = teamThemeAssetFor(state.page.team, season);
   if (!logo) return null;
-  const info = teamInfoFor(state.page.team, state.page.season);
+  const info = teamInfoFor(state.page.team, season);
   const primary = rocketLeagueColor(info?.primary) || { code: "", name: "Team color", hex: "#32e8ff" };
   const secondary = rocketLeagueColor(info?.secondary) || { code: "", name: "Accent", hex: "#ff4fc3" };
   return {
@@ -6645,17 +6894,20 @@ function renderDetailExtras() {
   }
 
   if (state.page.type === "team") {
-    const info = teamInfoFor(state.page.team, state.page.season);
-    const draft = draftRowForTeam(state.page.team, state.page.season);
+    const season = baseSeasonName(state.page.season);
+    const info = teamInfoFor(state.page.team, season);
+    const draft = draftRowForTeam(state.page.team, season);
+    const regularTotals = teamSeasonRow(state.page.team, season);
+    const playoffTotals = season === "S6" || season === "Lifetime" ? s6PlayoffTeamRows().find((row) => row.name === state.page.team)
+      : data.teams.find((row) => row.name === state.page.team && row.season === playoffSeasonName(season));
+    const playoffRows = teamPlayoffRoster(state.page.team, season);
     const pageTheme = activeTeamPageTheme();
     const canShowSchedule = state.page.season && state.page.season !== "Lifetime";
-    const awards = teamAwards(state.page.team, state.page.season);
-    if (!info && !draft && !canShowSchedule) {
-      els.detailExtras.classList.add("hidden");
-      els.detailExtras.innerHTML = "";
-      return;
-    }
+    const awards = teamAwards(state.page.team, season);
     els.detailExtras.innerHTML = `
+      ${detailTotalCardsMarkup(regularTotals, "Regular Season Team Totals")}
+      ${playoffDetailTableMarkup(playoffRows, rosterColumns, (row) => ({ type: "player", player: row.name }))}
+      ${detailTotalCardsMarkup(playoffTotals, "Playoff Team Totals")}
       <div class="extras-grid">
         ${info ? `<section>
           <h2>Team Info</h2>
@@ -6699,9 +6951,9 @@ function renderDetailExtras() {
         ${canShowSchedule ? `<section>
           <h2>Schedule</h2>
           <div class="compact-stat-list">
-            <button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "schedule", season: state.page.season, team: state.page.team }))}">
+            <button type="button" data-action="${encodeURIComponent(JSON.stringify({ type: "schedule", season, team: state.page.team }))}">
               <strong>View ${escapeHtml(displayName(state.page.team, "team"))} Schedule</strong>
-              <span>${escapeHtml(state.page.season)}</span>
+              <span>${escapeHtml(season)}</span>
             </button>
           </div>
         </section>` : ""}
@@ -6732,6 +6984,13 @@ function renderDetailExtras() {
     return;
   }
 
+  if (state.page.type === "playerSeason") {
+    const games = playerSeasonGames(state.page.player, state.page.season);
+    els.detailExtras.innerHTML = `<p class="empty-note">${games.length ? "Game logs show available replay and CSV data only; manual season totals do not include individual game breakdowns." : "Individual game stats are unavailable for this season. Manual season totals are still preserved."}</p>`;
+    els.detailExtras.classList.remove("hidden");
+    return;
+  }
+
   if (state.page.type !== "player") {
     els.detailExtras.classList.add("hidden");
     els.detailExtras.innerHTML = "";
@@ -6748,6 +7007,7 @@ function renderDetailExtras() {
     ["Total Goals", totals.goals],
     ["Total Assists", totals.assists],
     ["Total Saves", totals.saves],
+    ["Total Shots", totals.shots],
   ];
   const leaderboardHtml = groups.length ? groups.map((group) => `
     <article class="appearance-card">
@@ -6799,6 +7059,8 @@ function renderDetailExtras() {
   ` : `<p class="empty-note">No milestones yet.</p>`;
 
   els.detailExtras.innerHTML = `
+    ${playoffDetailTableMarkup(playerPlayoffCareer(state.page.player), playerSeasonColumns,
+      (row) => ({ type: "playerSeason", player: state.page.player, season: row.season }))}
     <div class="extras-grid">
       <section>
         <h2>Career Totals</h2>
@@ -7069,6 +7331,7 @@ function render() {
   els.teamInfoPanel.innerHTML = "";
   els.yourKitchenPanel.classList.add("hidden");
   els.yourKitchenPanel.innerHTML = "";
+  els.season7Panel.classList.add("hidden");
   const showAnalyticsToggle = !inDetail && (state.view === "kitchen" || state.view === "yourKitchen");
   els.analyticsModeControl.classList.toggle("hidden", !showAnalyticsToggle);
   els.analyticsModeControl.querySelectorAll("[data-analytics-mode]").forEach((button) => button.classList.toggle("active", button.dataset.analyticsMode === state.analyticsMode));
@@ -7111,6 +7374,16 @@ function render() {
     els.playoffStats.classList.add("hidden");
     els.playoffStats.innerHTML = "";
     renderHomePage();
+    return;
+  }
+
+  if (state.view === "season7") {
+    renderKpis([]);
+    document.querySelector(".kpis").classList.add("hidden");
+    els.tableShell.classList.add("hidden");
+    els.playoffStats.classList.add("hidden");
+    els.playoffStats.innerHTML = "";
+    if (typeof window.renderSeason7Page === "function") window.renderSeason7Page();
     return;
   }
 
@@ -7295,7 +7568,8 @@ els.seasonPhaseControl.addEventListener("click", (event) => {
   const button = event.target.closest("[data-season-phase]");
   if (!button || button.disabled || els.seasonSelect.value === "Lifetime") return;
   state.seasonPhase = button.dataset.seasonPhase;
-  state.page = { type: "dashboard" };
+  if (!["team", "player"].includes(state.page.type)) state.page = { type: "dashboard" };
+  else if (state.page.type === "team") state.page = { ...state.page, season: baseSeasonName(state.page.season) };
   const base = els.seasonSelect.value;
   state.season = state.seasonPhase === "playoffs" && hasPlayoffSeason(base) ? playoffSeasonName(base) : base;
   render();
@@ -7336,12 +7610,6 @@ els.s6PoolControl.addEventListener("click", (event) => {
 els.searchInput.addEventListener("input", (event) => {
   state.searchText = event.target.value;
   renderSearchSuggestions();
-});
-
-els.includeScrims.addEventListener("change", (event) => {
-  state.includeScrims = event.target.checked;
-  renderSeasonOptions();
-  render();
 });
 
 els.excludeTwosEra.addEventListener("change", (event) => {
@@ -7515,6 +7783,13 @@ els.backButton.addEventListener("click", () => {
     state.sortKey = "season";
     state.sortDir = "asc";
   } else if (state.page.type === "scheduleGame") {
+    if (state.page.playerLog) {
+      state.page = { type: "playerSeason", ...state.page.playerLog };
+      state.sortKey = "date";
+      state.sortDir = "asc";
+      render();
+      return;
+    }
     state.page = {
       type: "scheduleSeries",
       season: state.page.season,
@@ -7779,6 +8054,13 @@ els.kitchenPanel.addEventListener("focusout", (event) => {
 });
 
 els.detailExtras.addEventListener("click", (event) => {
+  const playoffSort = event.target.closest("[data-playoff-sort]");
+  if (playoffSort) {
+    const key = playoffSort.dataset.playoffSort;
+    playoffDetailSort = { key, dir: playoffDetailSort.key === key && playoffDetailSort.dir === "desc" ? "asc" : "desc" };
+    renderDetailExtras();
+    return;
+  }
   const matchupToggle = event.target.closest("[data-toggle-matchup-preview]");
   if (matchupToggle) {
     state.showMatchupPreview = !state.showMatchupPreview;
@@ -7885,7 +8167,6 @@ els.head.addEventListener("click", (event) => {
   render();
 });
 
-els.includeScrims.checked = state.includeScrims;
 els.excludeTwosEra.checked = state.excludeTwosEra;
 els.excludeThreesEra.checked = state.excludeThreesEra;
 renderSeasonOptions();
